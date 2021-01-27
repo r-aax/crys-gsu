@@ -282,6 +282,7 @@ class Grid:
                         # Maybe it came from another zone already.
                         reference_node = self.find_near_node(new_node)
                         if reference_node is None:
+                            # Need to isolate this.
                             self.Nodes.append(new_node)
                             self.RoundedCoordsBag.add(new_node.RoundedCoords)
                             reference_node = new_node
