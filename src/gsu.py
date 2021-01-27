@@ -21,6 +21,20 @@ class Node:
         # Variable for any purpose marking.
         self.Mark = 0
 
+    def is_near(self, n, eps=1e-10):
+        """
+        Check if one node is near to another.
+        :param n: another node
+        :param eps: epsilon
+        :return: True - if nodes are near to each other, False - otherwise
+        """
+
+        dx = abs(self.Data[0] - n.Data[0])
+        dy = abs(self.Data[1] - n.Data[1])
+        dz = abs(self.Data[2] - n.Data[2])
+
+        return (dx < eps) and (dy < eps) and (dz < eps)
+
 
 class Face:
     """
@@ -168,6 +182,21 @@ class Grid:
 
         return len(self.Zones)
 
+    def find_near_node(self, n, eps=1e-10):
+        """
+        Find in grid nodes collection node that is near to a given node.
+        :param n: node to check
+        :param eps: epsilon
+        :return: near node from grid nodes collection
+        """
+
+        # Not optimal at all.
+        for node in self.Nodes:
+            if node.is_near(n, eps):
+                return node
+
+        return None
+
     def load(self, filename):
         """
         Load grid from file.
@@ -245,9 +274,16 @@ class Grid:
                         line = f.readline()
                         d.append([float(xi) for xi in line.split()])
                     for i in range(nodes_to_read):
-                        node = Node([d[0][i], d[1][i], d[2][i]])
-                        self.Nodes.append(node)
-                        zone.Nodes.append(node)
+                        new_node = Node([d[0][i], d[1][i], d[2][i]])
+
+                        # First we try find such node in grid nodes collection.
+                        # Maybe it came from another zone already.
+                        reference_node = self.find_near_node(new_node)
+                        if reference_node is None:
+                            self.Nodes.append(new_node)
+                            reference_node = new_node
+
+                        zone.Nodes.append(reference_node)
 
                     # Read data for faces.
                     d = []
