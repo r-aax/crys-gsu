@@ -10,10 +10,11 @@ class Node:
     Node of the grid.
     """
 
-    def __init__(self, data):
+    def __init__(self, data, digits=10):
         """
         Constructor node.
         :param data: node data (tuple)
+        :param digits: digits count for rounding coordinates
         """
 
         self.Data = data
@@ -21,19 +22,16 @@ class Node:
         # Variable for any purpose marking.
         self.Mark = 0
 
-    def is_near(self, n, eps=1e-10):
+        # Rounded coordinates for registration in set.
+        self.RoundedCoords = round(data[0], digits), round(data[1], digits), round(data[2], digits)
+
+    def is_near(self, n):
         """
         Check if one node is near to another.
         :param n: another node
-        :param eps: epsilon
         :return: True - if nodes are near to each other, False - otherwise
         """
-
-        dx = abs(self.Data[0] - n.Data[0])
-        dy = abs(self.Data[1] - n.Data[1])
-        dz = abs(self.Data[2] - n.Data[2])
-
-        return (dx < eps) and (dy < eps) and (dz < eps)
+        return self.RoundedCoords == n.RoundedCoords
 
 
 class Face:
@@ -148,6 +146,9 @@ class Grid:
         self.Faces = []
         self.Zones = []
 
+        # Rounded coordinates
+        self.RoundedCoordsBag = set()
+
     def print_info(self):
         """
         Print information about grid.
@@ -182,18 +183,19 @@ class Grid:
 
         return len(self.Zones)
 
-    def find_near_node(self, n, eps=1e-10):
+    def find_near_node(self, n):
         """
         Find in grid nodes collection node that is near to a given node.
         :param n: node to check
-        :param eps: epsilon
         :return: near node from grid nodes collection
         """
 
-        # Not optimal at all.
-        for node in self.Nodes:
-            if node.is_near(n, eps):
-                return node
+        # First try to find  in bag.
+        if n.RoundedCoords in self.RoundedCoordsBag:
+            for node in self.Nodes:
+                if node.is_near(n):
+                    return node
+            raise Exception('We expect to find node with coordinates {0} in the grid'.format(n.RoundedCoords))
 
         return None
 
@@ -281,6 +283,7 @@ class Grid:
                         reference_node = self.find_near_node(new_node)
                         if reference_node is None:
                             self.Nodes.append(new_node)
+                            self.RoundedCoordsBag.add(new_node.RoundedCoords)
                             reference_node = new_node
 
                         zone.Nodes.append(reference_node)
