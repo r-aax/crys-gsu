@@ -64,6 +64,56 @@ class Edge:
         self.Nodes = []
         self.Faces = []
 
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def is_border(self):
+        """
+        Check if edge is border edge.
+        :return: True - if edge is border edge, False - otherwise
+        """
+
+        # Border edge has only one neighbour face.
+        return len(self.Faces) == 1
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def is_interzones(self):
+        """
+        Check if edge is interzones.
+        :return: True - if edge is interzones, False - otherwise
+        """
+
+        # Interzone edge has two neighbour faces from different zones.
+
+        faces_count = len(self.Faces)
+
+        if faces_count == 1:
+            return False
+        elif faces_count == 2:
+            return self.Faces[0].Zone != self.Faces[1].Zone
+        else:
+            raise Exception('Edge cannot has {0} neighbours faces.'.format(faces_count))
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def is_innerzones(self):
+        """
+        Check if edge is innerzones.
+        :return: True - if edge is innerzones, False - otherwise
+        """
+
+        # Innerzones edge has two faces from one zone.
+
+        faces_count = len(self.Faces)
+
+        if faces_count == 1:
+            return False
+        elif faces_count == 2:
+            return self.Faces[0].Zone == self.Faces[1].Zone
+        else:
+            raise Exception('Edge cannot has {0} neighbours faces.'.format(faces_count))
+
+
 # ======================================================================================================================
 
 
@@ -85,6 +135,9 @@ class Face:
         # Links with nodes and edges.
         self.Nodes = []
         self.Edges = []
+
+        # Link to zone (each face belongs only to one single zone).
+        self.Zone = None
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -168,6 +221,17 @@ class Zone:
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    def add_face(self, face):
+        """
+        Add face to zone (with link).
+        :param face: face
+        """
+
+        self.Faces.append(face)
+        face.Zone = self
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def mark_nodes(self):
         """
         Mark all nodes.
@@ -215,11 +279,35 @@ class Grid:
         Print information about grid.
         """
 
+        ec = self.edges_count()
+
         print('GSU: {0}'.format(self.Name))
         print('  {0} nodes, {1} edges, {2} faces, {3} zones'.format(self.nodes_count(),
-                                                                    self.edges_count(),
+                                                                    ec,
                                                                     self.faces_count(),
                                                                     self.zones_count()))
+
+        # Edges statistics.
+        border_edges_count = 0
+        interzones_edges_count = 0
+        innerzones_edges_count = 0
+        for edge in self.Edges:
+            if edge.is_border():
+                border_edges_count += 1
+            elif edge.is_interzones():
+                interzones_edges_count += 1
+            elif edge.is_innerzones():
+                innerzones_edges_count += 1
+            else:
+                raise Exception('Unknown type of edge.')
+        border_edges_p = 100.0 * border_edges_count / ec
+        interzones_edges_p = 100.0 * interzones_edges_count / ec
+        innerzones_edges_p = 100.0 * innerzones_edges_count / ec
+        print('  edges stats: {0} border ({1:.2f}%), '
+              '{2} interzones ({3:.2f}%), '
+              '{4} innerzones ({5:.2f}%)'.format(border_edges_count, border_edges_p,
+                                                 interzones_edges_count, interzones_edges_p,
+                                                 innerzones_edges_count, innerzones_edges_p))
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -474,7 +562,7 @@ class Grid:
                     for i in range(faces_to_read):
                         face = Face([d[0][i], d[1][i], d[2][i], d[3][i], d[4][i], d[5][i], d[6][i], d[7][i]])
                         self.Faces.append(face)
-                        zone.Faces.append(face)
+                        zone.add_face(face)
 
                     # Read connectivity lists.
                     for i in range(faces_to_read):
@@ -580,7 +668,7 @@ class Grid:
         zone = Zone('mono')
         self.Zones.append(zone)
         for face in self.Faces:
-            zone.Faces.append(face)
+            zone.add_face(face)
 
         # Link nodes.
         self.relink_nodes_to_zones()
@@ -600,7 +688,7 @@ class Grid:
             zone = Zone('random ' + str(i))
             self.Zones.append(zone)
         for face in self.Faces:
-            self.Zones[random.randint(0, count - 1)].Faces.append(face)
+            self.Zones[random.randint(0, count - 1)].add_face(face)
 
         # Link nodes.
         self.relink_nodes_to_zones()

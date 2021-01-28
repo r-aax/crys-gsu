@@ -13,17 +13,13 @@ if __name__ == '__main__':
     g.load('grids/' + test + '.dat')
     g.print_info()
 
-    """
     print('Create initial version.')
     g.store('grids/' + test + '_origin.dat')
-    """
 
-    """
     print('Create mono version.')
     g.distribute_mono()
     g.print_info()
     g.store('grids/' + test + '_mono.dat')
-    """
 
     print('Create random version.')
     g.distribute_random()
