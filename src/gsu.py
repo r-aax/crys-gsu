@@ -2,6 +2,7 @@
 GSU main functions.
 """
 
+import random
 from functools import reduce
 
 # ======================================================================================================================
@@ -259,6 +260,16 @@ class Grid:
         """
 
         return len(self.Zones)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def mark_nodes(self):
+        """
+        Mark all nodes.
+        """
+
+        for (i, node) in enumerate(self.Nodes):
+            node.Mark = i + 1
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -531,5 +542,67 @@ class Grid:
                     f.write(face.get_nodes_marks_str() + '\n')
 
             f.close()
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def relink_nodes_to_zones(self):
+        """
+        Relink nodes to zones.
+        """
+
+        # Mark nodes for easy search.
+        self.mark_nodes()
+
+        for zone in self.Zones:
+
+            # Delete old information.
+            zone.Nodes.clear()
+
+            # Bad for duplicates monitoring.
+            bag = set()
+
+            # Add nodes.
+            for face in zone.Faces:
+                for node in face.Nodes:
+                    if node.Mark not in bag:
+                        zone.Nodes.append(node)
+                        bag.add(node.Mark)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def distribute_mono(self):
+        """
+        Create mono distribution (with 1 zone).
+        """
+
+        # Delete all zones and create one zone with name 'mono'.
+        self.Zones.clear()
+        zone = Zone('mono')
+        self.Zones.append(zone)
+        for face in self.Faces:
+            zone.Faces.append(face)
+
+        # Link nodes.
+        self.relink_nodes_to_zones()
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def distribute_random(self, count=16):
+        """
+        Create random distribution.
+        :param count: zones count
+        """
+
+        # Delete all zones.
+        # Create 'count' zones and random distribute faces between them.
+        self.Zones.clear()
+        for i in range(count):
+            zone = Zone('random ' + str(i))
+            self.Zones.append(zone)
+        for face in self.Faces:
+            self.Zones[random.randint(0, count - 1)].Faces.append(face)
+
+        # Link nodes.
+        self.relink_nodes_to_zones()
 
 # ======================================================================================================================
