@@ -280,12 +280,14 @@ class Grid:
         """
 
         ec = self.edges_count()
+        fc = self.faces_count()
 
         print('GSU: {0}'.format(self.Name))
         print('  {0} nodes, {1} edges, {2} faces, {3} zones'.format(self.nodes_count(),
                                                                     ec,
-                                                                    self.faces_count(),
+                                                                    fc,
                                                                     self.zones_count()))
+        # Check faces count.
 
         # Edges statistics.
         border_edges_count = 0
@@ -658,6 +660,27 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    def unlink_faces_from_zones(self):
+        """
+        Unlink faces from zones.
+        """
+
+        for face in self.Faces:
+            face.Zone = None
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def check_faces_are_linked_to_zones(self):
+        """
+        Check if all faces are linked to zones.
+        """
+
+        for face in self.Faces:
+            if face.Zone == None:
+                raise Exception('Unlinked face detected.')
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def distribute_mono(self):
         """
         Create mono distribution (with 1 zone).
@@ -665,6 +688,7 @@ class Grid:
 
         # Delete all zones and create one zone with name 'mono'.
         self.Zones.clear()
+        self.unlink_faces_from_zones()
         zone = Zone('mono')
         self.Zones.append(zone)
         for face in self.Faces:
@@ -672,6 +696,7 @@ class Grid:
 
         # Link nodes.
         self.relink_nodes_to_zones()
+        self.check_faces_are_linked_to_zones()
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -684,6 +709,7 @@ class Grid:
         # Delete all zones.
         # Create 'count' zones and random distribute faces between them.
         self.Zones.clear()
+        self.unlink_faces_from_zones()
         for i in range(count):
             zone = Zone('random ' + str(i))
             self.Zones.append(zone)
@@ -692,6 +718,7 @@ class Grid:
 
         # Link nodes.
         self.relink_nodes_to_zones()
+        self.check_faces_are_linked_to_zones()
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -708,6 +735,7 @@ class Grid:
         # Delete all zones.
         # Create 'count' zones and random distribute faces between them.
         self.Zones.clear()
+        self.unlink_faces_from_zones()
         for i in range(count):
             zone = Zone('linear ' + str(i))
             self.Zones.append(zone)
@@ -721,8 +749,51 @@ class Grid:
             for j in range(cur_face_i, cur_face_i + faces_to_add):
                 zone.add_face(self.Faces[j])
             cur_face_i += faces_to_add
+        if cur_face_i != fc:
+            raise Exception('Wrong linera distribution mathematics.')
 
         # Link nodes.
         self.relink_nodes_to_zones()
+        self.check_faces_are_linked_to_zones()
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def distribute_uniform(self,
+                           fun_extract_sign,
+                           count=16):
+
+        fc = self.faces_count()
+        fcpz = fc // count
+
+        # Delete all zones and links.
+        self.Zones.clear()
+        self.unlink_faces_from_zones()
+        for i in range(count):
+            zone = Zone('uniform ' + str(i))
+            self.Zones.append(zone)
+
+        # Extract signs.
+        signs = [fun_extract_sign(f) for f in self.Faces]
+        signs.sort()
+        # Need correction (for more uniform).
+        signs = signs[fcpz::fcpz]
+        if len(signs) > count - 1:
+            signs = signs[:-1]
+        if len(signs) != count - 1:
+            raise Exception('{0} partitions expected, but we have {1}.'.format(count, len(signs) + 1))
+
+        # Distribute.
+        for face in self.Faces:
+            fs = fun_extract_sign(face)
+            for (i, s) in enumerate(signs):
+                if fs < s:
+                    self.Zones[i].add_face(face)
+                    break
+            if face.Zone is None:
+                self.Zones[-1].add_face(face)
+
+        # Links nodes.
+        self.relink_nodes_to_zones()
+        self.check_faces_are_linked_to_zones()
 
 # ======================================================================================================================
