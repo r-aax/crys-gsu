@@ -693,4 +693,36 @@ class Grid:
         # Link nodes.
         self.relink_nodes_to_zones()
 
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def distribute_linear(self, count=16):
+        """
+        Linear distribution.
+        :param count: zones count
+        """
+
+        fc = self.faces_count()
+        fcpz = fc // count
+        fcrm = fc % count
+
+        # Delete all zones.
+        # Create 'count' zones and random distribute faces between them.
+        self.Zones.clear()
+        for i in range(count):
+            zone = Zone('linear ' + str(i))
+            self.Zones.append(zone)
+
+        # Distribute faces accurately.
+        cur_face_i = 0
+        for (i, zone) in enumerate(self.Zones):
+            faces_to_add = fcpz
+            if i < fcrm:
+                faces_to_add += 1
+            for j in range(cur_face_i, cur_face_i + faces_to_add):
+                zone.add_face(self.Faces[j])
+            cur_face_i += faces_to_add
+
+        # Link nodes.
+        self.relink_nodes_to_zones()
+
 # ======================================================================================================================
