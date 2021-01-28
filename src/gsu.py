@@ -280,6 +280,29 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    def add_new_node(self, data):
+        """
+        Add new node with given data.
+        :param data: data
+        :return: node registered in self.Nodes
+        """
+
+        new_node = Node(data)
+        found_node = self.find_near_node(new_node)
+
+        if found_node is None:
+            # There is no such node in the grid.
+            # We have to add it.
+            self.Nodes.append(new_node)
+            self.RoundedCoordsBag.add(new_node.RoundedCoords)
+            return new_node
+        else:
+            # There is already such a node in the grid.
+            # Just return it.
+            return found_node
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def link_node_edge(node, edge):
         """
         Link node with edge.
@@ -428,18 +451,9 @@ class Grid:
                         line = f.readline()
                         d.append([float(xi) for xi in line.split()])
                     for i in range(nodes_to_read):
-                        new_node = Node([d[0][i], d[1][i], d[2][i]])
-
-                        # First we try find such node in grid nodes collection.
-                        # Maybe it came from another zone already.
-                        reference_node = self.find_near_node(new_node)
-                        if reference_node is None:
-                            # Need to isolate this.
-                            self.Nodes.append(new_node)
-                            self.RoundedCoordsBag.add(new_node.RoundedCoords)
-                            reference_node = new_node
-
-                        zone.Nodes.append(reference_node)
+                        data = (d[0][i], d[1][i], d[2][i])
+                        new_node = self.add_new_node(data)
+                        zone.Nodes.append(new_node)
 
                     # Read data for faces.
                     d = []
