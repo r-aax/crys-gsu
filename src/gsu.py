@@ -4,11 +4,15 @@ GSU main functions.
 
 from functools import reduce
 
+# ======================================================================================================================
+
 
 class Node:
     """
     Node of the grid.
     """
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def __init__(self, data, digits=10):
         """
@@ -25,19 +29,49 @@ class Node:
         # Rounded coordinates for registration in set.
         self.RoundedCoords = round(data[0], digits), round(data[1], digits), round(data[2], digits)
 
+        # Links with edges and faces.
+        self.Edges = []
+        self.Faces = []
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def is_near(self, n):
         """
         Check if one node is near to another.
         :param n: another node
         :return: True - if nodes are near to each other, False - otherwise
         """
+
         return self.RoundedCoords == n.RoundedCoords
+
+# ======================================================================================================================
+
+
+class Edge:
+    """
+    Edge of the grid.
+    """
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def __init__(self):
+        """
+        Constructor.
+        """
+
+        # Links to nodes and faces.
+        self.Nodes = []
+        self.Faces = []
+
+# ======================================================================================================================
 
 
 class Face:
     """
     Face of the grid.
     """
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def __init__(self, data):
         """
@@ -47,8 +81,11 @@ class Face:
 
         self.Data = data
 
-        # Empty nodes links
+        # Links with nodes and edges.
         self.Nodes = []
+        self.Edges = []
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def get_nodes_marks_str(self):
         """
@@ -58,11 +95,15 @@ class Face:
 
         return reduce(lambda x, y: x + ' ' + y, [str(node.Mark) for node in self.Nodes])
 
+# ======================================================================================================================
+
 
 class Zone:
     """
     Zone of the grid.
     """
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def __init__(self, name):
         """
@@ -76,6 +117,8 @@ class Zone:
         self.Nodes = []
         self.Faces = []
 
+    # ------------------------------------------------------------------------------------------------------------------
+
     def nodes_count(self):
         """
         Nodes count.
@@ -84,6 +127,8 @@ class Zone:
 
         return len(self.Nodes)
 
+    # ------------------------------------------------------------------------------------------------------------------
+
     def faces_count(self):
         """
         Faces count.
@@ -91,6 +136,8 @@ class Zone:
         """
 
         return len(self.Faces)
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def get_nodes_data_slice_str(self, i):
         """
@@ -104,6 +151,8 @@ class Zone:
 
         return i_str
 
+    # ------------------------------------------------------------------------------------------------------------------
+
     def get_faces_data_slice_str(self, i):
         """
         Get string composed from i-th elements of data of all faces.
@@ -116,6 +165,8 @@ class Zone:
 
         return i_str
 
+    # ------------------------------------------------------------------------------------------------------------------
+
     def mark_nodes(self):
         """
         Mark all nodes.
@@ -124,14 +175,20 @@ class Zone:
         for (i, node) in enumerate(self.Nodes):
             node.Mark = i + 1
 
+# ======================================================================================================================
+
 
 class Grid:
     """
     Grid (Surface Unstructured).
     """
 
+    # ------------------------------------------------------------------------------------------------------------------
+
     # Right variables str for load/store grids.
     VariablesStr = '"X", "Y", "Z", "T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ"'
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def __init__(self):
         """
@@ -143,11 +200,14 @@ class Grid:
 
         # Set empty sets of nodes, faces, zones.
         self.Nodes = []
+        self.Edges = []
         self.Faces = []
         self.Zones = []
 
         # Rounded coordinates
         self.RoundedCoordsBag = set()
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def print_info(self):
         """
@@ -155,9 +215,12 @@ class Grid:
         """
 
         print('GSU: {0}'.format(self.Name))
-        print('  {0} nodes, {1} faces, {2} zones'.format(self.nodes_count(),
-                                                         self.faces_count(),
-                                                         self.zones_count()))
+        print('  {0} nodes, {1} edges, {2} faces, {3} zones'.format(self.nodes_count(),
+                                                                    self.edges_count(),
+                                                                    self.faces_count(),
+                                                                    self.zones_count()))
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def nodes_count(self):
         """
@@ -167,6 +230,18 @@ class Grid:
 
         return len(self.Nodes)
 
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def edges_count(self):
+        """
+        Edges count.
+        :return: edges count
+        """
+
+        return len(self.Edges)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def faces_count(self):
         """
         Faces count.
@@ -175,6 +250,8 @@ class Grid:
 
         return len(self.Faces)
 
+    # ------------------------------------------------------------------------------------------------------------------
+
     def zones_count(self):
         """
         Zones count.
@@ -182,6 +259,8 @@ class Grid:
         """
 
         return len(self.Zones)
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def find_near_node(self, n):
         """
@@ -199,6 +278,85 @@ class Grid:
 
         return None
 
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def link_node_edge(node, edge):
+        """
+        Link node with edge.
+        :param node: node
+        :param edge: edge
+        """
+
+        node.Edges.append(edge)
+        edge.Nodes.append(node)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def link_node_face(node, face):
+        """
+        Link face with node.
+        :param node: node
+        :param face: face
+        """
+
+        node.Faces.append(face)
+        face.Nodes.append(node)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def link_edge_face(edge, face):
+        """
+        Link edge with face.
+        :param edge: edge
+        :param face: face
+        """
+
+        edge.Faces.append(face)
+        face.Edges.append(edge)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def find_edge(node_a, node_b):
+        """
+        Find edge with given nodes.
+        :param node_a: the first node
+        :param node_b: the second node
+        :return: edge - if it is found, None - otherwise
+        """
+
+        for edge in node_a.Edges:
+            if node_b in edge.Nodes:
+                return edge
+
+        return None
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def complex_link_face_node_node_edge(self, face, node_a, node_b):
+        """
+        Compllex link nodes with edge, and edge with face.
+        :param face: face
+        :param node_a: the first node
+        :param node_b: th second node
+        """
+
+        # First we need to find edge.
+        edge = Grid.find_edge(node_a, node_b)
+
+        if edge is None:
+            # New edge and link it.
+            edge = Edge()
+            self.Edges.append(edge)
+            Grid.link_node_edge(node_a, edge)
+            Grid.link_node_edge(node_b, edge)
+            Grid.link_edge_face(edge, face)
+        else:
+            # Edge is already linked with nodes.
+            # Link only with the face.
+            Grid.link_edge_face(edge, face)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def load(self, filename):
         """
         Load grid from file.
@@ -207,15 +365,9 @@ class Grid:
 
         # Clear all objects of the grid.
         self.Nodes.clear()
+        self.Edges.clear()
         self.Faces.clear()
         self.Zones.clear()
-
-        # Current processed zone.
-        zone = None
-
-        # Nodes and faces to read.
-        nodes_to_read = 0
-        faces_to_read = 0
 
         # Open file and try to load it line by line.
         with open(filename, 'r') as f:
@@ -302,13 +454,30 @@ class Grid:
                     # Read connectivity lists.
                     for i in range(faces_to_read):
                         line = f.readline()
-                        zone.Faces[i].Nodes = [zone.Nodes[int(ss) - 1] for ss in line.split()]
+                        face = zone.Faces[i]
+                        nodes = [zone.Nodes[int(ss) - 1] for ss in line.split()]
+                        if len(nodes) != 3:
+                            raise Exception('Wrong count of face linked nodes ({0}).'.format(len(nodes)))
+                        Grid.link_node_face(nodes[0], face)
+                        Grid.link_node_face(nodes[1], face)
+                        Grid.link_node_face(nodes[2], face)
 
                 else:
                     raise Exception('Unexpected line : {0}.'.format(line))
 
                 line = f.readline()
             f.close()
+
+            # Now we need to fix rest objects links.
+            for face in self.Faces:
+                node_a = face.Nodes[0]
+                node_b = face.Nodes[1]
+                node_c = face.Nodes[2]
+                self.complex_link_face_node_node_edge(face, node_a, node_b)
+                self.complex_link_face_node_node_edge(face, node_a, node_c)
+                self.complex_link_face_node_node_edge(face, node_b, node_c)
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def store(self, filename):
         """
@@ -348,3 +517,5 @@ class Grid:
                     f.write(face.get_nodes_marks_str() + '\n')
 
             f.close()
+
+# ======================================================================================================================
