@@ -7,6 +7,25 @@ from functools import reduce
 
 # ======================================================================================================================
 
+def flatten(ar):
+    """
+    Flatten array.
+    :param ar: array
+    :return: flat array
+    """
+
+    r = []
+    for e in ar:
+        if isinstance(e, list):
+            r += flatten(e)
+        else:
+            r.append(e)
+
+    return r
+
+
+# ======================================================================================================================
+
 
 class Node:
     """
@@ -25,7 +44,7 @@ class Node:
         self.Data = data
 
         # Variable for any purpose marking.
-        self.Mark = 0
+        self.Mark = -1
 
         # Rounded coordinates for registration in set.
         self.RoundedCoords = round(data[0], digits), round(data[1], digits), round(data[2], digits)
@@ -139,6 +158,9 @@ class Face:
         # Link to zone (each face belongs only to one single zone).
         self.Zone = None
 
+        # Face mark.
+        self.Mark = -1
+
     # ------------------------------------------------------------------------------------------------------------------
 
     def get_nodes_marks_str(self):
@@ -147,7 +169,47 @@ class Face:
         :return: string of nodes marks
         """
 
-        return reduce(lambda x, y: x + ' ' + y, [str(node.Mark) for node in self.Nodes])
+        return reduce(lambda x, y: x + ' ' + y, [str(node.Mark + 1) for node in self.Nodes])
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def center_point(self):
+        """
+        Get point - center of the face.
+        :return: center point (tuple of coordinates)
+        """
+
+        xs = [n.Data[0] for n in self.Nodes]
+        ys = [n.Data[1] for n in self.Nodes]
+        zs = [n.Data[2] for n in self.Nodes]
+
+        return sum(xs) / len(xs), sum(ys) / len(ys), sum(zs) / len(zs)
+
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def get_neighbour(self, edge):
+        """
+        Get neighbour through edge.
+        :param edge: edge
+        :return: neighbour
+        """
+
+        incident_faces = len(edge.Faces)
+
+        if incident_faces == 1:
+            if edge.Faces[0] != self:
+                raise Exception('Error while getting face neighbour.')
+            return None
+        elif incident_faces == 2:
+            if edge.Faces[0] == self:
+                return edge.Faces[1]
+            elif edge.Faces[1] == self:
+                return edge.Faces[0]
+            else:
+                raise Exception('Error while getting face neighbour.')
+        else:
+            raise Exception('Wrong edge incident faces ({0}).'.format(incident_faces))
 
 # ======================================================================================================================
 
@@ -170,6 +232,12 @@ class Zone:
         # No nodes or faces in the zone yet.
         self.Nodes = []
         self.Faces = []
+
+        # Mark.
+        self.Mark = -1
+
+        # Faces queue.
+        self.FacesQueue = []
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -232,13 +300,47 @@ class Zone:
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    def fill_queue(self, face):
+        """
+        Fill queue with face neighbours.
+        :param face: face
+        """
+
+        for edge in face.Edges:
+            nf = face.get_neighbour(edge)
+            if nf is not None:
+                if nf.Zone is None:
+                    nf.Zone = self
+                    self.FacesQueue.append(nf)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def mark_nodes(self):
         """
         Mark all nodes.
         """
 
         for (i, node) in enumerate(self.Nodes):
-            node.Mark = i + 1
+            node.Mark = i
+
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def grow(self):
+        """
+        Grow zone.
+        :return: 1 - if zone grows, 0 - otherwise
+        """
+
+        if self.FacesQueue == []:
+            print('I can not grow : zone {0}.'.format(self.Name))
+            return 0
+        else:
+            fc = self.FacesQueue[0]
+            self.FacesQueue = self.FacesQueue[1:]
+            self.add_face(fc)
+            self.fill_queue(fc)
+            return 1
 
 # ======================================================================================================================
 
@@ -287,7 +389,6 @@ class Grid:
                                                                     ec,
                                                                     fc,
                                                                     self.zones_count()))
-        # Check faces count.
 
         # Edges statistics.
         border_edges_count = 0
@@ -310,6 +411,39 @@ class Grid:
               '{4} innerzones ({5:.2f}%)'.format(border_edges_count, border_edges_p,
                                                  interzones_edges_count, interzones_edges_p,
                                                  innerzones_edges_count, innerzones_edges_p))
+
+        # Distribution faces between zones.
+        print('  distribution faces between zones:')
+        for zone in self.Zones:
+            print('    {0} : {1} faces'.format(zone.Name, zone.faces_count()))
+        zones_faces_count = [zone.faces_count() for zone in self.Zones]
+        ideal_mean = self.faces_count() / self.zones_count()
+        max_zone_faces_count = max(zones_faces_count)
+        faces_distr_dev = 100.0 * (max_zone_faces_count - ideal_mean) / ideal_mean
+        print('  ~ max zone faces {0}, faces distribution deviation : {1}%'.format(max_zone_faces_count,
+                                                                                   faces_distr_dev))
+
+        # Distribution edges between pairs of neighbours.
+        m = []
+        for zone in self.Zones:
+            m.append([0] * self.zones_count())
+        # Calculate border lengths.
+        self.mark_zones()
+        for edge in self.Edges:
+            if len(edge.Faces) == 2:
+                ff = edge.Faces[0]
+                sf = edge.Faces[1]
+                if ff.Zone != sf.Zone:
+                    if ff.Zone is not None and sf.Zone is not None:
+                        m[ff.Zone.Mark][sf.Zone.Mark] += 1
+                        m[sf.Zone.Mark][ff.Zone.Mark] += 1
+        # Print distribution.
+        for i in range(self.zones_count()):
+            print(' '.join(['{0:5}'.format(e) for e in m[i]]))
+        # Calculate stats.
+        fm = flatten(m)
+        max_interzone_border_length = max(fm)
+        print('  ~ max interzones border length : {0}'.format(max_interzone_border_length))
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -359,7 +493,27 @@ class Grid:
         """
 
         for (i, node) in enumerate(self.Nodes):
-            node.Mark = i + 1
+            node.Mark = i
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def mark_faces(self):
+        """
+        Mark all faces.
+        """
+
+        for (i, face) in enumerate(self.Faces):
+            face.Mark = i
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def mark_zones(self):
+        """
+        Mark all zones.
+        """
+
+        for (i, zone) in enumerate(self.Zones):
+            zone.Mark = i
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -544,6 +698,7 @@ class Grid:
                     if 'VARLOCATION=([4-11]=CELLCENTERED)' != varlocation_line[:-1]:
                         raise Exception('Wrong varlocation line ({0}).'.format(varlocation_line))
                     nodes_to_read = int(nodes_line.split('=')[-1][:-1])
+                    print('zone {0}, nodes_to_read = {1}'.format(zone_name, nodes_to_read))
                     faces_to_read = int(faces_line.split('=')[-1][:-1])
 
                     # Read data for nodes.
@@ -791,6 +946,102 @@ class Grid:
                     break
             if face.Zone is None:
                 self.Zones[-1].add_face(face)
+
+        # Links nodes.
+        self.relink_nodes_to_zones()
+        self.check_faces_are_linked_to_zones()
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def distribute_rgrow(self, count=16):
+        """
+        Distribution with random grow.
+        :param count: count of zones.
+        """
+
+        # Delete all zones and links.
+        self.Zones.clear()
+        self.unlink_faces_from_zones()
+        for i in range(count):
+            zone = Zone('rgrow ' + str(i))
+            self.Zones.append(zone)
+
+        # Initial faces.
+        self.mark_faces()
+        self.mark_zones()
+        for zone in self.Zones:
+            rf = self.Faces[random.randint(0, self.faces_count() - 1)]
+            while rf.Zone is not None:
+                rf = self.Faces[random.randint(0, self.faces_count() - 1)]
+            zone.add_face(rf)
+            zone.FacesQueue = []
+            zone.fill_queue(rf)
+
+        # Walk and add to faces to queues.
+        total_faces = count
+        while total_faces < self.faces_count():
+            for i in range(3 * count):
+                zi = i % count
+                total_faces += self.Zones[zi].grow()
+
+        # Links nodes.
+        self.relink_nodes_to_zones()
+        self.check_faces_are_linked_to_zones()
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def split_zone(self, zone, extract_signs_fun):
+        """
+        Split zone.
+        :param zone: zone
+        :param extract_signs_fun: list of functions for extraction.
+        """
+
+        # Technical actions.
+        zl = Zone(zone.Name + 'l')
+        zr = Zone(zone.Name + 'r')
+        self.Zones.remove(zone)
+        self.Zones.append(zl)
+        self.Zones.append(zr)
+
+        # Split.
+        signs = [extract_signs_fun(f) for f in zone.Faces]
+        signs.sort()
+        blade = signs[len(signs) // 2]
+
+        for face in zone.Faces:
+            if extract_signs_fun(face) <  blade:
+                zl.add_face(face)
+            else:
+                zr.add_face(face)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def distribute_hierarchical(self, extract_signs_funs, levels=4):
+        """
+        Hierarchical distribution with given numbers of levels.
+        :param extract_signs_funs: list of functions for signs extraction
+        :param levels: levels count
+        """
+
+        # Delete all zones and links.
+        self.Zones.clear()
+        self.unlink_faces_from_zones()
+
+        # Check levels.
+        if levels < 1:
+            raise Exception('It must be at least 1 level.')
+
+        zone = Zone('h')
+        self.Zones.append(zone)
+        for face in self.Faces:
+            zone.add_face(face)
+
+        for li in range(levels - 1):
+            c = len(self.Zones)
+            for zi in range(c):
+                print('split zone {0}.'.format(self.Zones[0].Name))
+                self.split_zone(self.Zones[0], extract_signs_funs[li % len(extract_signs_funs)])
 
         # Links nodes.
         self.relink_nodes_to_zones()
