@@ -23,7 +23,6 @@ def flatten(ar):
 
     return r
 
-
 # ======================================================================================================================
 
 
@@ -185,7 +184,6 @@ class Face:
 
         return sum(xs) / len(xs), sum(ys) / len(ys), sum(zs) / len(zs)
 
-
     # ------------------------------------------------------------------------------------------------------------------
 
     def get_neighbour(self, edge):
@@ -323,7 +321,6 @@ class Zone:
         for (i, node) in enumerate(self.Nodes):
             node.Mark = i
 
-
     # ------------------------------------------------------------------------------------------------------------------
 
     def grow(self):
@@ -332,8 +329,8 @@ class Zone:
         :return: 1 - if zone grows, 0 - otherwise
         """
 
-        if self.FacesQueue == []:
-            print('I can not grow : zone {0}.'.format(self.Name))
+        if not self.FacesQueue:
+            # print('I can not grow : zone {0}.'.format(self.Name))
             return 0
         else:
             fc = self.FacesQueue[0]
@@ -698,7 +695,7 @@ class Grid:
                     if 'VARLOCATION=([4-11]=CELLCENTERED)' != varlocation_line[:-1]:
                         raise Exception('Wrong varlocation line ({0}).'.format(varlocation_line))
                     nodes_to_read = int(nodes_line.split('=')[-1][:-1])
-                    print('zone {0}, nodes_to_read = {1}'.format(zone_name, nodes_to_read))
+                    print('LOAD: zone {0}, nodes_to_read = {1}'.format(zone_name, nodes_to_read))
                     faces_to_read = int(faces_line.split('=')[-1][:-1])
 
                     # Read data for nodes.
@@ -855,7 +852,7 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def distribute_random(self, count=16):
+    def distribute_random(self, count=32):
         """
         Create random distribution.
         :param count: zones count
@@ -877,7 +874,7 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def distribute_linear(self, count=16):
+    def distribute_linear(self, count=32):
         """
         Linear distribution.
         :param count: zones count
@@ -915,7 +912,7 @@ class Grid:
 
     def distribute_uniform(self,
                            fun_extract_sign,
-                           count=16):
+                           count=32):
 
         fc = self.faces_count()
         fcpz = fc // count
@@ -953,7 +950,7 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def distribute_rgrow(self, count=16):
+    def distribute_rgrow(self, count=32):
         """
         Distribution with random grow.
         :param count: count of zones.
@@ -990,11 +987,51 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def split_zone(self, zone, extract_signs_fun):
+    def split_zone_metric(self, zone, zl, zr, fun):
+        """
+        Split zone, calculate metric and roll-back.
+        :param zone: zone
+        :param zl: left child zone
+        :param zr: right child zone
+        :param fun: function for sign extraction
+        :return: metric
+        """
+
+        # Now all faces are in zone.
+        signs = [fun(f) for f in zone.Faces]
+        signs.sort()
+        blade = signs[len(signs) // 2]
+
+        # Distribute.
+        for f in zone.Faces:
+            if fun(f) < blade:
+                f.Zone = zl
+            else:
+                f.Zone = zr
+
+        # Metric.
+        r = 0
+        for f in zone.Faces:
+            for e in f.Edges:
+                if len(e.Faces) == 2:
+                    ff = e.Faces[0]
+                    sf = e.Faces[1]
+                    if (ff.Zone == zl and sf.Zone == zr) or (ff.Zone == zr and sf.Zone == zl):
+                        r += 1
+
+        # Roll back.
+        for f in zone.Faces:
+            f.Zone = zone
+
+        return r
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def split_zone(self, zone, extract_signs_funs):
         """
         Split zone.
         :param zone: zone
-        :param extract_signs_fun: list of functions for extraction.
+        :param extract_signs_funs: list of functions for extraction.
         """
 
         # Technical actions.
@@ -1004,20 +1041,25 @@ class Grid:
         self.Zones.append(zl)
         self.Zones.append(zr)
 
+        # Explore metrics.
+        metrics = [self.split_zone_metric(zone, zl, zr, extract_signs_funs[i])
+                   for i in range(len(extract_signs_funs))]
+        spl_index = metrics.index(min(metrics))
+
         # Split.
-        signs = [extract_signs_fun(f) for f in zone.Faces]
+        signs = [extract_signs_funs[spl_index](f) for f in zone.Faces]
         signs.sort()
         blade = signs[len(signs) // 2]
 
         for face in zone.Faces:
-            if extract_signs_fun(face) <  blade:
+            if extract_signs_funs[spl_index](face) < blade:
                 zl.add_face(face)
             else:
                 zr.add_face(face)
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def distribute_hierarchical(self, extract_signs_funs, levels=4):
+    def distribute_hierarchical(self, extract_signs_funs, levels=6):
         """
         Hierarchical distribution with given numbers of levels.
         :param extract_signs_funs: list of functions for signs extraction
@@ -1040,8 +1082,9 @@ class Grid:
         for li in range(levels - 1):
             c = len(self.Zones)
             for zi in range(c):
-                print('split zone {0}.'.format(self.Zones[0].Name))
-                self.split_zone(self.Zones[0], extract_signs_funs[li % len(extract_signs_funs)])
+                nm = self.Zones[0].Name
+                print('split zone {0} -> {1}, {2}.'.format(nm, nm + 'l', nm + 'r'))
+                self.split_zone(self.Zones[0], extract_signs_funs)
 
         # Links nodes.
         self.relink_nodes_to_zones()
