@@ -9,6 +9,39 @@ import utils
 # ======================================================================================================================
 
 
+def fun_face_cx():
+    """
+    Function that returns X coordinate of the face center.
+    :return: function
+    """
+
+    return lambda f: f.center_point()[0]
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+def fun_face_cy():
+    """
+    Function that returns Y coordinate of the face center.
+    :return: function
+    """
+
+    return lambda f: f.center_point()[1]
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+def fun_face_cz():
+    """
+    Function that returns Z coordinate of the face center.
+    :return: function
+    """
+
+    return lambda f: f.center_point()[2]
+
+# ======================================================================================================================
+
+
 class Node:
     """
     Node of the grid.
