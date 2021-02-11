@@ -4,24 +4,7 @@ GSU main functions.
 
 import random
 from functools import reduce
-
-# ======================================================================================================================
-
-def flatten(ar):
-    """
-    Flatten array.
-    :param ar: array
-    :return: flat array
-    """
-
-    r = []
-    for e in ar:
-        if isinstance(e, list):
-            r += flatten(e)
-        else:
-            r.append(e)
-
-    return r
+import utils
 
 # ======================================================================================================================
 
@@ -438,7 +421,7 @@ class Grid:
         for i in range(self.zones_count()):
             print(' '.join(['{0:5}'.format(e) for e in m[i]]))
         # Calculate stats.
-        fm = flatten(m)
+        fm = utils.flatten(m)
         max_interzone_border_length = max(fm)
         print('  ~ max interzones border length : {0}'.format(max_interzone_border_length))
 
