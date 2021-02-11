@@ -315,8 +315,18 @@ class Zone:
         Mark all nodes.
         """
 
-        for (i, node) in enumerate(self.Nodes):
-            node.Mark = i
+        for (i, n) in enumerate(self.Nodes):
+            n.Mark = i
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def mark_faces(self):
+        """
+        Mark all faces.
+        """
+
+        for (i, f) in enumerate(self.Faces):
+            f.Mark = i
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -487,8 +497,8 @@ class Grid:
         Mark all nodes.
         """
 
-        for (i, node) in enumerate(self.Nodes):
-            node.Mark = i
+        for (i, n) in enumerate(self.Nodes):
+            n.Mark = i
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -497,8 +507,8 @@ class Grid:
         Mark all faces.
         """
 
-        for (i, face) in enumerate(self.Faces):
-            face.Mark = i
+        for (i, f) in enumerate(self.Faces):
+            f.Mark = i
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -507,8 +517,8 @@ class Grid:
         Mark all zones.
         """
 
-        for (i, zone) in enumerate(self.Zones):
-            zone.Mark = i
+        for (i, z) in enumerate(self.Zones):
+            z.Mark = i
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -795,9 +805,17 @@ class Grid:
         :param filename_base: base of filename
         """
 
+        zam = self.get_zones_adjacency_matrix()
+
+        # Mark faces inside zones.
+        for z in self.Zones:
+            z.mark_faces()
+
         for (i, z) in enumerate(self.Zones):
             with open('{0}_{1:04d}.txt'.format(filename_base, i), 'w', newline='\n') as file:
-                file.write('# zone for MPI process № {0}\n'.format(i))
+                file.write('MPI={0}\n'.format(i))
+
+                # Write faces information.
                 file.write('FACES={0}\n'.format(len(z.Faces)))
                 for (j, f) in enumerate(z.Faces):
                     # Write face data and all 3 nodes data.
@@ -805,6 +823,55 @@ class Grid:
                     d = f.Data + f.Nodes[0].Data + f.Nodes[1].Data + f.Nodes[2].Data
                     s = ['{0:.18e}'.format(di) for di in d]
                     file.write(' '.join(s) + '\n')
+
+                # Write inner edges information.
+                file.write('INNER-EDGES={0}\n'.format(zam[i][i]))
+                iei = 0
+                for e in self.Edges:
+                    if e.is_inner():
+                        if e.Faces[0].Zone == z:
+                            d = e.Nodes[0].Data + e.Nodes[1].Data
+                            s = ['{0:.18e}'.format(di) for di in d]
+                            ss = ' '.join(s)
+                            file.write('[{0}] {1} {2} {3}\n'.format(iei, e.Faces[0].Mark, e.Faces[1].Mark, ss))
+                            iei += 1
+
+                # Write cross edges information.
+                cross_edges_line = zam[i]
+                cross_edges_line[len(self.Zones)] = 0
+                cross_edges_line[i] = 0
+                cross_edges_count = sum(cross_edges_line)
+                file.write('CROSS-EDGES={0}\n'.format(cross_edges_count))
+                cei = 0
+                for e in self.Edges:
+                    if e.is_cross():
+                        if e.Faces[0].Zone == z:
+                            d = e.Nodes[0].Data + e.Nodes[1].Data
+                            s = ['{0:.18e}'.format(di) for di in d]
+                            ss = ' '.join(s)
+                            file.write('[{0}] {1} {2}\n'.format(cei, e.Faces[0].Mark, ss))
+                        elif e.Faces[1].Zone == z:
+                            d = e.Nodes[0].Data + e.Nodes[1].Data
+                            s = ['{0:.18e}'.format(di) for di in d]
+                            ss = ' '.join(s)
+                            file.write('[{0}] {1} {2}\n'.format(cei, e.Faces[1].Mark, ss))
+                        cei += 1
+
+                # Write cross edges information (for buffers organization).
+                buffers_count = len([x for x in cross_edges_line if x > 0])
+                file.write('CROSS-BUFFERS={0}\n'.format(buffers_count))
+                for j in range(len(cross_edges_line)):
+                    buffer_len = cross_edges_line[j]
+                    if buffer_len > 0:
+                        file.write('[MPI={0} LEN={1}] '.format(j, buffer_len))
+                        for e in self.Edges:
+                            if e.is_cross():
+                                if (e.Faces[0].Zone == z) and (e.Faces[1].Zone.Mark == j):
+                                    file.write('{0} '.format(e.Faces[0].Mark))
+                                elif (e.Faces[1].Zone == z) and (e.Faces[0].Zone.Mark == j):
+                                    file.write('{0} '.format(e.Faces[1].Mark))
+                        file.write('\n')
+
                 file.close()
 
     # ------------------------------------------------------------------------------------------------------------------
