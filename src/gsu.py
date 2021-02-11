@@ -486,6 +486,11 @@ class Grid:
             for i in range(zc + 1):
                 print(' '.join(['{0:5}'.format(e) for e in zam[i]]))
             # Calculate stats.
+            # TODO: fix this ugly correction.
+            for i in range(zc):
+                zam[i][i] = 0
+                zam[i][zc] = 0
+            zam[zc] = [0]
             fm = utils.flatten(zam)
             max_interzone_border_length = max(fm)
             print('  ~ max interzones border length : {0}'.format(max_interzone_border_length))
