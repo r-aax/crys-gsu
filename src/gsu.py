@@ -763,7 +763,7 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def distribute_mono(self, new_name=None):
+    def decompose_mono(self, new_name=None):
         """
         Create mono distribution (with 1 zone).
         :param new_name: grid new name
@@ -786,7 +786,7 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def distribute_random(self, count=32, new_name=None):
+    def decompose_random(self, count=32, new_name=None):
         """
         Create random distribution.
         :param count: zones count
@@ -812,7 +812,7 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def distribute_linear(self, count=32, new_name=None):
+    def decompose_linear(self, count=32, new_name=None):
         """
         Linear distribution.
         :param count: zones count
@@ -852,7 +852,7 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def distribute_rgrow(self, count=32, new_name=None):
+    def decompose_rgrow(self, count=32, new_name=None):
         """
         Distribution with random grow.
         :param count: count of zones.
@@ -965,7 +965,7 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def distribute_hierarchical(self, extract_signs_funs, levels=6, new_name=None):
+    def decompose_hierarchical(self, extract_signs_funs, levels=6, new_name=None):
         """
         Hierarchical distribution with given numbers of levels.
         :param extract_signs_funs: list of functions for signs extraction
