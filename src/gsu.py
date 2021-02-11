@@ -850,12 +850,13 @@ class Grid:
                             s = ['{0:.18e}'.format(di) for di in d]
                             ss = ' '.join(s)
                             file.write('[{0}] {1} {2}\n'.format(cei, e.Faces[0].Mark, ss))
+                            cei += 1
                         elif e.Faces[1].Zone == z:
                             d = e.Nodes[0].Data + e.Nodes[1].Data
                             s = ['{0:.18e}'.format(di) for di in d]
                             ss = ' '.join(s)
                             file.write('[{0}] {1} {2}\n'.format(cei, e.Faces[1].Mark, ss))
-                        cei += 1
+                            cei += 1
 
                 # Write cross edges information (for buffers organization).
                 buffers_count = len([x for x in cross_edges_line if x > 0])
