@@ -497,17 +497,18 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def add_new_node(self, data):
+    def add_new_node(self, data, is_merge_same_nodes):
         """
         Add new node with given data.
         :param data: data
+        :param is_merge_same_nodes: flag merge same nodes
         :return: node registered in self.Nodes
         """
 
         new_node = Node(data)
         found_node = self.find_near_node(new_node)
 
-        if found_node is None:
+        if (found_node is None) or (not is_merge_same_nodes):
             # There is no such node in the grid.
             # We have to add it.
             self.Nodes.append(new_node)
@@ -597,10 +598,12 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def load(self, filename):
+    def load(self, filename,
+             is_merge_same_nodes=True):
         """
         Load grid from file.
         :param filename: file name
+        :param is_merge_same_nodes: merge same nodes
         """
 
         # Clear all objects of the grid.
@@ -660,7 +663,7 @@ class Grid:
                     if 'VARLOCATION=([4-11]=CELLCENTERED)' != varlocation_line[:-1]:
                         raise Exception('Wrong varlocation line ({0}).'.format(varlocation_line))
                     nodes_to_read = int(nodes_line.split('=')[-1][:-1])
-                    print('LOAD: zone {0}, nodes_to_read = {1}'.format(zone_name, nodes_to_read))
+                    # print('LOAD: zone {0}, nodes_to_read = {1}'.format(zone_name, nodes_to_read))
                     faces_to_read = int(faces_line.split('=')[-1][:-1])
 
                     # Read data for nodes.
@@ -670,7 +673,7 @@ class Grid:
                         d.append([float(xi) for xi in line.split()])
                     for i in range(nodes_to_read):
                         data = (d[0][i], d[1][i], d[2][i])
-                        new_node = self.add_new_node(data)
+                        new_node = self.add_new_node(data, is_merge_same_nodes)
                         zone.Nodes.append(new_node)
 
                     # Read data for faces.
@@ -1052,16 +1055,17 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def move_from_mean_point(self):
+    def move_from_mean_point(self, k=0.1):
         """
         Move zones from mean point.
+        :param k: factor while zones moving
         """
 
         gx, gy, gz = mean_nodes_point(self.Nodes)
 
         for z in self.Zones:
             zx, zy, zz = mean_nodes_point(z.Nodes)
-            vx, vy, vz = 0.5 * (zx - gz), 0.5 * (zy - gy), 0.5 * (zz - gz)
+            vx, vy, vz = k * (zx - gz), k * (zy - gy), k * (zz - gz)
             for n in z.Nodes:
                 d = n.Data
                 n.Data = (d[0] + vx, d[1] + vy, d[2] + vz)

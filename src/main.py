@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     print('Testing crys-gsu main : begin.')
 
-    test = 'bunny'
+    test = 'small'
     g = gsu.Grid()
     g.load('grids/' + test + '.dat')
     g.print_info()
