@@ -763,10 +763,14 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def distribute_mono(self):
+    def distribute_mono(self, new_name=None):
         """
         Create mono distribution (with 1 zone).
+        :param new_name: grid new name
         """
+
+        if new_name is not None:
+            self.Name = new_name
 
         # Delete all zones and create one zone with name 'mono'.
         self.Zones.clear()
@@ -782,11 +786,15 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def distribute_random(self, count=32):
+    def distribute_random(self, count=32, new_name=None):
         """
         Create random distribution.
         :param count: zones count
+        :param new_name: grid new name
         """
+
+        if new_name is not None:
+            self.Name = new_name
 
         # Delete all zones.
         # Create 'count' zones and random distribute faces between them.
@@ -804,11 +812,15 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def distribute_linear(self, count=32):
+    def distribute_linear(self, count=32, new_name=None):
         """
         Linear distribution.
         :param count: zones count
+        :param new_name: grid new name
         """
+
+        if new_name is not None:
+            self.Name = new_name
 
         fc = len(self.Faces)
         fcpz = fc // count
@@ -840,51 +852,15 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def distribute_uniform(self,
-                           fun_extract_sign,
-                           count=32):
-
-        fc = self.faces_count()
-        fcpz = fc // count
-
-        # Delete all zones and links.
-        self.Zones.clear()
-        self.unlink_faces_from_zones()
-        for i in range(count):
-            zone = Zone('uniform ' + str(i))
-            self.Zones.append(zone)
-
-        # Extract signs.
-        signs = [fun_extract_sign(f) for f in self.Faces]
-        signs.sort()
-        # Need correction (for more uniform).
-        signs = signs[fcpz::fcpz]
-        if len(signs) > count - 1:
-            signs = signs[:-1]
-        if len(signs) != count - 1:
-            raise Exception('{0} partitions expected, but we have {1}.'.format(count, len(signs) + 1))
-
-        # Distribute.
-        for face in self.Faces:
-            fs = fun_extract_sign(face)
-            for (i, s) in enumerate(signs):
-                if fs < s:
-                    self.Zones[i].add_face(face)
-                    break
-            if face.Zone is None:
-                self.Zones[-1].add_face(face)
-
-        # Links nodes.
-        self.relink_nodes_to_zones()
-        self.check_faces_are_linked_to_zones()
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def distribute_rgrow(self, count=32):
+    def distribute_rgrow(self, count=32, new_name=None):
         """
         Distribution with random grow.
         :param count: count of zones.
+        :param new_name: grid new name
         """
+
+        if new_name is not None:
+            self.Name = new_name
 
         # Delete all zones and links.
         self.Zones.clear()
@@ -989,12 +965,16 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def distribute_hierarchical(self, extract_signs_funs, levels=6):
+    def distribute_hierarchical(self, extract_signs_funs, levels=6, new_name=None):
         """
         Hierarchical distribution with given numbers of levels.
         :param extract_signs_funs: list of functions for signs extraction
         :param levels: levels count
+        :param new_name: grid new name
         """
+
+        if new_name is not None:
+            self.Name = new_name
 
         # Delete all zones and links.
         self.Zones.clear()

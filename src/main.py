@@ -13,44 +13,27 @@ if __name__ == '__main__':
     g.load('grids/' + test + '.dat')
     g.print_info()
 
-    '''
-    print('Create initial version.')
-    g.store('grids/' + test + '_origin.dat')
-    '''
-
-    '''
-    print('Create mono version.')
-    g.distribute_mono()
+    # Distributions.
+    g.distribute_mono(new_name='GRID mono')
     g.print_info()
     g.store('grids/' + test + '_mono.dat')
-    '''
-
-    print('Create random version.')
-    g.distribute_random()
+    #
+    g.distribute_random(new_name='GRID random')
     g.print_info()
     g.store('grids/' + test + '_random.dat')
-
-    print('Create linear version.')
-    g.distribute_linear()
+    #
+    g.distribute_linear(new_name='GRID linear')
     g.print_info()
     g.store('grids/' + test + '_linear.dat')
-
-    '''
-    print('Create uniform version.')
-    g.distribute_uniform(lambda f: f.center_point()[0])
-    g.print_info()
-    g.store('grids/' + test + '_uniform.dat')
-    '''
-
-    print('Create rgrow version.')
-    g.distribute_rgrow()
+    #
+    g.distribute_rgrow(new_name='GRID rgrow')
     g.print_info()
     g.store('grids/' + test + '_rgrow.dat')
-
-    print('Create hierarchical version.')
+    #
     g.distribute_hierarchical([lambda f: f.center_point()[0],
                                lambda f: f.center_point()[1],
-                               lambda f: f.center_point()[2]])
+                               lambda f: f.center_point()[2]],
+                              new_name='GRID hierarchical')
     g.print_info()
     g.store('grids/' + test + '_hierarchical.dat')
 
