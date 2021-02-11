@@ -127,13 +127,13 @@ class Edge:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def is_interzones(self):
+    def is_cross(self):
         """
-        Check if edge is interzones.
-        :return: True - if edge is interzones, False - otherwise
+        Check if edge is cross-zones.
+        :return: True - if edge is cross-zones, False - otherwise
         """
 
-        # Interzone edge has two neighbour faces from different zones.
+        # Cross-zone edge has two neighbour faces from different zones.
 
         faces_count = len(self.Faces)
 
@@ -146,13 +146,13 @@ class Edge:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def is_innerzones(self):
+    def is_inner(self):
         """
-        Check if edge is innerzones.
-        :return: True - if edge is innerzones, False - otherwise
+        Check if edge is inner.
+        :return: True - if edge is inner, False - otherwise
         """
 
-        # Innerzones edge has two faces from one zone.
+        # Inner edge has two faces from one zone.
 
         faces_count = len(self.Faces)
 
@@ -391,25 +391,25 @@ class Grid:
         # Edges statistics.
         if is_print_edges_statistics:
             border_edges_count = 0
-            interzones_edges_count = 0
-            innerzones_edges_count = 0
+            cross_edges_count = 0
+            inner_edges_count = 0
             for edge in self.Edges:
                 if edge.is_border():
                     border_edges_count += 1
-                elif edge.is_interzones():
-                    interzones_edges_count += 1
-                elif edge.is_innerzones():
-                    innerzones_edges_count += 1
+                elif edge.is_cross():
+                    cross_edges_count += 1
+                elif edge.is_inner():
+                    inner_edges_count += 1
                 else:
                     raise Exception('Unknown type of edge.')
             border_edges_p = 100.0 * border_edges_count / ec
-            interzones_edges_p = 100.0 * interzones_edges_count / ec
-            innerzones_edges_p = 100.0 * innerzones_edges_count / ec
+            cross_edges_p = 100.0 * cross_edges_count / ec
+            inner_edges_p = 100.0 * inner_edges_count / ec
             print('  edges stats: {0} border ({1:.2f}%), '
                   '{2} interzones ({3:.2f}%), '
                   '{4} innerzones ({5:.2f}%)'.format(border_edges_count, border_edges_p,
-                                                     interzones_edges_count, interzones_edges_p,
-                                                     innerzones_edges_count, innerzones_edges_p))
+                                                     cross_edges_count, cross_edges_p,
+                                                     inner_edges_count, inner_edges_p))
 
         # Distribution faces between zones.
         if is_print_faces_distribution:
