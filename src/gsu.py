@@ -335,74 +335,82 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def print_info(self):
+    def print_info(self,
+                   is_print_edges_statistics=False,
+                   is_print_faces_distribution=False,
+                   is_print_zones_adjacency_matrix=False):
         """
         Print information about grid.
+        :param is_print_edges_statistics: flag for print edges statistics
+        :param is_print_faces_distribution: flag for print faces distribution between zones
+        :param is_print_zones_adjacency_matrix: flag for print zones adjacency matrix
         """
 
         ec = len(self.Edges)
         fc = len(self.Faces)
 
         print('GSU: {0}'.format(self.Name))
-        print('  {0} nodes, {1} edges, {2} faces, {3} zones'.format(len(self.Nodes),
-                                                                    ec,
-                                                                    fc,
-                                                                    len(self.Zones)))
+        print('  {0} nodes, {1} edges, '
+              '{2} faces, {3} zones'.format(len(self.Nodes), ec, fc, len(self.Zones)))
 
         # Edges statistics.
-        border_edges_count = 0
-        interzones_edges_count = 0
-        innerzones_edges_count = 0
-        for edge in self.Edges:
-            if edge.is_border():
-                border_edges_count += 1
-            elif edge.is_interzones():
-                interzones_edges_count += 1
-            elif edge.is_innerzones():
-                innerzones_edges_count += 1
-            else:
-                raise Exception('Unknown type of edge.')
-        border_edges_p = 100.0 * border_edges_count / ec
-        interzones_edges_p = 100.0 * interzones_edges_count / ec
-        innerzones_edges_p = 100.0 * innerzones_edges_count / ec
-        print('  edges stats: {0} border ({1:.2f}%), '
-              '{2} interzones ({3:.2f}%), '
-              '{4} innerzones ({5:.2f}%)'.format(border_edges_count, border_edges_p,
-                                                 interzones_edges_count, interzones_edges_p,
-                                                 innerzones_edges_count, innerzones_edges_p))
+        if is_print_edges_statistics:
+            border_edges_count = 0
+            interzones_edges_count = 0
+            innerzones_edges_count = 0
+            for edge in self.Edges:
+                if edge.is_border():
+                    border_edges_count += 1
+                elif edge.is_interzones():
+                    interzones_edges_count += 1
+                elif edge.is_innerzones():
+                    innerzones_edges_count += 1
+                else:
+                    raise Exception('Unknown type of edge.')
+            border_edges_p = 100.0 * border_edges_count / ec
+            interzones_edges_p = 100.0 * interzones_edges_count / ec
+            innerzones_edges_p = 100.0 * innerzones_edges_count / ec
+            print('  edges stats: {0} border ({1:.2f}%), '
+                  '{2} interzones ({3:.2f}%), '
+                  '{4} innerzones ({5:.2f}%)'.format(border_edges_count, border_edges_p,
+                                                     interzones_edges_count, interzones_edges_p,
+                                                     innerzones_edges_count, innerzones_edges_p))
 
         # Distribution faces between zones.
-        print('  distribution faces between zones:')
-        for zone in self.Zones:
-            print('    {0} : {1} faces'.format(zone.Name, len(zone.Faces)))
-        zones_faces_count = [len(zone.Faces) for zone in self.Zones]
-        ideal_mean = len(self.Faces) / len(self.Zones)
-        max_zone_faces_count = max(zones_faces_count)
-        faces_distr_dev = 100.0 * (max_zone_faces_count - ideal_mean) / ideal_mean
-        print('  ~ max zone faces {0}, faces distribution deviation : {1}%'.format(max_zone_faces_count,
-                                                                                   faces_distr_dev))
+        if is_print_faces_distribution:
+            print('  distribution faces between zones:')
+            for zone in self.Zones:
+                print('    {0} : {1} faces'.format(zone.Name, len(zone.Faces)))
+            zones_faces_count = [len(zone.Faces) for zone in self.Zones]
+            ideal_mean = len(self.Faces) / len(self.Zones)
+            max_zone_faces_count = max(zones_faces_count)
+            faces_distr_dev = 100.0 * (max_zone_faces_count - ideal_mean) / ideal_mean
+            print('  ~ max zone faces {0}, '
+                  'faces distribution deviation : {1}%'.format(max_zone_faces_count,
+                                                               faces_distr_dev))
 
         # Distribution edges between pairs of neighbours.
-        m = []
-        for zone in self.Zones:
-            m.append([0] * len(self.Zones))
-        # Calculate border lengths.
-        self.mark_zones()
-        for edge in self.Edges:
-            if len(edge.Faces) == 2:
-                ff = edge.Faces[0]
-                sf = edge.Faces[1]
-                if ff.Zone != sf.Zone:
-                    if ff.Zone is not None and sf.Zone is not None:
-                        m[ff.Zone.Mark][sf.Zone.Mark] += 1
-                        m[sf.Zone.Mark][ff.Zone.Mark] += 1
-        # Print distribution.
-        for i in range(len(self.Zones)):
-            print(' '.join(['{0:5}'.format(e) for e in m[i]]))
-        # Calculate stats.
-        fm = utils.flatten(m)
-        max_interzone_border_length = max(fm)
-        print('  ~ max interzones border length : {0}'.format(max_interzone_border_length))
+        if is_print_zones_adjacency_matrix:
+            m = []
+            for zone in self.Zones:
+                m.append([0] * len(self.Zones))
+            # Calculate border lengths.
+            self.mark_zones()
+            for edge in self.Edges:
+                if len(edge.Faces) == 2:
+                    ff = edge.Faces[0]
+                    sf = edge.Faces[1]
+                    if ff.Zone != sf.Zone:
+                        if ff.Zone is not None and sf.Zone is not None:
+                            m[ff.Zone.Mark][sf.Zone.Mark] += 1
+                            m[sf.Zone.Mark][ff.Zone.Mark] += 1
+            # Print distribution.
+            for i in range(len(self.Zones)):
+                print(' '.join(['{0:5}'.format(e) for e in m[i]]))
+            # Calculate stats.
+            fm = utils.flatten(m)
+            max_interzone_border_length = max(fm)
+            print('  ~ max interzones border length : {0}'.format(max_interzone_border_length))
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -1005,7 +1013,7 @@ class Grid:
             c = len(self.Zones)
             for zi in range(c):
                 nm = self.Zones[0].Name
-                print('split zone {0} -> {1}, {2}.'.format(nm, nm + 'l', nm + 'r'))
+                # print('split zone {0} -> {1}, {2}.'.format(nm, nm + 'l', nm + 'r'))
                 self.split_zone(self.Zones[0], extract_signs_funs)
 
         # Links nodes.
