@@ -9,13 +9,29 @@ import utils
 # ======================================================================================================================
 
 
+def mean_nodes_point(ns):
+    """
+    Get mean point of nodes.
+    :param ns: nodes
+    :return: mean point
+    """
+
+    xs = [n.Data[0] for n in ns]
+    ys = [n.Data[1] for n in ns]
+    zs = [n.Data[2] for n in ns]
+
+    return sum(xs) / len(xs), sum(ys) / len(ys), sum(zs) / len(zs)
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
 def fun_face_cx():
     """
     Function that returns X coordinate of the face center.
     :return: function
     """
 
-    return lambda f: f.center_point()[0]
+    return lambda f: mean_nodes_point(f.Nodes)[0]
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -26,7 +42,7 @@ def fun_face_cy():
     :return: function
     """
 
-    return lambda f: f.center_point()[1]
+    return lambda f: mean_nodes_point(f.Nodes)[1]
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -37,7 +53,7 @@ def fun_face_cz():
     :return: function
     """
 
-    return lambda f: f.center_point()[2]
+    return lambda f: mean_nodes_point(f.Nodes)[2]
 
 # ======================================================================================================================
 
@@ -184,20 +200,6 @@ class Face:
         """
 
         return reduce(lambda x, y: x + ' ' + y, [str(node.Mark + 1) for node in self.Nodes])
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def center_point(self):
-        """
-        Get point - center of the face.
-        :return: center point (tuple of coordinates)
-        """
-
-        xs = [n.Data[0] for n in self.Nodes]
-        ys = [n.Data[1] for n in self.Nodes]
-        zs = [n.Data[2] for n in self.Nodes]
-
-        return sum(xs) / len(xs), sum(ys) / len(ys), sum(zs) / len(zs)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -1032,5 +1034,36 @@ class Grid:
         # Links nodes.
         self.relink_nodes_to_zones()
         self.check_faces_are_linked_to_zones()
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def box(self):
+        """
+        Get box around grid (tuple with 6 values - XYZ of the left down back point
+        and XYZ of the right up front point).
+        :return: tuple
+        """
+
+        xs = [n.Data[0] for n in self.Nodes]
+        ys = [n.Data[1] for n in self.Nodes]
+        zs = [n.Data[2] for n in self.Nodes]
+
+        return min(xs), min(ys), min(zs), max(xs), max(ys), max(zs)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def move_from_mean_point(self):
+        """
+        Move zones from mean point.
+        """
+
+        gx, gy, gz = mean_nodes_point(self.Nodes)
+
+        for z in self.Zones:
+            zx, zy, zz = mean_nodes_point(z.Nodes)
+            vx, vy, vz = 0.5 * (zx - gz), 0.5 * (zy - gy), 0.5 * (zz - gz)
+            for n in z.Nodes:
+                d = n.Data
+                n.Data = (d[0] + vx, d[1] + vy, d[2] + vz)
 
 # ======================================================================================================================
