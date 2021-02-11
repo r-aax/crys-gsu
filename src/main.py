@@ -8,10 +8,10 @@ if __name__ == '__main__':
 
     print('Testing crys-gsu main : begin.')
 
-    test = 'wing_50'
+    test = 'bunny'
     g = gsu.Grid()
     g.load('grids/' + test + '.dat')
-    #g.print_info()
+    g.print_info()
 
     '''
     print('Create initial version.')

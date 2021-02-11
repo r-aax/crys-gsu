@@ -114,7 +114,6 @@ class Edge:
         else:
             raise Exception('Edge cannot has {0} neighbours faces.'.format(faces_count))
 
-
 # ======================================================================================================================
 
 
@@ -219,26 +218,6 @@ class Zone:
 
         # Faces queue.
         self.FacesQueue = []
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def nodes_count(self):
-        """
-        Nodes count.
-        :return: nodes count
-        """
-
-        return len(self.Nodes)
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def faces_count(self):
-        """
-        Faces count.
-        :return: faces count
-        """
-
-        return len(self.Faces)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -361,14 +340,14 @@ class Grid:
         Print information about grid.
         """
 
-        ec = self.edges_count()
-        fc = self.faces_count()
+        ec = len(self.Edges)
+        fc = len(self.Faces)
 
         print('GSU: {0}'.format(self.Name))
-        print('  {0} nodes, {1} edges, {2} faces, {3} zones'.format(self.nodes_count(),
+        print('  {0} nodes, {1} edges, {2} faces, {3} zones'.format(len(self.Nodes),
                                                                     ec,
                                                                     fc,
-                                                                    self.zones_count()))
+                                                                    len(self.Zones)))
 
         # Edges statistics.
         border_edges_count = 0
@@ -395,9 +374,9 @@ class Grid:
         # Distribution faces between zones.
         print('  distribution faces between zones:')
         for zone in self.Zones:
-            print('    {0} : {1} faces'.format(zone.Name, zone.faces_count()))
-        zones_faces_count = [zone.faces_count() for zone in self.Zones]
-        ideal_mean = self.faces_count() / self.zones_count()
+            print('    {0} : {1} faces'.format(zone.Name, len(zone.Faces)))
+        zones_faces_count = [len(zone.Faces) for zone in self.Zones]
+        ideal_mean = len(self.Faces) / len(self.Zones)
         max_zone_faces_count = max(zones_faces_count)
         faces_distr_dev = 100.0 * (max_zone_faces_count - ideal_mean) / ideal_mean
         print('  ~ max zone faces {0}, faces distribution deviation : {1}%'.format(max_zone_faces_count,
@@ -406,7 +385,7 @@ class Grid:
         # Distribution edges between pairs of neighbours.
         m = []
         for zone in self.Zones:
-            m.append([0] * self.zones_count())
+            m.append([0] * len(self.Zones))
         # Calculate border lengths.
         self.mark_zones()
         for edge in self.Edges:
@@ -418,52 +397,12 @@ class Grid:
                         m[ff.Zone.Mark][sf.Zone.Mark] += 1
                         m[sf.Zone.Mark][ff.Zone.Mark] += 1
         # Print distribution.
-        for i in range(self.zones_count()):
+        for i in range(len(self.Zones)):
             print(' '.join(['{0:5}'.format(e) for e in m[i]]))
         # Calculate stats.
         fm = utils.flatten(m)
         max_interzone_border_length = max(fm)
         print('  ~ max interzones border length : {0}'.format(max_interzone_border_length))
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def nodes_count(self):
-        """
-        Nodes count.
-        :return: nodes count
-        """
-
-        return len(self.Nodes)
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def edges_count(self):
-        """
-        Edges count.
-        :return: edges count
-        """
-
-        return len(self.Edges)
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def faces_count(self):
-        """
-        Faces count.
-        :return: faces count
-        """
-
-        return len(self.Faces)
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def zones_count(self):
-        """
-        Zones count.
-        :return: zones count
-        """
-
-        return len(self.Zones)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -747,8 +686,8 @@ class Grid:
 
                 # Store zone head.
                 f.write('ZONE T="{0}"\n'.format(zone.Name))
-                f.write('NODES={0}\n'.format(zone.nodes_count()))
-                f.write('ELEMENTS={0}\n'.format(zone.faces_count()))
+                f.write('NODES={0}\n'.format(len(zone.Nodes)))
+                f.write('ELEMENTS={0}\n'.format(len(zone.Faces)))
                 f.write('DATAPACKING=BLOCK\n')
                 f.write('ZONETYPE=FETRIANGLE\n')
                 f.write('VARLOCATION=([4-11]=CELLCENTERED)\n')
@@ -863,7 +802,7 @@ class Grid:
         :param count: zones count
         """
 
-        fc = self.faces_count()
+        fc = len(self.Faces)
         fcpz = fc // count
         fcrm = fc % count
 
@@ -950,16 +889,16 @@ class Grid:
         self.mark_faces()
         self.mark_zones()
         for zone in self.Zones:
-            rf = self.Faces[random.randint(0, self.faces_count() - 1)]
+            rf = self.Faces[random.randint(0, len(self.Faces) - 1)]
             while rf.Zone is not None:
-                rf = self.Faces[random.randint(0, self.faces_count() - 1)]
+                rf = self.Faces[random.randint(0, len(self.Faces) - 1)]
             zone.add_face(rf)
             zone.FacesQueue = []
             zone.fill_queue(rf)
 
         # Walk and add to faces to queues.
         total_faces = count
-        while total_faces < self.faces_count():
+        while total_faces < len(self.Faces):
             for i in range(3 * count):
                 zi = i % count
                 total_faces += self.Zones[zi].grow()
