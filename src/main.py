@@ -43,5 +43,6 @@ if __name__ == '__main__':
                              new_name=test + ' hierarchical')
     g.print_info()
     g.store('grids/' + test + '_hierarchical.dat')
+    g.store_mpi('grids/' + test + '_mpi')
 
     print('Testing crys-gsu main : ok.')

@@ -672,7 +672,7 @@ class Grid:
                         line = f.readline()
                         d.append([float(xi) for xi in line.split()])
                     for i in range(nodes_to_read):
-                        data = (d[0][i], d[1][i], d[2][i])
+                        data = [d[0][i], d[1][i], d[2][i]]
                         new_node = self.add_new_node(data, is_merge_same_nodes)
                         zone.Nodes.append(new_node)
 
@@ -752,6 +752,26 @@ class Grid:
                     f.write(face.get_nodes_marks_str() + '\n')
 
             f.close()
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def store_mpi(self, filename_base):
+        """
+        Store grid for mpi program.
+        As many processes count as zones count.
+        :param filename_base: base of filename
+        """
+
+        for (i, z) in enumerate(self.Zones):
+            with open('{0}_{1:04d}.txt'.format(filename_base, i), 'w', newline='\n') as file:
+                file.write('# zone for MPI process № {0}\n'.format(i))
+                file.write('FACES={0}\n'.format(len(z.Faces)))
+                for f in z.Faces:
+                    # Write face data and all 3 nodes data.
+                    d = f.Data + f.Nodes[0].Data + f.Nodes[1].Data + f.Nodes[2].Data
+                    s = ['{0:.18e}'.format(di) for di in d]
+                    file.write(' '.join(s) + '\n')
+                file.close()
 
     # ------------------------------------------------------------------------------------------------------------------
 
