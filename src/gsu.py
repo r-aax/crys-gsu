@@ -1039,9 +1039,6 @@ class Grid:
                 file.write('EDGES={0}\n'.format(ec))
                 file.write('CROSS-EDGES={0}\n'.format(zam.zone_cross_edges_count(zi)))
                 file.write('FACES={0}\n'.format(fc))
-                file.write('DATAPACKING=BLOCK\n')
-                file.write('ZONETYPE=FETRIANGLE\n')
-                file.write('VARLOCATION=([4-11]=CELLCENTERED)\n')
 
                 # Write nodes and faces data.
                 file.write('NODES COORDINATES:\n')
@@ -1070,6 +1067,7 @@ class Grid:
                         # Border between zones with indices zi and li.
                         lz = self.Zones[li]
                         # Border between zones z and lz.
+                        file.write('[{0}] '.format(li))
                         for e in z.Edges:
                             if e.is_connect_zones(z, lz):
                                 file.write('{0} '.format(e.LocId))
