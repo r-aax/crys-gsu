@@ -262,6 +262,8 @@ class Zone:
         :param name: name of zone
         """
 
+        self.Id = -1
+
         self.Name = name
 
         # No nodes or faces in the zone yet.
@@ -310,8 +312,7 @@ class Zone:
         """
 
         # Just add node.
-        if n not in self.Nodes:
-            self.Nodes.append(n)
+        self.Nodes.append(n)
 
         return n
 
@@ -325,8 +326,7 @@ class Zone:
         """
 
         # Just add egde.
-        if e not in self.Edges:
-            self.Edges.append(e)
+        self.Edges.append(e)
 
         return e
 
@@ -340,10 +340,9 @@ class Zone:
         """
 
         # Just add and correct local id.
-        if f not in self.Faces:
-            f.LocId = len(self.Faces)
-            f.Zone = self
-            self.Faces.append(f)
+        f.LocId = len(self.Faces)
+        f.Zone = self
+        self.Faces.append(f)
 
         return f
 
@@ -750,9 +749,8 @@ class Grid:
         """
 
         # Just add edge with global id correction.
-        if e not in self.Edges:
-            e.GloId = len(self.Edges)
-            self.Edges.append(e)
+        e.GloId = len(self.Edges)
+        self.Edges.append(e)
 
         return e
 
@@ -766,11 +764,30 @@ class Grid:
         """
 
         # Just correct global id and add.
-        if f not in self.Faces:
-            f.GloId = len(self.Faces)
-            self.Faces.append(f)
+        f.GloId = len(self.Faces)
+        self.Faces.append(f)
 
         return f
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def set_zones_ids(self):
+        """
+        Set zones identifiers.
+        """
+
+        for (i, z) in enumerate(self.Zones):
+            z.Id = i
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def reset_zones_ids(self):
+        """
+        Reset zones identifiers.
+        """
+
+        for z in self.Zones:
+            z.Id = -1
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -1091,15 +1108,21 @@ class Grid:
             z.Nodes.clear()
             z.Edges.clear()
 
+        self.set_zones_ids()
+
         # Add nodes.
         for n in self.Nodes:
-            for f in n.Faces:
-                f.Zone.add_node(n)
+            zids = list(set([f.Zone.Id for f in n.Faces]))
+            for zid in zids:
+                self.Zones[zid].add_node(n)
 
         # Add edges.
         for e in self.Edges:
-            for f in e.Faces:
-                f.Zone.add_edge(e)
+            zids = list(set([f.Zone.Id for f in e.Faces]))
+            for zid in zids:
+                self.Zones[zid].add_edge(e)
+
+        self.reset_zones_ids()
 
     # ------------------------------------------------------------------------------------------------------------------
 
