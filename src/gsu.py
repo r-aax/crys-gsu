@@ -688,8 +688,8 @@ class Grid:
             max_zone_faces_count = max(zones_faces_count)
             faces_distr_dev = 100.0 * (max_zone_faces_count - ideal_mean) / ideal_mean
             print('  ~ max zone faces {0}, '
-                  'faces distribution deviation : {1}%'.format(max_zone_faces_count,
-                                                               faces_distr_dev))
+                  'faces distribution deviation : {1:.2f}%'.format(max_zone_faces_count,
+                                                                   faces_distr_dev))
 
         # Distribution edges between pairs of neighbours.
         if is_print_zones_adjacency_matrix:
