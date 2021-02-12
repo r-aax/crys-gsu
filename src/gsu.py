@@ -113,6 +113,12 @@ class Edge:
         Constructor.
         """
 
+        # Identifiers:
+        # Global - in grid numeration.
+        # Local - in zone numeration.
+        self.GloId = -1
+        self.LocId = -1
+
         # Links to nodes and faces.
         self.Nodes = []
         self.Faces = []
@@ -242,6 +248,7 @@ class Zone:
 
         # No nodes or faces in the zone yet.
         self.Nodes = []
+        self.Edges = []
         self.Faces = []
 
         # Faces queue.
@@ -285,9 +292,25 @@ class Zone:
         """
 
         # Just add node.
-        self.Nodes.append(n)
+        if n not in self.Nodes:
+            self.Nodes.append(n)
 
         return n
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def add_edge(self, e):
+        """
+        Add edge to zone.
+        :param e: edge
+        :return: added edge
+        """
+
+        # Just add egde.
+        if e not in self.Edges:
+            self.Edges.append(e)
+
+        return e
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -299,9 +322,10 @@ class Zone:
         """
 
         # Just add and correct local id.
-        f.LocId = len(self.Faces)
-        f.Zone = self
-        self.Faces.append(f)
+        if f not in self.Faces:
+            f.LocId = len(self.Faces)
+            f.Zone = self
+            self.Faces.append(f)
 
         return f
 
@@ -320,11 +344,50 @@ class Zone:
     def reset_nodes_local_ids(self):
         """
         Reset nodes local identifiers.
-        :return:
         """
 
         for n in self.Nodes:
             n.LocId = -1
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def set_edges_local_ids(self):
+        """
+        Set edges local identifiers.
+        """
+
+        for (i, e) in enumerate(self.Edges):
+            e.LocId = i
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def reset_edges_local_ids(self):
+        """
+        Reset edges local identifiers.
+        """
+
+        for e in self.Edges:
+            e.LocId = -1
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def set_nodes_and_edges_local_ids(self):
+        """
+        Set nodes and edges local ids.
+        """
+
+        self.set_nodes_local_ids()
+        self.set_edges_local_ids()
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def reset_nodes_and_edges_local_ids(self):
+        """
+        Reset nodes and edges local ids.
+        """
+
+        self.reset_nodes_local_ids()
+        self.reset_edges_local_ids()
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -487,7 +550,21 @@ class ZonesAdjacencyMatrix:
         :return: max border length
         """
 
+        # TODO: FIX IT
         return max([sum(line) - line[i] - line[self.ZonesCount] for (i, line) in enumerate(self.M[:-1])])
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def zone_cross_edges_count(self, zi):
+        """
+        Get zone cross-edges count.
+        :param zi: zone index
+        :return: count of cross-edges for this zone
+        """
+
+        line = self.M[zi]
+
+        return sum(line) - line[zi] - line[self.ZonesCount]
 
 # ======================================================================================================================
 
@@ -612,6 +689,22 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    def add_edge(self, e):
+        """
+        Add edge to grid.
+        :param e: edge
+        :return: added edge
+        """
+
+        # Just add edge with global id correction.
+        if e not in self.Edges:
+            e.GloId = len(self.Edges)
+            self.Edges.append(e)
+
+        return e
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def add_face(self, f):
         """
         Add face.
@@ -620,8 +713,9 @@ class Grid:
         """
 
         # Just correct global id and add.
-        f.GloId = len(self.Faces)
-        self.Faces.append(f)
+        if f not in self.Faces:
+            f.GloId = len(self.Faces)
+            self.Faces.append(f)
 
         return f
 
@@ -693,7 +787,7 @@ class Grid:
         if edge is None:
             # New edge and link it.
             edge = Edge()
-            self.Edges.append(edge)
+            self.add_edge(edge)
             Grid.link_node_edge(node_a, edge)
             Grid.link_node_edge(node_b, edge)
             Grid.link_edge_face(edge, face)
@@ -819,6 +913,9 @@ class Grid:
                 self.complex_link_face_node_node_edge(face, node_a, node_c)
                 self.complex_link_face_node_node_edge(face, node_b, node_c)
 
+            # Relink.
+            self.link_nodes_and_edges_to_zones()
+
     # ------------------------------------------------------------------------------------------------------------------
 
     def store(self, filename):
@@ -872,92 +969,76 @@ class Grid:
 
         zam = ZonesAdjacencyMatrix(self.Edges, self.Zones)
 
-        for (i, z) in enumerate(self.Zones):
-            with open('{0}_{1:04d}.txt'.format(filename_base, i), 'w', newline='\n') as file:
-                file.write('MPI={0}\n'.format(i))
+        for (zi, z) in enumerate(self.Zones):
+            with open('{0}_{1:04d}.txt'.format(filename_base, zi), 'w', newline='\n') as file:
 
-                # Write faces information.
-                file.write('FACES={0}\n'.format(len(z.Faces)))
-                for (j, f) in enumerate(z.Faces):
-                    # Write face data and all 3 nodes data.
-                    file.write('[{0}] '.format(j))
-                    d = f.Data + f.Nodes[0].Data + f.Nodes[1].Data + f.Nodes[2].Data
-                    s = ['{0:.18e}'.format(di) for di in d]
-                    file.write(' '.join(s) + '\n')
+                # Set local ids.
+                z.set_nodes_and_edges_local_ids()
 
-                # Write inner edges information.
-                file.write('INNER-EDGES={0}\n'.format(zam.M[i][i]))
-                iei = 0
-                for e in self.Edges:
-                    if e.is_inner():
-                        if e.Faces[0].Zone == z:
-                            d = e.Nodes[0].Data + e.Nodes[1].Data
-                            s = ['{0:.18e}'.format(di) for di in d]
-                            ss = ' '.join(s)
-                            file.write('[{0}] {1} {2} {3}\n'.format(iei, e.Faces[0].LocId, e.Faces[1].LocId, ss))
-                            iei += 1
+                nc = len(z.Nodes)
+                ec = len(z.Edges)
+                fc = len(z.Faces)
 
-                # Write cross edges information.
-                cross_edges_line = zam.M[i]
-                cross_edges_line[len(self.Zones)] = 0
-                cross_edges_line[i] = 0
-                cross_edges_count = sum(cross_edges_line)
-                file.write('CROSS-EDGES={0}\n'.format(cross_edges_count))
-                cei = 0
-                for e in self.Edges:
-                    if e.is_cross():
-                        if e.Faces[0].Zone == z:
-                            d = e.Nodes[0].Data + e.Nodes[1].Data
-                            s = ['{0:.18e}'.format(di) for di in d]
-                            ss = ' '.join(s)
-                            file.write('[{0}] {1} {2}\n'.format(cei, e.Faces[0].LocId, ss))
-                            cei += 1
-                        elif e.Faces[1].Zone == z:
-                            d = e.Nodes[0].Data + e.Nodes[1].Data
-                            s = ['{0:.18e}'.format(di) for di in d]
-                            ss = ' '.join(s)
-                            file.write('[{0}] {1} {2}\n'.format(cei, e.Faces[1].LocId, ss))
-                            cei += 1
+                # Write head information.
+                file.write('TITLE="{0}"\n'.format(self.Name))
+                file.write('VARIABLES={0}\n'.format(Grid.VariablesStr))
+                file.write('MPI={0}\n'.format(zi))
+                file.write('NODES={0}\n'.format(nc))
+                file.write('EDGES={0}\n'.format(ec))
+                file.write('CROSS-EDGES={0}\n'.format(zam.zone_cross_edges_count(zi)))
+                file.write('FACES={0}\n'.format(fc))
+                file.write('DATAPACKING=BLOCK\n')
+                file.write('ZONETYPE=FETRIANGLE\n')
+                file.write('VARLOCATION=([4-11]=CELLCENTERED)\n')
 
-                # Write cross edges information (for buffers organization).
-                buffers_count = len([x for x in cross_edges_line if x > 0])
-                file.write('CROSS-BUFFERS={0}\n'.format(buffers_count))
-                for j in range(len(cross_edges_line)):
-                    buffer_len = cross_edges_line[j]
-                    if buffer_len > 0:
-                        file.write('[MPI={0} LEN={1}] '.format(j, buffer_len))
-                        for e in self.Edges:
-                            if e.is_cross():
-                                if (e.Faces[0].Zone == z) and (self.Zones.index(e.Faces[1].Zone) == j):
-                                    file.write('{0} '.format(e.Faces[0].LocId))
-                                elif (e.Faces[1].Zone == z) and (self.Zones.index(e.Faces[0].Zone) == j):
-                                    file.write('{0} '.format(e.Faces[1].LocId))
-                        file.write('\n')
+                # Write nodes and faces data.
+                file.write('NODES COORDINATES:\n')
+                for i in range(3):
+                    file.write(z.get_nodes_data_slice_str(i) + ' \n')
+                file.write('FACES DATA:\n')
+                for i in range(len(Grid.VariablesStr.split()) - 3):
+                    file.write(z.get_faces_data_slice_str(i) + ' \n')
+
+                # Write connectivity lists.
+                file.write('FACE-NODE CONNECTIVITY LIST:\n')
+                for f in z.Faces:
+                    file.write(' '.join([str(n.LocId) for n in f.Nodes]) + '\n')
+                file.write('FACE-EDGE CONNECTIVITY LIST:\n')
+                for f in z.Faces:
+                    file.write(' '.join([str(e.LocId) for e in f.Edges]) + '\n')
+                file.write('EDGE-NODE CONNECTIVITY LIST:\n')
+                for e in z.Edges:
+                    file.write(' '.join([str(n.LocId) for n in e.Nodes]) + '\n')
+
+                # Write MPI-borders.
+                # TODO: add it
+
+                # Reset local ids.
+                z.reset_nodes_and_edges_local_ids()
 
                 file.close()
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def relink_nodes_to_zones(self):
+    def link_nodes_and_edges_to_zones(self):
         """
-        Relink nodes to zones.
+        Link nodes and edges to zones.
         """
 
-        for zone in self.Zones:
+        # Clear old information.
+        for z in self.Zones:
+            z.Nodes.clear()
+            z.Edges.clear()
 
-            # Delete old information.
-            zone.Nodes.clear()
+        # Add nodes.
+        for n in self.Nodes:
+            for f in n.Faces:
+                f.Zone.add_node(n)
 
-            # Bad for duplicates monitoring.
-            bag = set()
-
-            # Add nodes.
-            # Check duplication using global identifiers of nodes.
-            for face in zone.Faces:
-                for node in face.Nodes:
-                    if node.GloId not in bag:
-                        zone.add_node(node)
-                        bag.add(node.GloId)
+        # Add edges.
+        for e in self.Edges:
+            for f in e.Faces:
+                f.Zone.add_edge(e)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -1000,7 +1081,7 @@ class Grid:
             zone.add_face(face)
 
         # Link nodes.
-        self.relink_nodes_to_zones()
+        self.link_nodes_and_edges_to_zones()
         self.check_faces_are_linked_to_zones()
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -1026,7 +1107,7 @@ class Grid:
             self.Zones[random.randint(0, count - 1)].add_face(face)
 
         # Link nodes.
-        self.relink_nodes_to_zones()
+        self.link_nodes_and_edges_to_zones()
         self.check_faces_are_linked_to_zones()
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -1066,7 +1147,7 @@ class Grid:
             raise Exception('Wrong linera distribution mathematics.')
 
         # Link nodes.
-        self.relink_nodes_to_zones()
+        self.link_nodes_and_edges_to_zones()
         self.check_faces_are_linked_to_zones()
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -1105,7 +1186,7 @@ class Grid:
                 total_faces += self.Zones[zi].grow()
 
         # Links nodes.
-        self.relink_nodes_to_zones()
+        self.link_nodes_and_edges_to_zones()
         self.check_faces_are_linked_to_zones()
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -1214,7 +1295,7 @@ class Grid:
                 self.split_zone(self.Zones[0], extract_signs_funs)
 
         # Links nodes.
-        self.relink_nodes_to_zones()
+        self.link_nodes_and_edges_to_zones()
         self.check_faces_are_linked_to_zones()
 
     # ------------------------------------------------------------------------------------------------------------------
