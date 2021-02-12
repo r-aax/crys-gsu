@@ -3,6 +3,7 @@ GSU main functions.
 """
 
 import random
+import math
 from functools import reduce
 import utils
 
@@ -1267,11 +1268,19 @@ class Grid:
         blade = signs[len(signs) // 2]
 
         # Distribute.
+        zlc = 0
+        zrc = 0
         for f in zone.Faces:
             if fun(f) < blade:
                 f.Zone = zl
+                zlc += 1
             else:
                 f.Zone = zr
+                zrc += 1
+
+        # Prevent empty zone.
+        if (zlc == 0) or (zrc == 0):
+            return math.inf
 
         # Metric.
         r = 0
@@ -1298,6 +1307,15 @@ class Grid:
         :param extract_signs_funs: list of functions for extraction.
         """
 
+        # Do not split zone if it is impossible.
+        if len(zone.Faces) < 2:
+            print('Warning : not enough faces to split zone {0} '\
+                  '({1} faces).'.format(zone.Name, len(zone.Faces)))
+            # Replace to the end.
+            self.Zones.remove(zone)
+            self.Zones.append(zone)
+            return
+
         # Technical actions.
         zl = Zone(zone.Name + 'l')
         zr = Zone(zone.Name + 'r')
@@ -1308,7 +1326,16 @@ class Grid:
         # Explore metrics.
         metrics = [self.split_zone_metric(zone, zl, zr, extract_signs_funs[i])
                    for i in range(len(extract_signs_funs))]
-        spl_index = metrics.index(min(metrics))
+        min_metric = min(metrics)
+
+        if min_metric is math.inf:
+            print('Warning : bad metrics to split zone {0}'.format(zone.Name))
+            # Replace to the end.
+            self.Zones.remove(zone)
+            self.Zones.append(zone)
+            return
+
+        spl_index = metrics.index(min_metric)
 
         # Split.
         signs = [extract_signs_funs[spl_index](f) for f in zone.Faces]
