@@ -349,6 +349,136 @@ class Zone:
 # ======================================================================================================================
 
 
+class ZonesAdjacencyMatrix:
+    """
+    Matrix of zones adjacency.
+    For example if there is 3 zones matrix should be the following:
+      | i00 c01 c02 br0 |
+      | c01 i11 c12 br1 |
+      | c02 c12 i22 br2 |
+      | br0 br1 br2   0 |
+    where cxy - count of cross edges between x-th and y-th zones,
+          ixx - count of inner edges for x-th zone,
+          brx - count of border edges for x-th zone.
+    """
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def __init__(self, es, zs):
+        """
+        Constructor.
+        :param es: edges list
+        :param zs: zones list
+        """
+
+        # Init size and zero matrix.
+        zc = len(zs)
+        self.ZonesCount = zc
+        self.M = []
+        # Do not copy arrays because we have to create arrays, not references.
+        for i in range(zc + 1):
+            self.M.append([0] * (zc + 1))
+
+        # Calculate for each edge.
+        for e in es:
+            fc = len(e.Faces)
+            if fc == 1:
+                f0 = e.Faces[0]
+                z0 = zs.index(f0.Zone)
+                self.inc_border(z0)
+            elif fc == 2:
+                f0, f1 = e.Faces[0], e.Faces[1]
+                z0, z1 = zs.index(f0.Zone), zs.index(f1.Zone)
+                self.inc(z0, z1)
+            else:
+                raise Exception('Wrong edge faces count ({0}).'.format(fc))
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def inc(self, i, j):
+        """
+        Increment matrix element value.
+        :param i: first zone index
+        :param j: second zone index
+        """
+
+        self.M[i][j] += 1
+
+        if i != j:
+            self.M[j][i] += 1
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def inc_border(self, i):
+        """
+        Increment value of border edges count.
+        :param i: zone number
+        """
+
+        self.inc(i, self.ZonesCount)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def edges_statistics(self):
+        """
+        Get edges statistics.
+        Statistics is a tuple with following elements:
+          ec - full edges count
+          bec - border edges count
+          iec - inner edges count
+          cec - cross edges  count
+          becp - border edges count percent
+          iecp - inner edges count percent
+          cecp - cross edges count percent
+        :return: tuple
+        """
+
+        ec = 0
+        bec = 0
+        iec = 0
+        cec = 0
+
+        # Count all lines without the last one.
+        for i in range(self.ZonesCount):
+            line = self.M[i]
+            bec += line[self.ZonesCount]
+            iec += line[i]
+            cec += sum(line[i + 1 :])
+
+        # Total count and percents.
+        ec = bec + iec + cec
+        becp, iecp, cecp = 100.0 * bec / ec, 100.0 * iec / ec, 100.0 * cec / ec
+
+        return ec, bec, iec, cec, becp, iecp, cecp
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def edges_statistics_string(self):
+        """
+        String of edges statistics:
+        :return: string
+        """
+
+        ec, bec, iec, cec, becp, iecp, cecp = self.edges_statistics()
+
+        return 'edges stats: ' \
+               '{0} border ({1:.2f}%), ' \
+               '{2} inner ({3:.2f}%), ' \
+               '{4} cross ({5:.2f}%)'.format(bec, becp, iec, iecp, cec, cecp)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def max_cross_zones_border_len(self):
+        """
+        Max value of cross zones border lengths.
+        :return: max border length
+        """
+
+        return max([sum(line) - line[i] - line[self.ZonesCount] for (i, line) in enumerate(self.M[:-1])])
+
+# ======================================================================================================================
+
+
 class Grid:
     """
     Grid (Surface Unstructured).
@@ -380,51 +510,6 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def get_zones_adjacency_matrix(self):
-        """
-        Get zones adjacency matrix.
-        For example if there is 3 zones matrix should be the following:
-          | i00 c01 c02 br0 |
-          | c01 i11 c12 br1 |
-          | c02 c12 i22 br2 |
-          | br0 br1 br2   0 |
-        where cxy - count of cross edges between x-th and y-th zones,
-              ixx - count of inner edges for x-th zone,
-              brx - count of border edges for x-th zone.
-        :return: matrix
-        """
-
-        # Init zero matrix.
-        zc = len(self.Zones)
-        m = []
-        for i in range(zc + 1):
-            m.append([0] * (zc + 1))
-
-        # Mark zones.
-        self.mark_zones()
-
-        # Calculate for each zone.
-        for e in self.Edges:
-            fc = len(e.Faces)
-            if fc == 1:
-                ff = e.Faces[0]
-                m[ff.Zone.Mark][zc] += 1
-                m[zc][ff.Zone.Mark] += 1
-            elif fc == 2:
-                ff = e.Faces[0]
-                sf = e.Faces[1]
-                if ff.Zone == sf.Zone:
-                    m[ff.Zone.Mark][ff.Zone.Mark] += 1
-                else:
-                    m[ff.Zone.Mark][sf.Zone.Mark] += 1
-                    m[sf.Zone.Mark][ff.Zone.Mark] += 1
-            else:
-                raise Exception('Wrong edge faces count ({0}).'.format(fc))
-
-        return m
-
-    # ------------------------------------------------------------------------------------------------------------------
-
     def print_info(self,
                    is_print_edges_statistics=False,
                    is_print_faces_distribution=False,
@@ -445,28 +530,11 @@ class Grid:
               '{2} faces, {3} zones'.format(len(self.Nodes), ec, fc, zc))
 
         # Zones adjacency matrix.
-        zam = self.get_zones_adjacency_matrix()
+        zam = ZonesAdjacencyMatrix(self.Edges, self.Zones)
 
         # Edges statistics.
         if is_print_edges_statistics:
-            border_edges_count = 0
-            inner_edges_count = 0
-            cross_edges_count = 0
-            for i in range(zc):
-                bec = zam[zc][i]
-                iec = zam[i][i]
-                cec = sum(zam[i]) - bec - iec
-                border_edges_count += bec
-                inner_edges_count += iec
-                cross_edges_count += cec
-            border_edges_p = 100.0 * border_edges_count / ec
-            inner_edges_p = 100.0 * inner_edges_count / ec
-            cross_edges_p = 100.0 * cross_edges_count / ec
-            print('  edges stats: {0} border ({1:.2f}%), '
-                  '{2} inner ({3:.2f}%), '
-                  '{4} cross ({5:.2f}%)'.format(border_edges_count, border_edges_p,
-                                                inner_edges_count, inner_edges_p,
-                                                cross_edges_count, cross_edges_p))
+            print('  ' + zam.edges_statistics_string())
 
         # Distribution faces between zones.
         if is_print_faces_distribution:
@@ -484,16 +552,8 @@ class Grid:
         # Distribution edges between pairs of neighbours.
         if is_print_zones_adjacency_matrix:
             for i in range(zc + 1):
-                print(' '.join(['{0:5}'.format(e) for e in zam[i]]))
-            # Calculate stats.
-            # TODO: fix this ugly correction.
-            for i in range(zc):
-                zam[i][i] = 0
-                zam[i][zc] = 0
-            zam[zc] = [0]
-            fm = utils.flatten(zam)
-            max_interzone_border_length = max(fm)
-            print('  ~ max interzones border length : {0}'.format(max_interzone_border_length))
+                print(' '.join(['{0:5}'.format(e) for e in zam.M[i]]))
+            print('  ~ max interzones border length : {0}'.format(zam.max_cross_zones_border_len()))
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -810,7 +870,7 @@ class Grid:
         :param filename_base: base of filename
         """
 
-        zam = self.get_zones_adjacency_matrix()
+        zam = ZonesAdjacencyMatrix(self.Edges, self.Zones)
 
         # Mark faces inside zones.
         for z in self.Zones:
@@ -830,7 +890,7 @@ class Grid:
                     file.write(' '.join(s) + '\n')
 
                 # Write inner edges information.
-                file.write('INNER-EDGES={0}\n'.format(zam[i][i]))
+                file.write('INNER-EDGES={0}\n'.format(zam.M[i][i]))
                 iei = 0
                 for e in self.Edges:
                     if e.is_inner():
@@ -842,7 +902,7 @@ class Grid:
                             iei += 1
 
                 # Write cross edges information.
-                cross_edges_line = zam[i]
+                cross_edges_line = zam.M[i]
                 cross_edges_line[len(self.Zones)] = 0
                 cross_edges_line[i] = 0
                 cross_edges_count = sum(cross_edges_line)
