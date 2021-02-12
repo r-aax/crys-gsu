@@ -544,14 +544,33 @@ class ZonesAdjacencyMatrix:
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    def zone_max_cross_edges_count(self, zi):
+        """
+        Maximum border length for given zone.
+        :param zi: zone index
+        :return: max zone border length
+        """
+
+        line = self.M[zi]
+
+        # Copy in.
+        line2 = line[:]
+
+        # Zero inner and border edges.
+        line2[zi] = 0
+        line2[self.ZonesCount] = 0
+
+        return max(line2)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def max_cross_zones_border_len(self):
         """
         Max value of cross zones border lengths.
         :return: max border length
         """
 
-        # TODO: FIX IT
-        return max([sum(line) - line[i] - line[self.ZonesCount] for (i, line) in enumerate(self.M[:-1])])
+        return max([self.zone_max_cross_edges_count(zi) for zi in range(self.ZonesCount)])
 
     # ------------------------------------------------------------------------------------------------------------------
 
