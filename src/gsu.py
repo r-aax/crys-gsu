@@ -172,6 +172,23 @@ class Edge:
         else:
             raise Exception('Edge cannot has {0} neighbours faces.'.format(faces_count))
 
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def is_connect_zones(self, z0, z1):
+        """
+        Check if edge connect two given zones.
+        :param z0: first zone
+        :param z1: second zone
+        :return: True - if edge connects two given zones, False - otherwise
+        """
+
+        if len(self.Faces) != 2:
+            return False
+
+        fz0, fz1 = self.Faces[0].Zone, self.Faces[1].Zone
+
+        return ((z0 == fz0) and (z1 == fz1)) or ((z0 == fz1) and (z1 == fz0))
+
 # ======================================================================================================================
 
 
@@ -544,33 +561,40 @@ class ZonesAdjacencyMatrix:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def zone_max_cross_edges_count(self, zi):
+    def zone_cross_edges_array(self, zi):
+        """
+        Array with count of cross edges.
+        :param zi: zone index
+        :return: array with cross edges count.
+        """
+
+        line = self.M[zi]
+        line2 = line[:]
+        line2[zi] = 0
+        line2[self.ZonesCount] = 0
+
+        return line2
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def zone_max_cross_border_len(self, zi):
         """
         Maximum border length for given zone.
         :param zi: zone index
         :return: max zone border length
         """
 
-        line = self.M[zi]
-
-        # Copy in.
-        line2 = line[:]
-
-        # Zero inner and border edges.
-        line2[zi] = 0
-        line2[self.ZonesCount] = 0
-
-        return max(line2)
+        return max(self.zone_cross_edges_array(zi))
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def max_cross_zones_border_len(self):
+    def max_cross_border_len(self):
         """
         Max value of cross zones border lengths.
         :return: max border length
         """
 
-        return max([self.zone_max_cross_edges_count(zi) for zi in range(self.ZonesCount)])
+        return max([self.zone_max_cross_border_len(zi) for zi in range(self.ZonesCount)])
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -581,9 +605,18 @@ class ZonesAdjacencyMatrix:
         :return: count of cross-edges for this zone
         """
 
-        line = self.M[zi]
+        return sum(self.zone_cross_edges_array(zi))
 
-        return sum(line) - line[zi] - line[self.ZonesCount]
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def zone_cross_borders_count(self, zi):
+        """
+        Get borders count for given zone.
+        :param zi: zone index
+        :return: borders count
+        """
+
+        return len([x for x in self.zone_cross_edges_array(zi) if x > 0])
 
 # ======================================================================================================================
 
@@ -662,7 +695,7 @@ class Grid:
         if is_print_zones_adjacency_matrix:
             for i in range(zc + 1):
                 print(' '.join(['{0:5}'.format(e) for e in zam.M[i]]))
-            print('  ~ max cross-zones border length : {0}'.format(zam.max_cross_zones_border_len()))
+            print('  ~ max cross-zones border length : {0}'.format(zam.max_cross_border_len()))
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -1030,7 +1063,17 @@ class Grid:
                     file.write(' '.join([str(n.LocId) for n in e.Nodes]) + '\n')
 
                 # Write MPI-borders.
-                # TODO: add it
+                file.write('MPI-BORDERS={0}\n'.format(zam.zone_cross_borders_count(zi)))
+                line = zam.zone_cross_edges_array(zi)
+                for (li, le) in enumerate(line):
+                    if le > 0:
+                        # Border between zones with indices zi and li.
+                        lz = self.Zones[li]
+                        # Border between zones z and lz.
+                        for e in z.Edges:
+                            if e.is_connect_zones(z, lz):
+                                file.write('{0} '.format(e.LocId))
+                        file.write('\n')
 
                 # Reset local ids.
                 z.reset_nodes_and_edges_local_ids()
