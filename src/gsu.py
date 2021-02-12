@@ -72,10 +72,13 @@ class Node:
         :param digits: digits count for rounding coordinates
         """
 
-        self.Data = data
+        # Identifiers:
+        # Global - in grid numeration.
+        # Local - in zone numeration.
+        self.GloId = -1
+        self.LocId = -1
 
-        # Variable for any purpose marking.
-        self.Mark = -1
+        self.Data = data
 
         # Rounded coordinates for registration in set.
         self.RoundedCoords = round(data[0], digits), round(data[1], digits), round(data[2], digits)
@@ -179,6 +182,12 @@ class Face:
         :param data: face data (tuple)
         """
 
+        # Identifiers:
+        # Global - in grid numeration.
+        # Local - in zone numeration.
+        self.GloId = -1
+        self.LocId = -1
+
         self.Data = data
 
         # Links with nodes and edges.
@@ -187,19 +196,6 @@ class Face:
 
         # Link to zone (each face belongs only to one single zone).
         self.Zone = None
-
-        # Face mark.
-        self.Mark = -1
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def get_nodes_marks_str(self):
-        """
-        Get string "am bm cm", where am, bm, cm - nodes marks.
-        :return: string of nodes marks
-        """
-
-        return reduce(lambda x, y: x + ' ' + y, [str(node.Mark + 1) for node in self.Nodes])
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -304,26 +300,6 @@ class Zone:
                 if nf.Zone is None:
                     nf.Zone = self
                     self.FacesQueue.append(nf)
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def mark_nodes(self):
-        """
-        Mark all nodes.
-        """
-
-        for (i, n) in enumerate(self.Nodes):
-            n.Mark = i
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def mark_faces(self):
-        """
-        Mark all faces.
-        """
-
-        for (i, f) in enumerate(self.Faces):
-            f.Mark = i
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -551,26 +527,6 @@ class Grid:
             for i in range(zc + 1):
                 print(' '.join(['{0:5}'.format(e) for e in zam.M[i]]))
             print('  ~ max interzones border length : {0}'.format(zam.max_cross_zones_border_len()))
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def mark_nodes(self):
-        """
-        Mark all nodes.
-        """
-
-        for (i, n) in enumerate(self.Nodes):
-            n.Mark = i
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def mark_faces(self):
-        """
-        Mark all faces.
-        """
-
-        for (i, f) in enumerate(self.Faces):
-            f.Mark = i
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -842,9 +798,8 @@ class Grid:
                     f.write(zone.get_faces_data_slice_str(i) + ' \n')
 
                 # Write connectivity lists.
-                zone.mark_nodes()
                 for face in zone.Faces:
-                    f.write(face.get_nodes_marks_str() + '\n')
+                    f.write(' '.join([str(n.LocId + 1) for n in face.Nodes]) + '\n')
 
             f.close()
 
@@ -858,10 +813,6 @@ class Grid:
         """
 
         zam = ZonesAdjacencyMatrix(self.Edges, self.Zones)
-
-        # Mark faces inside zones.
-        for z in self.Zones:
-            z.mark_faces()
 
         for (i, z) in enumerate(self.Zones):
             with open('{0}_{1:04d}.txt'.format(filename_base, i), 'w', newline='\n') as file:
@@ -885,7 +836,7 @@ class Grid:
                             d = e.Nodes[0].Data + e.Nodes[1].Data
                             s = ['{0:.18e}'.format(di) for di in d]
                             ss = ' '.join(s)
-                            file.write('[{0}] {1} {2} {3}\n'.format(iei, e.Faces[0].Mark, e.Faces[1].Mark, ss))
+                            file.write('[{0}] {1} {2} {3}\n'.format(iei, e.Faces[0].LocId, e.Faces[1].LocId, ss))
                             iei += 1
 
                 # Write cross edges information.
@@ -901,13 +852,13 @@ class Grid:
                             d = e.Nodes[0].Data + e.Nodes[1].Data
                             s = ['{0:.18e}'.format(di) for di in d]
                             ss = ' '.join(s)
-                            file.write('[{0}] {1} {2}\n'.format(cei, e.Faces[0].Mark, ss))
+                            file.write('[{0}] {1} {2}\n'.format(cei, e.Faces[0].LocId, ss))
                             cei += 1
                         elif e.Faces[1].Zone == z:
                             d = e.Nodes[0].Data + e.Nodes[1].Data
                             s = ['{0:.18e}'.format(di) for di in d]
                             ss = ' '.join(s)
-                            file.write('[{0}] {1} {2}\n'.format(cei, e.Faces[1].Mark, ss))
+                            file.write('[{0}] {1} {2}\n'.format(cei, e.Faces[1].LocId, ss))
                             cei += 1
 
                 # Write cross edges information (for buffers organization).
@@ -920,9 +871,9 @@ class Grid:
                         for e in self.Edges:
                             if e.is_cross():
                                 if (e.Faces[0].Zone == z) and (self.Zones.index(e.Faces[1].Zone) == j):
-                                    file.write('{0} '.format(e.Faces[0].Mark))
+                                    file.write('{0} '.format(e.Faces[0].LocId))
                                 elif (e.Faces[1].Zone == z) and (self.Zones.index(e.Faces[0].Zone) == j):
-                                    file.write('{0} '.format(e.Faces[1].Mark))
+                                    file.write('{0} '.format(e.Faces[1].LocId))
                         file.write('\n')
 
                 file.close()
@@ -934,9 +885,6 @@ class Grid:
         Relink nodes to zones.
         """
 
-        # Mark nodes for easy search.
-        self.mark_nodes()
-
         for zone in self.Zones:
 
             # Delete old information.
@@ -946,11 +894,13 @@ class Grid:
             bag = set()
 
             # Add nodes.
+            # Check duplication using global identifiers of nodes.
             for face in zone.Faces:
                 for node in face.Nodes:
-                    if node.Mark not in bag:
+                    if node.GloId not in bag:
+                        node.LocId = len(zone.Nodes)
                         zone.Nodes.append(node)
-                        bag.add(node.Mark)
+                        bag.add(node.GloId)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -1082,8 +1032,6 @@ class Grid:
             self.Zones.append(zone)
 
         # Initial faces.
-        self.mark_faces()
-        self.mark_zones()
         for zone in self.Zones:
             rf = self.Faces[random.randint(0, len(self.Faces) - 1)]
             while rf.Zone is not None:
