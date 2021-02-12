@@ -277,14 +277,54 @@ class Zone:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def add_face(self, face):
+    def add_node(self, n):
         """
-        Add face to zone (with link).
-        :param face: face
+        Add node to zone.
+        :param n: node
+        :return: added node
         """
 
-        self.Faces.append(face)
-        face.Zone = self
+        # Just add node.
+        self.Nodes.append(n)
+
+        return n
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def add_face(self, f):
+        """
+        Add face to zone (with link).
+        :param f: face
+        :return: added face
+        """
+
+        # Just add and correct local id.
+        f.LocId = len(self.Faces)
+        f.Zone = self
+        self.Faces.append(f)
+
+        return f
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def set_nodes_local_ids(self):
+        """
+        Set nodes local identifiers.
+        """
+
+        for (i, n) in enumerate(self.Nodes):
+            n.LocId = i
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def reset_nodes_local_ids(self):
+        """
+        Reset nodes local identifiers.
+        :return:
+        """
+
+        for n in self.Nodes:
+            n.LocId = -1
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -526,7 +566,7 @@ class Grid:
         if is_print_zones_adjacency_matrix:
             for i in range(zc + 1):
                 print(' '.join(['{0:5}'.format(e) for e in zam.M[i]]))
-            print('  ~ max interzones border length : {0}'.format(zam.max_cross_zones_border_len()))
+            print('  ~ max cross-zones border length : {0}'.format(zam.max_cross_zones_border_len()))
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -548,27 +588,42 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def add_new_node(self, data, is_merge_same_nodes):
+    def add_node(self, n, is_merge_same_nodes):
         """
-        Add new node with given data.
-        :param data: data
+        Add node.
+        :param n: node
         :param is_merge_same_nodes: flag merge same nodes
         :return: node registered in self.Nodes
         """
 
-        new_node = Node(data)
-        found_node = self.find_near_node(new_node)
+        found_node = self.find_near_node(n)
 
         if (found_node is None) or (not is_merge_same_nodes):
             # There is no such node in the grid.
             # We have to add it.
-            self.Nodes.append(new_node)
-            self.RoundedCoordsBag.add(new_node.RoundedCoords)
-            return new_node
+            n.GloId = len(self.Nodes)
+            self.Nodes.append(n)
+            self.RoundedCoordsBag.add(n.RoundedCoords)
+            return n
         else:
             # There is already such a node in the grid.
             # Just return it.
             return found_node
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def add_face(self, f):
+        """
+        Add face.
+        :param f: face
+        :return: added face
+        """
+
+        # Just correct global id and add.
+        f.GloId = len(self.Faces)
+        self.Faces.append(f)
+
+        return f
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -724,8 +779,9 @@ class Grid:
                         d.append([float(xi) for xi in line.split()])
                     for i in range(nodes_to_read):
                         data = [d[0][i], d[1][i], d[2][i]]
-                        new_node = self.add_new_node(data, is_merge_same_nodes)
-                        zone.Nodes.append(new_node)
+                        node = Node(data)
+                        node = self.add_node(node, is_merge_same_nodes)
+                        zone.add_node(node)
 
                     # Read data for faces.
                     d = []
@@ -734,7 +790,7 @@ class Grid:
                         d.append([float(xi) for xi in line.split()])
                     for i in range(faces_to_read):
                         face = Face([d[0][i], d[1][i], d[2][i], d[3][i], d[4][i], d[5][i], d[6][i], d[7][i]])
-                        self.Faces.append(face)
+                        self.add_face(face)
                         zone.add_face(face)
 
                     # Read connectivity lists.
@@ -798,8 +854,10 @@ class Grid:
                     f.write(zone.get_faces_data_slice_str(i) + ' \n')
 
                 # Write connectivity lists.
+                zone.set_nodes_local_ids()
                 for face in zone.Faces:
                     f.write(' '.join([str(n.LocId + 1) for n in face.Nodes]) + '\n')
+                zone.reset_nodes_local_ids()
 
             f.close()
 
@@ -898,8 +956,7 @@ class Grid:
             for face in zone.Faces:
                 for node in face.Nodes:
                     if node.GloId not in bag:
-                        node.LocId = len(zone.Nodes)
-                        zone.Nodes.append(node)
+                        zone.add_node(node)
                         bag.add(node.GloId)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -920,7 +977,7 @@ class Grid:
         """
 
         for face in self.Faces:
-            if face.Zone == None:
+            if face.Zone is None:
                 raise Exception('Unlinked face detected.')
 
     # ------------------------------------------------------------------------------------------------------------------
