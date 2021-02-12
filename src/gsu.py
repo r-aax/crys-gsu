@@ -248,9 +248,6 @@ class Zone:
         self.Nodes = []
         self.Faces = []
 
-        # Mark.
-        self.Mark = -1
-
         # Faces queue.
         self.FacesQueue = []
 
@@ -574,16 +571,6 @@ class Grid:
 
         for (i, f) in enumerate(self.Faces):
             f.Mark = i
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def mark_zones(self):
-        """
-        Mark all zones.
-        """
-
-        for (i, z) in enumerate(self.Zones):
-            z.Mark = i
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -932,9 +919,9 @@ class Grid:
                         file.write('[MPI={0} LEN={1}] '.format(j, buffer_len))
                         for e in self.Edges:
                             if e.is_cross():
-                                if (e.Faces[0].Zone == z) and (e.Faces[1].Zone.Mark == j):
+                                if (e.Faces[0].Zone == z) and (self.Zones.index(e.Faces[1].Zone) == j):
                                     file.write('{0} '.format(e.Faces[0].Mark))
-                                elif (e.Faces[1].Zone == z) and (e.Faces[0].Zone.Mark == j):
+                                elif (e.Faces[1].Zone == z) and (self.Zones.index(e.Faces[0].Zone) == j):
                                     file.write('{0} '.format(e.Faces[1].Mark))
                         file.write('\n')
 
