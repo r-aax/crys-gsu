@@ -302,7 +302,11 @@ class Face:
         """
 
         p = mean_nodes_point(self.Nodes)
-        a = [p[0], p[1], p[2], self.get_t(), self.get_hw(), self.get_hi()]
+        # Random data for t, hw, hi.
+        a = [p[0], p[1], p[2],
+             self.get_t() + random.random(),
+             self.get_hw() + random.random(),
+             self.get_hi() + random.random()]
         i_list = ['{0:.18e}'.format(ai) for ai in a]
         i_str = ' '.join(i_list)
 
@@ -1494,5 +1498,38 @@ class Grid:
                 p = mean_nodes_point(face.Nodes)
                 f.write(face.get_p_t_hw_hi_str() + '\n')
             f.close()
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def load_faces_t_hw_hi(self, filename):
+        """
+        Load T, Hw, Hi data from file and write it to grid.
+        :param filename: name of file
+        """
+
+        # Create dictionary of faces centers.
+        d = {rounded_point(mean_nodes_point(face.Nodes)): i for (i, face) in enumerate(self.Faces)}
+        dc = len(d)
+
+        lc = 0
+        with open(filename, 'r') as f:
+            line = f.readline()
+
+            while line:
+                lc += 1
+                vs = [float(s) for s in line.split()]
+                p = rounded_point((vs[0], vs[1], vs[2]))
+                i = d.pop(p)
+                face = self.Faces[i]
+                face.set_t(vs[3])
+                face.set_hw(vs[4])
+                face.set_hi(vs[5])
+                line = f.readline()
+
+            f.close()
+
+        # Check consistency.
+        if dc != lc:
+            raise Exception('Elements count inconsistency detected: {0} dc != {1} lc.\n'.format(dc, lc))
 
 # ======================================================================================================================
