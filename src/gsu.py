@@ -271,9 +271,6 @@ class Zone:
         self.Edges = []
         self.Faces = []
 
-        # Faces queue.
-        self.FacesQueue = []
-
     # ------------------------------------------------------------------------------------------------------------------
 
     def get_nodes_coord_slice_str(self, i):
@@ -405,39 +402,6 @@ class Zone:
 
         self.reset_nodes_local_ids()
         self.reset_edges_local_ids()
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def fill_queue(self, face):
-        """
-        Fill queue with face neighbours.
-        :param face: face
-        """
-
-        for edge in face.Edges:
-            nf = face.get_neighbour(edge)
-            if nf is not None:
-                if nf.Zone is None:
-                    nf.Zone = self
-                    self.FacesQueue.append(nf)
-
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def grow(self):
-        """
-        Grow zone.
-        :return: 1 - if zone grows, 0 - otherwise
-        """
-
-        if not self.FacesQueue:
-            # print('I can not grow : zone {0}.'.format(self.Name))
-            return 0
-        else:
-            fc = self.FacesQueue[0]
-            self.FacesQueue = self.FacesQueue[1:]
-            self.add_face(fc)
-            self.fill_queue(fc)
-            return 1
 
 # ======================================================================================================================
 
@@ -1239,44 +1203,6 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def decompose_rgrow(self, count=32, new_name=None):
-        """
-        Distribution with random grow.
-        :param count: count of zones.
-        :param new_name: grid new name
-        """
-
-        if new_name is not None:
-            self.Name = new_name
-
-        # Delete all zones and links.
-        self.Zones.clear()
-        self.unlink_faces_from_zones()
-        for i in range(count):
-            zone = Zone('rgrow ' + str(i))
-            self.Zones.append(zone)
-
-        # Initial faces.
-        for zone in self.Zones:
-            rf = self.Faces[random.randint(0, len(self.Faces) - 1)]
-            while rf.Zone is not None:
-                rf = self.Faces[random.randint(0, len(self.Faces) - 1)]
-            zone.add_face(rf)
-            zone.FacesQueue = []
-            zone.fill_queue(rf)
-
-        # Walk and add to faces to queues.
-        total_faces = count
-        while total_faces < len(self.Faces):
-            for i in range(3 * count):
-                zi = i % count
-                total_faces += self.Zones[zi].grow()
-
-        # Links nodes.
-        self.link_nodes_and_edges_to_zones()
-        self.check_faces_are_linked_to_zones()
-
-    # ------------------------------------------------------------------------------------------------------------------
 
     def split_zone_metric(self, zone, zl, zr, fun):
         """
