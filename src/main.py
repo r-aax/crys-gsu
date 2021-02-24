@@ -98,6 +98,8 @@ def case_004_load_store_load(test='bunny'):
 def case_005_explode_bunny(test='bunny_pos'):
     """
     Visual bunny explosion (illusion of different zones run away from each other).
+    Test objective:
+      To check how we can move zones in different directions.
     :param test: test name
     """
 
@@ -116,11 +118,28 @@ def case_005_explode_bunny(test='bunny_pos'):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
+def case_006_store_faces_t_hw_hi(test='bunny'):
+    """
+    Store faces T, Hw, Hi data.
+    Test objective:
+      Storing data ot T, Hw, Hi to file (emulation the result of MPI program).
+    :param test: test name
+    """
+
+    print('case_006_store_faces_t_hw_hi({0}):'.format(test))
+    g = gsu.Grid()
+    g.load('grids/{0}.dat'.format(test))
+    g.store_faces_t_hw_hi('grids/{0}.thh'.format(test))
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
     # case_001_node_face_data()
     # case_002_decompose()
     # case_003_fixed_zones()
     # case_004_load_store_load()
-    case_005_explode_bunny()
+    # case_005_explode_bunny()
+    case_006_store_faces_t_hw_hi()
 
 # ----------------------------------------------------------------------------------------------------------------------

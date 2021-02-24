@@ -10,6 +10,19 @@ import utils
 # ======================================================================================================================
 
 
+def rounded_point(p, digits=10):
+    """
+    Get rounded point for constructing bags of points.
+    :param p: point
+    :param digits: accuracy
+    :return: rounded point
+    """
+
+    return round(p[0], digits), round(p[1], digits), round(p[2], digits)
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
 def mean_nodes_point(ns):
     """
     Get mean point of nodes.
@@ -66,11 +79,10 @@ class Node:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, p, digits=10):
+    def __init__(self, p):
         """
         Constructor node.
         :param p: node point (tuple of coordinates)
-        :param digits: digits count for rounding coordinates
         """
 
         # Identifiers:
@@ -82,7 +94,7 @@ class Node:
         self.P = p
 
         # Rounded coordinates for registration in set.
-        self.RoundedCoords = round(p[0], digits), round(p[1], digits), round(p[2], digits)
+        self.RoundedCoords = rounded_point(p)
 
         # Links with edges and faces.
         self.Edges = []
@@ -223,6 +235,16 @@ class Face:
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    def get_t(self):
+        """
+        Get temperature value.
+        :return: temperature value
+        """
+
+        return self.Data[0]
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def set_t(self, t):
         """
         Set temperature value to face data.
@@ -230,6 +252,16 @@ class Face:
         """
 
         self.Data[0] = t
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def get_hw(self):
+        """
+        Get water height value.
+        :return: water height
+        """
+
+        return self.Data[1]
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -243,6 +275,16 @@ class Face:
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    def get_hi(self):
+        """
+        Get ice height value.
+        :return: ice height
+        """
+
+        return self.Data[2]
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def set_hi(self, hi):
         """
         Set ice height value to face data.
@@ -250,6 +292,21 @@ class Face:
         """
 
         self.Data[2] = hi
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def get_p_t_hw_hi_str(self):
+        """
+        Get string with center point coordinates, temperature, and water and ice heights.
+        :return: string
+        """
+
+        p = mean_nodes_point(self.Nodes)
+        a = [p[0], p[1], p[2], self.get_t(), self.get_hw(), self.get_hi()]
+        i_list = ['{0:.18e}'.format(ai) for ai in a]
+        i_str = ' '.join(i_list)
+
+        return i_str
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -1247,7 +1304,6 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-
     def split_zone_metric(self, zone, zl, zr, fun):
         """
         Split zone, calculate metric and roll-back.
@@ -1424,5 +1480,19 @@ class Grid:
             for n in z.Nodes:
                 p = n.P
                 n.P = (p[0] + vx, p[1] + vy, p[2] + vz)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def store_faces_t_hw_hi(self, filename):
+        """
+        Store T, Hw, Hi values to file.
+        :param filename: name of file
+        """
+
+        with open(filename, 'w', newline='\n') as f:
+            for face in self.Faces:
+                p = mean_nodes_point(face.Nodes)
+                f.write(face.get_p_t_hw_hi_str() + '\n')
+            f.close()
 
 # ======================================================================================================================
