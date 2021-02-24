@@ -652,6 +652,19 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    def clear(self):
+        """
+        Clear grid.
+        """
+
+        self.Nodes.clear()
+        self.Edges.clear()
+        self.Faces.clear()
+        self.Zones.clear()
+        self.RoundedCoordsBag.clear()
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def print_info(self,
                    is_print_edges_statistics=False,
                    is_print_faces_distribution=False,
@@ -877,10 +890,7 @@ class Grid:
         """
 
         # Clear all objects of the grid.
-        self.Nodes.clear()
-        self.Edges.clear()
-        self.Faces.clear()
-        self.Zones.clear()
+        self.clear()
 
         # Open file and try to load it line by line.
         with open(filename, 'r') as f:

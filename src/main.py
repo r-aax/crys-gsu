@@ -77,9 +77,28 @@ def case_003_fixed_zones(test='bunny_pos'):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
+def case_004_load_store_load(test='bunny'):
+    """
+    Load grid, save it immediately, and load again.
+    Test objective:
+      To make sure that operation load-store doesn't corrupt the grid.
+    :param test: test name
+    """
+
+    print('case_004_load_store_load({0}):'.format(test))
+    g = gsu.Grid()
+    g.load('grids/{0}.dat'.format(test))
+    g.store('grids/{0}_c1.dat'.format(test))
+    g.load('grids/{0}_c1.dat'.format(test))
+    g.store('grids/{0}_c2.dat'.format(test))
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
     # case_001_node_face_data()
     # case_002_decompose()
-    case_003_fixed_zones()
+    # case_003_fixed_zones()
+    case_004_load_store_load()
 
 # ----------------------------------------------------------------------------------------------------------------------
