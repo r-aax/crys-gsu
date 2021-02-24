@@ -95,10 +95,32 @@ def case_004_load_store_load(test='bunny'):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
+def case_005_explode_bunny(test='bunny_pos'):
+    """
+    Visual bunny explosion (illusion of different zones run away from each other).
+    :param test: test name
+    """
+
+    print('case_005_explode_bunny({0}):'.format(test))
+    g = gsu.Grid()
+    g.load('grids/{0}.dat'.format(test))
+    g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(), gsu.fun_face_cy(), gsu.fun_face_cz()],
+                             levels=5,
+                             new_name=test + ' hierarchical',
+                             fixed_zones=['POS1', 'POS2'])
+    g.store('grids/{0}_hierarchical.dat'.format(test))
+    g.load('grids/{0}_hierarchical.dat'.format(test), is_merge_same_nodes=False)
+    g.move_from_mean_point(0.25)
+    g.store('grids/{0}_explode.dat'.format(test))
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
     # case_001_node_face_data()
     # case_002_decompose()
     # case_003_fixed_zones()
-    case_004_load_store_load()
+    # case_004_load_store_load()
+    case_005_explode_bunny()
 
 # ----------------------------------------------------------------------------------------------------------------------
