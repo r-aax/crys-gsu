@@ -271,6 +271,9 @@ class Zone:
         self.Edges = []
         self.Faces = []
 
+        # Fixed zone flag.
+        self.IsFixed = False
+
     # ------------------------------------------------------------------------------------------------------------------
 
     def get_nodes_coord_slice_str(self, i):
@@ -1099,7 +1102,8 @@ class Grid:
         """
 
         for face in self.Faces:
-            face.Zone = None
+            if not face.Zone.IsFixed:
+                face.Zone = None
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -1259,6 +1263,12 @@ class Grid:
         :param extract_signs_funs: list of functions for extraction.
         """
 
+        # Do not split zone if it is fixed.
+        if zone.IsFixed:
+            self.Zones.remove(zone)
+            self.Zones.append(zone)
+            return
+
         # Do not split zone if it is impossible.
         if len(zone.Faces) < 2:
             print('Warning : not enough faces to split zone {0} '\
@@ -1302,19 +1312,24 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def decompose_hierarchical(self, extract_signs_funs, levels=6, new_name=None):
+    def decompose_hierarchical(self, extract_signs_funs, levels=6, new_name=None, fixed_zones=[]):
         """
         Hierarchical distribution with given numbers of levels.
         :param extract_signs_funs: list of functions for signs extraction
         :param levels: levels count
         :param new_name: grid new name
+        :param fixed_zones: list of fixed zones
         """
+
+        # Mark fixed zones.
+        for z in self.Zones:
+            z.IsFixed = z.Name in fixed_zones
 
         if new_name is not None:
             self.Name = new_name
 
-        # Delete all zones and links.
-        self.Zones.clear()
+        # Delete all zones (not fixed) and links.
+        self.Zones = [z for z in self.Zones if z.IsFixed]
         self.unlink_faces_from_zones()
 
         # Check levels.
@@ -1324,12 +1339,13 @@ class Grid:
         zone = Zone('h')
         self.Zones.append(zone)
         for face in self.Faces:
-            zone.add_face(face)
+            if face.Zone is None:
+                zone.add_face(face)
 
         for li in range(levels - 1):
             c = len(self.Zones)
             for zi in range(c):
-                nm = self.Zones[0].Name
+                # nm = self.Zones[0].Name
                 # print('split zone {0} -> {1}, {2}.'.format(nm, nm + 'l', nm + 'r'))
                 self.split_zone(self.Zones[0], extract_signs_funs)
 
