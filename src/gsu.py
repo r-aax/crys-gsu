@@ -534,9 +534,12 @@ class ZonesAdjacencyMatrix:
         # Count all lines without the last one.
         for i in range(self.ZonesCount):
             line = self.M[i]
+            # Border edges count for this zone is in the last row.
+            # Inner edges count for this zone is on the main diagonal of the matrix.
+            # All values between these two cells are cross edges.
             bec += line[self.ZonesCount]
             iec += line[i]
-            cec += sum(line[i + 1 :])
+            cec += sum(line[(i + 1):self.ZonesCount])
 
         # Total count and percents.
         ec = bec + iec + cec
