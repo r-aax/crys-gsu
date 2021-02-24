@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     print('Testing crys-gsu main : begin.')
 
-    test = 'bunny'
+    test = 'small'
     g = gsu.Grid()
     g.load('grids/' + test + '.dat')
     g.print_info()
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     '''
     #
     g.decompose_hierarchical([gsu.fun_face_cx(), gsu.fun_face_cy(), gsu.fun_face_cz()],
-                             levels=6,
+                             levels=2,
                              new_name=test + ' hierarchical')
     g.print_info(is_print_edges_statistics=True,
                  is_print_faces_distribution=True,
