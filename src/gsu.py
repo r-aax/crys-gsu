@@ -223,6 +223,36 @@ class Face:
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    def set_t(self, t):
+        """
+        Set temperature value to face data.
+        :param t: temperature
+        """
+
+        self.Data[0] = t
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def set_hw(self, hw):
+        """
+        Set water height value to face data.
+        :param hw: water height
+        """
+
+        self.Data[1] = hw
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def set_hi(self, hi):
+        """
+        Set ice height value to face data.
+        :param hi: ice height
+        """
+
+        self.Data[2] = hi
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def get_neighbour(self, edge):
         """
         Get neighbour through edge.
