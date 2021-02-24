@@ -17,9 +17,9 @@ def mean_nodes_point(ns):
     :return: mean point
     """
 
-    xs = [n.Data[0] for n in ns]
-    ys = [n.Data[1] for n in ns]
-    zs = [n.Data[2] for n in ns]
+    xs = [n.P[0] for n in ns]
+    ys = [n.P[1] for n in ns]
+    zs = [n.P[2] for n in ns]
 
     return sum(xs) / len(xs), sum(ys) / len(ys), sum(zs) / len(zs)
 
@@ -66,10 +66,10 @@ class Node:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, data, digits=10):
+    def __init__(self, p, digits=10):
         """
         Constructor node.
-        :param data: node data (tuple)
+        :param p: node point (tuple of coordinates)
         :param digits: digits count for rounding coordinates
         """
 
@@ -79,10 +79,10 @@ class Node:
         self.GloId = -1
         self.LocId = -1
 
-        self.Data = data
+        self.P = p
 
         # Rounded coordinates for registration in set.
-        self.RoundedCoords = round(data[0], digits), round(data[1], digits), round(data[2], digits)
+        self.RoundedCoords = round(p[0], digits), round(p[1], digits), round(p[2], digits)
 
         # Links with edges and faces.
         self.Edges = []
@@ -276,14 +276,14 @@ class Zone:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def get_nodes_data_slice_str(self, i):
+    def get_nodes_coord_slice_str(self, i):
         """
-        Get string composed from i-th elements of data of all nodes.
-        :param i: index of nodes data
+        Get string composed from i-th coord of all nodes.
+        :param i: index of nodes coord
         :return: composed string
         """
 
-        i_list = ['{0:.18e}'.format(node.Data[i]) for node in self.Nodes]
+        i_list = ['{0:.18e}'.format(node.P[i]) for node in self.Nodes]
         i_str = ' '.join(i_list)
 
         return i_str
@@ -940,13 +940,13 @@ class Grid:
                     faces_to_read = int(faces_line.split('=')[-1][:-1])
 
                     # Read data for nodes.
-                    d = []
+                    c = []
                     for i in range(3):
                         line = f.readline()
-                        d.append([float(xi) for xi in line.split()])
+                        c.append([float(xi) for xi in line.split()])
                     for i in range(nodes_to_read):
-                        data = [d[0][i], d[1][i], d[2][i]]
-                        node = Node(data)
+                        p = [c[0][i], c[1][i], c[2][i]]
+                        node = Node(p)
                         node = self.add_node(node, is_merge_same_nodes)
                         zone.add_node(node)
 
@@ -1017,7 +1017,7 @@ class Grid:
 
                 # Write first 3 data items (X, Y, Z coordinates).
                 for i in range(3):
-                    f.write(zone.get_nodes_data_slice_str(i) + ' \n')
+                    f.write(zone.get_nodes_coord_slice_str(i) + ' \n')
 
                 # Write rest faces data items.
                 for i in range(len(Grid.VariablesStr.split()) - 3):
@@ -1064,7 +1064,7 @@ class Grid:
                 # Write nodes and faces data.
                 file.write('NODES COORDINATES:\n')
                 for i in range(3):
-                    file.write(z.get_nodes_data_slice_str(i) + ' \n')
+                    file.write(z.get_nodes_coord_slice_str(i) + ' \n')
                 file.write('FACES DATA:\n')
                 for i in range(len(Grid.VariablesStr.split()) - 3):
                     file.write(z.get_faces_data_slice_str(i) + ' \n')
@@ -1420,9 +1420,9 @@ class Grid:
         :return: tuple
         """
 
-        xs = [n.Data[0] for n in self.Nodes]
-        ys = [n.Data[1] for n in self.Nodes]
-        zs = [n.Data[2] for n in self.Nodes]
+        xs = [n.P[0] for n in self.Nodes]
+        ys = [n.P[1] for n in self.Nodes]
+        zs = [n.P[2] for n in self.Nodes]
 
         return min(xs), min(ys), min(zs), max(xs), max(ys), max(zs)
 
@@ -1440,7 +1440,7 @@ class Grid:
             zx, zy, zz = mean_nodes_point(z.Nodes)
             vx, vy, vz = k * (zx - gz), k * (zy - gy), k * (zz - gz)
             for n in z.Nodes:
-                d = n.Data
-                n.Data = (d[0] + vx, d[1] + vy, d[2] + vz)
+                p = n.P
+                n.P = (p[0] + vx, p[1] + vy, p[2] + vz)
 
 # ======================================================================================================================
