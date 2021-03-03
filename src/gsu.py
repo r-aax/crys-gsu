@@ -958,7 +958,7 @@ class Grid:
             line = f.readline()
             while line:
 
-                if '# EXPORT MODE:' in line:
+                if '# EXPORT_MODE=' in line:
 
                     # Head of grid.
                     mode_line = line
@@ -966,7 +966,7 @@ class Grid:
                     variables_line = f.readline()
 
                     # Parse all and check.
-                    mode = mode_line.split()[-1]
+                    mode = mode_line.split('=')[-1][:-1]
                     if mode != 'CHECK_POINT':
                         raise Exception('The loaded grid must be in CHECK_POINT mode '
                                         '({0} mode is detected).'.format(mode))
@@ -1068,7 +1068,7 @@ class Grid:
         with open(filename, 'w', newline='\n') as f:
 
             # Store head.
-            f.write('# EXPORT MODE: CHECK_POINT\n')
+            f.write('# EXPORT_MODE=CHECK_POINT\n')
             f.write('TITLE="{0}"\n'.format(self.Name))
             f.write('VARIABLES={0}\n'.format(Grid.VariablesStr))
 
