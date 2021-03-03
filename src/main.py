@@ -3,6 +3,7 @@ Main module.
 """
 
 import gsu
+import split
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -153,12 +154,16 @@ def case_007_load_faces_t_hw_hi(test='bunny'):
 
 
 if __name__ == '__main__':
-    case_001_node_face_data()
-    case_002_decompose()
-    case_003_fixed_zones()
-    case_004_load_store_load()
-    case_005_explode_bunny()
-    case_006_store_faces_t_hw_hi()
-    case_007_load_faces_t_hw_hi()
+    # case_001_node_face_data()
+    # case_002_decompose()
+    # case_003_fixed_zones()
+    # case_004_load_store_load()
+    # case_005_explode_bunny()
+    # case_006_store_faces_t_hw_hi()
+    # case_007_load_faces_t_hw_hi()
+
+    split.split_2_power_n(grid_file='grids/bunny_pos.dat',
+                          n=2,
+                          fixed_zones=['POS1', 'POS2'])
 
 # ----------------------------------------------------------------------------------------------------------------------
