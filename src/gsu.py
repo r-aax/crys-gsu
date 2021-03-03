@@ -1101,17 +1101,19 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def store_mpi(self, filename_base):
+    def store_mpi(self, filename_base, ts, sf='.cry'):
         """
         Store grid for mpi program.
         As many processes count as zones count.
         :param filename_base: base of filename
+        "param ts: timestamp string
+        :param sf: suffixes of files
         """
 
         zam = ZonesAdjacencyMatrix(self.Edges, self.Zones)
 
         for (zi, z) in enumerate(self.Zones):
-            with open('{0}_{1:04d}.txt'.format(filename_base, zi), 'w', newline='\n') as file:
+            with open('{0}_{1:05d}_{2}{3}'.format(filename_base, zi, ts, sf), 'w', newline='\n') as file:
 
                 # Set local ids.
                 z.set_nodes_and_edges_local_ids()

@@ -4,6 +4,7 @@ Split grid for MPI.
 
 import pathlib
 import gsu
+import utils
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -19,15 +20,22 @@ def split_2_power_n(grid_file, n, fixed_zones=[]):
     :return:
     """
 
-    print('split_2_power_n : grid file = {0}'.format(grid_file))
+    pp = pathlib.PurePath(grid_file)
+    # Get characteristics of file:
+    #   bs - base of path
+    #   nm - name without timestamp
+    #   ts - timestamp string
+    #   sf - suffix
+    bs, sf = str(format(pp.parents[0])), pp.suffix
+    nm, ts = utils.get_filename_and_timestamp_pair(pp.stem)
+
+    print('split_2_power_n : grid file = '
+          '{0} (bs {1}, nm {2}, ts {3}, sf {4})'.format(grid_file, bs, nm, ts, sf))
     print('split_2_power_n : total zones count = '
           '{0} (2^{1} + {2} fixed zones)'.format(2 ** n + len(fixed_zones), n, len(fixed_zones)))
 
-    pp = pathlib.PurePath(grid_file)
-    base, suff = '{0}/{1}'.format(pp.parents[0], pp.stem), pp.suffix
-
     # Check file name.
-    if suff != '.dat':
+    if sf != '.dat':
         raise Exception('Wrong name of grid file (extension must be *.dat)')
 
     # Load grid.
@@ -40,7 +48,7 @@ def split_2_power_n(grid_file, n, fixed_zones=[]):
                              fixed_zones=fixed_zones)
 
     # Store for MPI.
-    g.store_mpi(base)
+    g.store_mpi('{0}/{1}'.format(bs, nm), ts)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
