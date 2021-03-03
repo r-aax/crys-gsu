@@ -51,6 +51,8 @@ def split_2_power_n(grid_file, n, fixed_zones=[]):
     # Store for MPI.
     g.store_mpi('{0}/{1}'.format(bs, nm), ts)
 
+    print('split_2_power_n : done')
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
