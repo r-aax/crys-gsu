@@ -4,8 +4,6 @@ GSU main functions.
 
 import random
 import math
-from functools import reduce
-import utils
 
 # ======================================================================================================================
 

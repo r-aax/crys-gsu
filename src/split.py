@@ -5,6 +5,7 @@ Split grid for MPI.
 import pathlib
 import gsu
 import utils
+import sys
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -50,5 +51,15 @@ def split_2_power_n(grid_file, n, fixed_zones=[]):
     # Store for MPI.
     g.store_mpi('{0}/{1}'.format(bs, nm), ts)
 
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+# split.py should be called from shell script in the following manner:
+#     py "grids/bunny.dat" 2 "POS1" "POS2"
+if __name__ == '__main__':
+
+    split_2_power_n(grid_file=sys.argv[1],
+                    n=int(sys.argv[2]),
+                    fixed_zones=sys.argv[3:])
 
 # ----------------------------------------------------------------------------------------------------------------------
