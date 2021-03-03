@@ -1,5 +1,5 @@
 """
-Main module.
+Test module.
 """
 
 import gsu
