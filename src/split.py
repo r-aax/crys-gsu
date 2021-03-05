@@ -30,9 +30,9 @@ def split_2_power_n(grid_file, n, fixed_zones=[]):
     bs, sf = str(format(pp.parents[0])), pp.suffix
     nm, ts = utils.get_filename_and_timestamp_pair(pp.stem)
 
-    print('split_2_power_n : grid file = '
+    print('crys-gsu : split_2_power_n : grid file = '
           '{0} (bs {1}, nm {2}, ts {3}, sf {4})'.format(grid_file, bs, nm, ts, sf))
-    print('split_2_power_n : total zones count = '
+    print('crys-gsu : split_2_power_n : total zones count = '
           '{0} (2^{1} + {2} fixed zones)'.format(2 ** n + len(fixed_zones), n, len(fixed_zones)))
 
     # Check file name.
@@ -51,13 +51,13 @@ def split_2_power_n(grid_file, n, fixed_zones=[]):
     # Store for MPI.
     g.store_mpi('{0}/{1}'.format(bs, nm), ts)
 
-    print('split_2_power_n : done')
+    print('crys-gsu : split_2_power_n : done')
 
 # ----------------------------------------------------------------------------------------------------------------------
 
 
 # split.py should be called from shell script in the following manner:
-#     py "grids/bunny.dat" 2 "POS1" "POS2"
+#     split.py "grids/bunny.dat" 2 "POS1" "POS2"
 if __name__ == '__main__':
 
     split_2_power_n(grid_file=sys.argv[1],

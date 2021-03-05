@@ -3,6 +3,7 @@ Utils functions.
 """
 
 import re
+import pathlib
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -29,7 +30,7 @@ def flatten(ar):
 
 def has_filename_timestamp(s):
     """
-    Check is filename has timestamp.
+    Check if filename has timestamp.
     :param s: name of file without extension
     :return: True - if filename has timestamp, False - otherwise
     """
@@ -56,6 +57,64 @@ def get_filename_and_timestamp_pair(s):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
+def dummy_split_filename(s):
+    """
+    Dummy function of splitting filename into 4 pieces:
+        - stem
+        - mpi id (if it is digit) or None
+        - timestamp (if it is digit) or None
+        - extension
+    :param s: filename
+    :return: tuple if four elements (str, int|None, int|None, str)
+    """
+
+    s, m, t, e = s[:-23], s[-22:-17], s[-16:-4], s[-3:]
+
+    if m.isdigit():
+        md = int(m)
+    else:
+        md = None
+
+    if t.isdigit():
+        td = int(t)
+    else:
+        td = None
+
+    return s, md, td, e
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+def is_filename_correct_crys_cry_file(fn, stem):
+    """
+    Check filename for correct crys cry.
+    :param fn: filename
+    :param stem: stem for check
+    :return: True - if file is correct crys cry filename, False - otherwise
+    """
+
+    s, m, t, e = dummy_split_filename(fn)
+
+    return (s == stem) and (m is not None) and (t is not None) and (e == 'cry')
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+def is_filename_correct_crys_txt_file(fn, stem):
+    """
+    Check filename for correct crys txt.
+    :param fn: filename
+    :param stem: stem for check
+    :return: True - if file is correct crys txt filename, False - otherwise
+    """
+
+    s, m, t, e = dummy_split_filename(fn)
+
+    return (s == stem) and (m is not None) and (t is not None) and (e == 'txt')
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
 
     # flatten
@@ -77,5 +136,12 @@ if __name__ == '__main__':
     # get_filename_and_timestamp_pair
     assert(get_filename_and_timestamp_pair('name') == ('name', '000000000000'))
     assert(get_filename_and_timestamp_pair('name_000111222333') == ('name', '000111222333'))
+
+    # dummy_split_filename
+    assert(dummy_split_filename('bunny_00001_111222333444.cry') == ('bunny', 1, 111222333444, 'cry'))
+
+    # is_filename_correct_crys_{cry/txt}_file
+    assert(is_filename_correct_crys_cry_file('bunny_00004_444333222111.cry', 'bunny'))
+    assert(is_filename_correct_crys_txt_file('bunny_00004_444333222111.txt', 'bunny'))
 
 # ----------------------------------------------------------------------------------------------------------------------
