@@ -1529,7 +1529,8 @@ class Grid:
             f.close()
 
         # Check consistency.
-        if dc != lc:
-            raise Exception('Elements count inconsistency detected: {0} dc != {1} lc.\n'.format(dc, lc))
+        # Consistency check is needed if merging is process with single file.
+        # if dc != lc:
+        #     raise Exception('Elements count inconsistency detected: {0} dc != {1} lc.\n'.format(dc, lc))
 
 # ======================================================================================================================
