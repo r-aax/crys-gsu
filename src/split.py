@@ -6,19 +6,19 @@ import pathlib
 import gsu
 import utils
 import sys
+import os
 
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-def split_2_power_n(grid_file, n, fixed_zones=[]):
+def split(grid_file, cry_dir, split_policy, fixed_zones=[]):
     """
-    Split grid on 2^n pieces (in additional to fixed zones).
-    So if there are m fixed zones, total count of zones is 2^n + m.
-    Splitting is produced by hierarchical method.
+    Split grid.
     :param grid_file: file with grid
-    :param n: power of 2
+    :param cry_dir: directory for *.cry files
+    :param split_policy: policy for grid splitting
     :param fixed_zones: list of fixed zones
-    :return:
+    :return: actual count of zones after splitting
     """
 
     pp = pathlib.PurePath(grid_file)
@@ -30,10 +30,8 @@ def split_2_power_n(grid_file, n, fixed_zones=[]):
     bs, sf = str(format(pp.parents[0])), pp.suffix
     nm, ts = utils.get_filename_and_timestamp_pair(pp.stem)
 
-    print('crys-gsu : split_2_power_n : grid file = '
-          '{0} (bs {1}, nm {2}, ts {3}, sf {4})'.format(grid_file, bs, nm, ts, sf))
-    print('crys-gsu : split_2_power_n : total zones count = '
-          '{0} (2^{1} + {2} fixed zones)'.format(2 ** n + len(fixed_zones), n, len(fixed_zones)))
+    print('crys-gsu-split : grid file='
+          '{0} (bs={1}, nm={2}, ts={3}, sf={4})'.format(grid_file, bs, nm, ts, sf))
 
     # Check file name.
     if sf != '.dat':
@@ -44,24 +42,42 @@ def split_2_power_n(grid_file, n, fixed_zones=[]):
     g.load(grid_file)
 
     # Decompose grid.
-    g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(), gsu.fun_face_cy(), gsu.fun_face_cz()],
-                             levels=n + 1,
-                             fixed_zones=fixed_zones)
+    if split_policy[0] == 'h':
+        # Hierarchical split.
+        n = int(split_policy[1:])
+        target_zones_count = 2 ** n + len(fixed_zones)
+        print('crys-gsu-split : hierarchical, target_zones_count={0} '
+              '(2^{1} + {2})'.format(target_zones_count, n, len(fixed_zones)))
+        g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(), gsu.fun_face_cy(), gsu.fun_face_cz()],
+                                 levels=n + 1,
+                                 fixed_zones=fixed_zones)
+        actual_zones_count = len(g.Zones)
+        print('crys-gsu-split : hierarchical, actual_zones_count={0}'.format(actual_zones_count))
+    else:
+        raise Exception('unknown split policy')
 
     # Store for MPI.
-    g.store_mpi('{0}/{1}'.format(bs, nm), ts)
+    try:
+        os.makedirs(cry_dir)
+    except FileExistsError:
+        # If directory already exists - there is nothing to do.
+        pass
+    g.store_mpi('{0}/{1}'.format(cry_dir, nm), ts)
 
-    print('crys-gsu : split_2_power_n : done')
+    print('crys-gsu-split : done')
+
+    return actual_zones_count
 
 # ----------------------------------------------------------------------------------------------------------------------
 
 
 # split.py should be called from shell script in the following manner:
-#     split.py "grids/bunny.dat" 2 "POS1" "POS2"
+#     split.py grids/bunny.dat grids/cry h2 "POS1" "POS2"
 if __name__ == '__main__':
 
-    split_2_power_n(grid_file=sys.argv[1],
-                    n=int(sys.argv[2]),
-                    fixed_zones=sys.argv[3:])
+    split(grid_file=sys.argv[1],
+          cry_dir=sys.argv[2],
+          split_policy=sys.argv[3],
+          fixed_zones=sys.argv[4:])
 
 # ----------------------------------------------------------------------------------------------------------------------
