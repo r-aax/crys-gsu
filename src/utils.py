@@ -114,6 +114,28 @@ def is_filename_correct_crys_txt_file(fn, stem):
 
 # ----------------------------------------------------------------------------------------------------------------------
 
+def group_txt_files_by_timestamps(fs):
+    """
+    Group list of files [f1, f2, ..., fn] into set { timestamp : list of files }.
+    :param fs: files
+    :return: set of timestamp : list of files.
+    """
+
+    d = dict()
+
+    for f in fs:
+        tm = f[-16:-4]
+        if tm in d:
+            v = d.get(tm)
+            v.append(f)
+            d.update([(tm, v)])
+        else:
+            d.update([(tm, [f])])
+
+    return d
+
+# ----------------------------------------------------------------------------------------------------------------------
+
 
 if __name__ == '__main__':
 
