@@ -75,6 +75,12 @@ def split(grid_file, cry_dir, split_policy, fixed_zones=[]):
 #     split.py grids/bunny.dat grids/cry h2 "POS1" "POS2"
 if __name__ == '__main__':
 
+    if sys.argv[1] == '-h':
+        print('split.py <grid-file> <output-dir> <split-strategy> <ais-zone-name-1> ... <ais-zone-name-n>')
+        print('    <split-strategy>:')
+        print('        h<n> - hierarchical split into 2^n zones in addition to AIS zones')
+        exit(0)
+
     split(grid_file=sys.argv[1],
           cry_dir=sys.argv[2],
           split_policy=sys.argv[3],

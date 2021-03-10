@@ -60,6 +60,10 @@ def merge(grid_file, txt_files_dir, r_files_dir):
 # Script produces out files for crys-remesh tool.
 if __name__ == '__main__':
 
+    if sys.argv[1] == '-h':
+        print('merge.py <grid-file> <txt-files-dir>')
+        exit(0)
+
     merge(grid_file=sys.argv[1],
           txt_files_dir=sys.argv[2],
           r_files_dir=sys.argv[3])
