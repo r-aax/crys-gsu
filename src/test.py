@@ -138,7 +138,7 @@ def case_006_store_faces_t_hw_hi(test='bunny'):
 def case_007_load_faces_t_hw_hi(test='bunny'):
     """
     Load faces T, Hw, Hi from file.
-    Test objective;
+    Test objective:
       Check how we can replace data T, Hw, Hi in grid from file.
     :param test: test name
     """
@@ -162,8 +162,6 @@ if __name__ == '__main__':
     # case_006_store_faces_t_hw_hi()
     # case_007_load_faces_t_hw_hi()
 
-    split.split_2_power_n(grid_file='grids/bunny_pos.dat',
-                          n=2,
-                          fixed_zones=['POS1', 'POS2'])
+    pass
 
 # ----------------------------------------------------------------------------------------------------------------------
