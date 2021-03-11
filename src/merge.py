@@ -61,7 +61,7 @@ def merge(grid_file, txt_files_dir, r_files_dir):
 if __name__ == '__main__':
 
     if sys.argv[1] == '-h':
-        print('merge.py <grid-file> <txt-files-dir>')
+        print('merge.py <grid-file> <txt-files-dir> <r-files-dir>')
         exit(0)
 
     merge(grid_file=sys.argv[1],
