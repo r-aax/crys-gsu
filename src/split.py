@@ -71,14 +71,40 @@ def split(grid_file, cry_dir, split_policy, fixed_zones=[]):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
+def print_help():
+    """
+    Print help.
+    """
+
+    print('[Overview]:')
+    print('split.py script reads *.dat file with surface grid and split it into several *.cry files')
+    print('')
+    print('[Usage]:')
+    print('split.py <grid-file> <output-dir> <split-strategy> <ais-zone-name-1> ... <ais-zone-name-n>')
+    print('    <grid-file> - full name of grid file')
+    print('    <output-dir> - directory name for output files')
+    print('        if there is no such directory, it will be created')
+    print('    <split-strategy>:')
+    print('        h<n> - hierarchical split into 2^n zones in addition to AIS zones')
+    print('    <ais-zone-name-i> - names of AIS zones')
+    print('')
+    print('[Examples]:')
+    print('bunny.dat -> bunny_<mpi_i>_000000000000.cry')
+    print('bunny_000000000100.dat -> bunny_<mpi_i>_000000000100.cry')
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
 # split.py should be called from shell script in the following manner:
 #     split.py grids/bunny.dat grids/cry h2 "POS1" "POS2"
 if __name__ == '__main__':
 
-    if sys.argv[1] == '-h':
-        print('split.py <grid-file> <output-dir> <split-strategy> <ais-zone-name-1> ... <ais-zone-name-n>')
-        print('    <split-strategy>:')
-        print('        h<n> - hierarchical split into 2^n zones in addition to AIS zones')
+    if len(sys.argv) == 1:
+        print_help()
+        exit(0)
+
+    if (sys.argv[1] == '-h') or (sys.argv[1] == '--help'):
+        print_help()
         exit(0)
 
     split(grid_file=sys.argv[1],
