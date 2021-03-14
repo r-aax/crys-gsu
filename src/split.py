@@ -35,7 +35,7 @@ def split(grid_file, cry_dir, split_policy, fixed_zones=[]):
         raise Exception('crys-gsu-split : no such file ({0})'.format(grid_file))
 
     # Start splitting.
-    print('crys-gsu-split : grid_file='
+    print('crys-gsu-split : grid-file='
           '{0} (bs={1}, nm={2}, ts={3}, sf={4})'.format(grid_file, bs, nm, ts, sf))
 
     # Check file name.
@@ -51,13 +51,13 @@ def split(grid_file, cry_dir, split_policy, fixed_zones=[]):
         # Hierarchical split.
         n = int(split_policy[1:])
         target_zones_count = 2 ** n + len(fixed_zones)
-        print('crys-gsu-split : hierarchical, target_zones_count={0} '
+        print('crys-gsu-split : hierarchical, target-zones-count={0} '
               '(2^{1} + {2})'.format(target_zones_count, n, len(fixed_zones)))
         g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(), gsu.fun_face_cy(), gsu.fun_face_cz()],
                                  levels=n + 1,
                                  fixed_zones=fixed_zones)
         actual_zones_count = len(g.Zones)
-        print('crys-gsu-split : hierarchical, actual_zones_count={0}'.format(actual_zones_count))
+        print('crys-gsu-split : hierarchical, actual-zones-count={0}'.format(actual_zones_count))
     else:
         raise Exception('crys-gsu-split : unknown split policy ({0})'.format(split_policy))
 
