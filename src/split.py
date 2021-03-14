@@ -30,12 +30,17 @@ def split(grid_file, cry_dir, split_policy, fixed_zones=[]):
     bs, sf = str(format(pp.parents[0])), pp.suffix
     nm, ts = utils.get_filename_and_timestamp_pair(pp.stem)
 
-    print('crys-gsu-split : grid file='
+    # Check for grid file.
+    if not os.path.isfile(grid_file):
+        raise Exception('crys-gsu-split : no such file ({0})'.format(grid_file))
+
+    # Start splitting.
+    print('crys-gsu-split : grid_file='
           '{0} (bs={1}, nm={2}, ts={3}, sf={4})'.format(grid_file, bs, nm, ts, sf))
 
     # Check file name.
     if sf != '.dat':
-        raise Exception('Wrong name of grid file (extension must be *.dat)')
+        raise Exception('crys-gsu-split : wrong name of grid file (extension must be *.dat)')
 
     # Load grid.
     g = gsu.Grid()
@@ -54,7 +59,7 @@ def split(grid_file, cry_dir, split_policy, fixed_zones=[]):
         actual_zones_count = len(g.Zones)
         print('crys-gsu-split : hierarchical, actual_zones_count={0}'.format(actual_zones_count))
     else:
-        raise Exception('unknown split policy')
+        raise Exception('crys-gsu-split : unknown split policy ({0})'.format(split_policy))
 
     # Store for MPI.
     try:
@@ -106,6 +111,9 @@ if __name__ == '__main__':
     if (sys.argv[1] == '-h') or (sys.argv[1] == '--help'):
         print_help()
         exit(0)
+
+    if len(sys.argv) < 4:
+        raise Exception('crys-gsu-split : not enough arguments')
 
     split(grid_file=sys.argv[1],
           cry_dir=sys.argv[2],
