@@ -687,11 +687,6 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    # Right variables str for load/store grids.
-    VariablesStr = '"X", "Y", "Z", "T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ"'
-
-    # ------------------------------------------------------------------------------------------------------------------
-
     def __init__(self):
         """
         Constructor.
@@ -702,6 +697,10 @@ class Grid:
 
         # Mode.
         self.Mode = ''
+
+        # Variables.
+        self.VariablesStr = ''
+        self.Variables = []
 
         # Set empty sets of nodes, faces, zones.
         self.Nodes = []
@@ -975,9 +974,8 @@ class Grid:
                     if 'VARIABLES=' not in variables_line:
                         raise Exception('Wrong variables line ({0}).'.format(variables_line))
                     variables_str = variables_line.split('=')[-1][:-1]
-                    if variables_str != Grid.VariablesStr:
-                        raise Exception('The loaded variables str must be {0} '
-                                        '({1} variables str is detected)'.format(Grid.VariablesStr, variables_str))
+                    self.VariablesStr = variables_str
+                    self.Variables = self.VariablesStr.replace('"', '').replace(',', '').split()
 
                 elif 'ZONE T=' in line:
 
@@ -1019,7 +1017,7 @@ class Grid:
 
                     # Read data for faces.
                     d = []
-                    for i in range(len(Grid.VariablesStr.split()) - 3):
+                    for i in range(len(self.Variables) - 3):
                         line = f.readline()
                         d.append([float(xi) for xi in line.split()])
                     for i in range(faces_to_read):
@@ -1069,7 +1067,7 @@ class Grid:
             # Store head.
             f.write('# EXPORT_MODE={0}\n'.format(self.Mode))
             f.write('TITLE="{0}"\n'.format(self.Name))
-            f.write('VARIABLES={0}\n'.format(Grid.VariablesStr))
+            f.write('VARIABLES={0}\n'.format(self.VariablesStr))
 
             # Store zones.
             for zone in self.Zones:
@@ -1087,7 +1085,7 @@ class Grid:
                     f.write(zone.get_nodes_coord_slice_str(i) + ' \n')
 
                 # Write rest faces data items.
-                for i in range(len(Grid.VariablesStr.split()) - 3):
+                for i in range(len(self.Variables) - 3):
                     f.write(zone.get_faces_data_slice_str(i) + ' \n')
 
                 # Write connectivity lists.
