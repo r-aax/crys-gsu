@@ -700,6 +700,9 @@ class Grid:
         # Empty name.
         self.Name = ''
 
+        # Mode.
+        self.Mode = ''
+
         # Set empty sets of nodes, faces, zones.
         self.Nodes = []
         self.Edges = []
@@ -965,9 +968,7 @@ class Grid:
 
                     # Parse all and check.
                     mode = mode_line.split('=')[-1][:-1]
-                    if mode != 'CHECK_POINT':
-                        raise Exception('The loaded grid must be in CHECK_POINT mode '
-                                        '({0} mode is detected).'.format(mode))
+                    self.Mode = mode
                     if 'TITLE=' not in title_line:
                         raise Exception('Wrong title line ({0}).'.format(title_line))
                     self.Name = title_line.split('=')[1][1:-2]
@@ -1066,7 +1067,7 @@ class Grid:
         with open(filename, 'w', newline='\n') as f:
 
             # Store head.
-            f.write('# EXPORT_MODE=CHECK_POINT\n')
+            f.write('# EXPORT_MODE={0}\n'.format(self.Mode))
             f.write('TITLE="{0}"\n'.format(self.Name))
             f.write('VARIABLES={0}\n'.format(Grid.VariablesStr))
 
