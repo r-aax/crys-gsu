@@ -701,6 +701,7 @@ class Grid:
         # Variables.
         self.VariablesStr = ''
         self.Variables = []
+        self.FaceVariablesCount = 0
 
         # Set empty sets of nodes, faces, zones.
         self.Nodes = []
@@ -976,6 +977,7 @@ class Grid:
                     variables_str = variables_line.split('=')[-1][:-1]
                     self.VariablesStr = variables_str
                     self.Variables = self.VariablesStr.replace('"', '').replace(',', '').split()
+                    self.FaceVariablesCount = len(self.Variables) - 3
 
                 elif 'ZONE T=' in line:
 
@@ -1017,11 +1019,11 @@ class Grid:
 
                     # Read data for faces.
                     d = []
-                    for i in range(len(self.Variables) - 3):
+                    for i in range(self.FaceVariablesCount):
                         line = f.readline()
                         d.append([float(xi) for xi in line.split()])
                     for i in range(faces_to_read):
-                        face = Face([d[0][i], d[1][i], d[2][i], d[3][i], d[4][i], d[5][i], d[6][i], d[7][i]])
+                        face = Face([d[j][i] for j in range(self.FaceVariablesCount)])
                         self.add_face(face)
                         zone.add_face(face)
 
@@ -1085,7 +1087,7 @@ class Grid:
                     f.write(zone.get_nodes_coord_slice_str(i) + ' \n')
 
                 # Write rest faces data items.
-                for i in range(len(self.Variables) - 3):
+                for i in range(self.FaceVariablesCount):
                     f.write(zone.get_faces_data_slice_str(i) + ' \n')
 
                 # Write connectivity lists.
@@ -1121,7 +1123,7 @@ class Grid:
 
                 # Write head information.
                 file.write('TITLE="{0}"\n'.format(self.Name))
-                file.write('VARIABLES={0}\n'.format(Grid.VariablesStr))
+                file.write('VARIABLES={0}\n'.format(self.VariablesStr))
                 file.write('MPI={0}\n'.format(zi))
                 file.write('NODES={0}\n'.format(nc))
                 file.write('EDGES={0}\n'.format(ec))
@@ -1133,7 +1135,7 @@ class Grid:
                 for i in range(3):
                     file.write(z.get_nodes_coord_slice_str(i) + ' \n')
                 file.write('FACES DATA:\n')
-                for i in range(len(Grid.VariablesStr.split()) - 3):
+                for i in range(self.FaceVariablesCount):
                     file.write(z.get_faces_data_slice_str(i) + ' \n')
 
                 # Write connectivity lists.
