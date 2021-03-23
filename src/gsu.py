@@ -393,6 +393,19 @@ class Zone:
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    def get_faces_global_ids_slice_str(self):
+        """
+        Get string composed from global identifiers of all faces.
+        :return: composed string
+        """
+
+        i_list = [str(face.GloId) for face in self.Faces]
+        i_str = ' '.join(i_list)
+
+        return i_str
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def add_node(self, n):
         """
         Add node to zone.
@@ -1123,7 +1136,10 @@ class Grid:
 
                 # Write head information.
                 file.write('TITLE="{0}"\n'.format(self.Name))
-                file.write('VARIABLES={0}\n'.format(self.VariablesStr))
+                variables = self.Variables[:3] + ['GloId'] + self.Variables[3:]
+                variables = ['"{0}"'.format(x) for x in variables]
+                variables_str = ', '.join(variables)
+                file.write('VARIABLES={0}\n'.format(variables_str))
                 file.write('MPI={0}\n'.format(zi))
                 file.write('NODES={0}\n'.format(nc))
                 file.write('EDGES={0}\n'.format(ec))
@@ -1135,6 +1151,7 @@ class Grid:
                 for i in range(3):
                     file.write(z.get_nodes_coord_slice_str(i) + ' \n')
                 file.write('FACES DATA:\n')
+                file.write(z.get_faces_global_ids_slice_str() + '\n')
                 for i in range(self.FaceVariablesCount):
                     file.write(z.get_faces_data_slice_str(i) + ' \n')
 
