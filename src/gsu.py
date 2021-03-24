@@ -980,15 +980,13 @@ class Grid:
                     variables_line = f.readline()
 
                     # Parse all and check.
-                    mode = mode_line.split('=')[-1][:-1]
-                    self.Mode = mode
+                    self.Mode = mode_line.split('=')[-1][:-1]
                     if 'TITLE=' not in title_line:
                         raise Exception('Wrong title line ({0}).'.format(title_line))
                     self.Name = title_line.split('=')[1][1:-2]
                     if 'VARIABLES=' not in variables_line:
                         raise Exception('Wrong variables line ({0}).'.format(variables_line))
-                    variables_str = variables_line.split('=')[-1][:-1]
-                    self.VariablesStr = variables_str
+                    self.VariablesStr = variables_line.split('=')[-1][:-1]
                     self.Variables = self.VariablesStr.replace('"', '').replace(',', '').split()
                     self.FaceVariablesCount = len(self.Variables) - 3
 
@@ -1013,8 +1011,11 @@ class Grid:
                         raise Exception('Wrong packing line ({0}).'.format(packing_line))
                     if 'ZONETYPE=FETRIANGLE' != zonetype_line[:-1]:
                         raise Exception('Wrong zonetype line ({0}).'.format(zonetype_line))
-                    if 'VARLOCATION=([4-11]=CELLCENTERED)' != varlocation_line[:-1]:
-                        raise Exception('Wrong varlocation line ({0}).'.format(varlocation_line))
+                    right_varlocation_line = 'VARLOCATION=([4-{0}]=CELLCENTERED)'.format(len(self.Variables))
+                    if right_varlocation_line != varlocation_line[:-1]:
+                        raise Exception('Wrong varlocation line ({0}). '
+                                        'Right value is {1}'.format(varlocation_line,
+                                                                    right_varlocation_line))
                     nodes_to_read = int(nodes_line.split('=')[-1][:-1])
                     # print('LOAD: zone {0}, nodes_to_read = {1}'.format(zone_name, nodes_to_read))
                     faces_to_read = int(faces_line.split('=')[-1][:-1])
@@ -1093,7 +1094,7 @@ class Grid:
                 f.write('ELEMENTS={0}\n'.format(len(zone.Faces)))
                 f.write('DATAPACKING=BLOCK\n')
                 f.write('ZONETYPE=FETRIANGLE\n')
-                f.write('VARLOCATION=([4-11]=CELLCENTERED)\n')
+                f.write('VARLOCATION=([4-{0}]=CELLCENTERED)\n'.format(len(self.Variables)))
 
                 # Write first 3 data items (X, Y, Z coordinates).
                 for i in range(3):
