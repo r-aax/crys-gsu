@@ -293,19 +293,17 @@ class Face:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def get_p_t_hw_hi_str(self):
+    def get_glo_id_t_hw_hi_str(self):
         """
-        Get string with center point coordinates, temperature, and water and ice heights.
+        Get string with global identifier, temperature, and water and ice heights.
         :return: string
         """
 
-        p = mean_nodes_point(self.Nodes)
         # Random data for t, hw, hi.
-        a = [p[0], p[1], p[2],
-             self.get_t() + random.random(),
+        a = [self.get_t() + random.random(),
              self.get_hw() + random.random(),
              self.get_hi() + random.random()]
-        i_list = ['{0:.18e}'.format(ai) for ai in a]
+        i_list = [str(self.GloId)] + ['{0:.18e}'.format(ai) for ai in a]
         i_str = ' '.join(i_list)
 
         return i_str
@@ -1513,9 +1511,10 @@ class Grid:
         """
 
         with open(filename, 'w', newline='\n') as f:
+            f.write('VARIABLES="GloId", "T", "Hw", "Hi"\n')
             for face in self.Faces:
                 p = mean_nodes_point(face.Nodes)
-                f.write(face.get_p_t_hw_hi_str() + '\n')
+                f.write(face.get_glo_id_t_hw_hi_str() + '\n')
             f.close()
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -1530,12 +1529,16 @@ class Grid:
             line = f.readline()
 
             while line:
-                ss = line.split()
-                glo_id, t, hw, hi = int(ss[0]), float(ss[1]), float(ss[2]), float(ss[3])
-                face = self.Faces[glo_id]
-                face.set_t(t)
-                face.set_hw(hw)
-                face.set_hi(hi)
+
+                # Ignore lines begin with "VARIABLES=".
+                if 'VARIABLES=' not in line:
+                    ss = line.split()
+                    glo_id, t, hw, hi = int(ss[0]), float(ss[1]), float(ss[2]), float(ss[3])
+                    face = self.Faces[glo_id]
+                    face.set_t(t)
+                    face.set_hw(hw)
+                    face.set_hi(hi)
+
                 line = f.readline()
 
             f.close()
