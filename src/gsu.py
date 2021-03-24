@@ -1526,30 +1526,18 @@ class Grid:
         :param filename: name of file
         """
 
-        # Create dictionary of faces centers.
-        d = {rounded_point(mean_nodes_point(face.Nodes)): i for (i, face) in enumerate(self.Faces)}
-        dc = len(d)
-
-        lc = 0
         with open(filename, 'r') as f:
             line = f.readline()
 
             while line:
-                lc += 1
-                vs = [float(s) for s in line.split()]
-                p = rounded_point((vs[0], vs[1], vs[2]))
-                i = d.pop(p)
-                face = self.Faces[i]
-                face.set_t(vs[3])
-                face.set_hw(vs[4])
-                face.set_hi(vs[5])
+                ss = line.split()
+                glo_id, t, hw, hi = int(ss[0]), float(ss[1]), float(ss[2]), float(ss[3])
+                face = self.Faces[glo_id]
+                face.set_t(t)
+                face.set_hw(hw)
+                face.set_hi(hi)
                 line = f.readline()
 
             f.close()
-
-        # Check consistency.
-        # Consistency check is needed if merging is process with single file.
-        # if dc != lc:
-        #     raise Exception('Elements count inconsistency detected: {0} dc != {1} lc.\n'.format(dc, lc))
 
 # ======================================================================================================================
