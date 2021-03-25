@@ -7,6 +7,7 @@ import os
 import pathlib
 import utils
 import gsu
+import time
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -19,6 +20,8 @@ def merge(grid_file, txt_files_dir, r_files_dir):
     :param txt_files_dir: dir with txt files
     :param r_files_dir: out dir for _r_ files
     """
+
+    start_time = time.time()
 
     pp = pathlib.PurePath(grid_file)
     # Get characteristics of file:
@@ -60,7 +63,8 @@ def merge(grid_file, txt_files_dir, r_files_dir):
             g.load_faces_t_hw_hi(txt_files_dir + '/' + f)
         g.store('{0}/{1}_r_{2}.dat'.format(r_files_dir, nm, tm))
 
-    print('crys-gsu-merge : done ({0} _r_ files generated)'.format(len(gmf.keys())))
+    print('crys-gsu-merge : done ({0} _r_ files generated, '
+          '{1:.3f} seconds spent)'.format(len(gmf.keys()), time.time() - start_time))
 
 # ----------------------------------------------------------------------------------------------------------------------
 
