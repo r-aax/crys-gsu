@@ -60,7 +60,7 @@ def merge(grid_file, txt_files_dir, r_files_dir):
         fs = gmf.get(tm)
         g.load(grid_file)
         for f in fs:
-            g.load_faces_t_hw_hi(txt_files_dir + '/' + f)
+            g.load_faces_calc_data(txt_files_dir + '/' + f)
         g.store('{0}/{1}_r_{2}.dat'.format(r_files_dir, nm, tm))
 
     print('crys-gsu-merge : done ({0} _r_ files generated, '

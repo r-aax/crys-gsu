@@ -1504,9 +1504,9 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def store_faces_t_hw_hi(self, filename):
+    def store_faces_calc_data(self, filename):
         """
-        Store T, Hw, Hi values to file.
+        Store calc values to file.
         :param filename: name of file
         """
 
@@ -1519,9 +1519,13 @@ class Grid:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def load_faces_t_hw_hi(self, filename):
+    def load_faces_calc_data(self, filename):
         """
-        Load T, Hw, Hi data from file and write it to grid.
+        Load calc data from file and write it to grid.
+
+        Warning!
+        This function rewrite VARIABLES list of grid.
+
         :param filename: name of file
         """
 
@@ -1530,14 +1534,31 @@ class Grid:
 
             while line:
 
-                # Ignore lines begin with "VARIABLES=".
-                if 'VARIABLES=' not in line:
+                if 'VARIABLES=' in line:
+
+                    # Set new variables.
+
+                    variables_xyz = '"X", "Y", "Z"'
+                    variables_oth = line.split('=')[-1][9:-1]
+
+                    # We know only basic modes.
+                    if variables_oth == '"T", "Hw", "Hi"':
+                        self.Mode = 'BASIC'
+                    elif variables_oth == '"T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ"':
+                        self.Mode = 'CHECK_POINT'
+                    else:
+                        raise Exception('unknown export mode')
+
+                    self.VariablesStr = variables_xyz + ', ' + variables_oth
+                    self.Variables = self.VariablesStr.replace('"', '').replace(',', '').split()
+                    self.FaceVariablesCount = len(self.Variables) - 3
+
+                else:
                     ss = line.split()
-                    glo_id, t, hw, hi = int(ss[0]), float(ss[1]), float(ss[2]), float(ss[3])
+                    glo_id = int(ss[0])
+                    ss = ss[1:]
                     face = self.Faces[glo_id]
-                    face.set_t(t)
-                    face.set_hw(hw)
-                    face.set_hi(hi)
+                    face.Data = [float(x) for x in ss]
 
                 line = f.readline()
 
