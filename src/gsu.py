@@ -1134,7 +1134,7 @@ class Grid:
                 fc = len(z.Faces)
 
                 # Write head information.
-                file.write('TITLE="{0}"\n'.format(self.Name))
+                file.write('TITLE="{0}"\n'.format(z.Name))
                 variables = self.Variables[:3] + ['GloId'] + self.Variables[3:]
                 variables = ['"{0}"'.format(x) for x in variables]
                 variables_str = ', '.join(variables)
