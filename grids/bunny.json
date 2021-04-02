@@ -1,0 +1,57 @@
+{
+    "__comment__"             : "Time parameters.",
+    "time_finish"             : 180.0,
+    "time_step"               : 0.001,
+    "pulse_time_step"         : 1.0,
+    "export_time_step"        : 1.0,
+
+    "__comment__"             : "Free stream parameters.",
+    "free_stream_t"           : -30.0,
+    "free_stream_u"           : 160.0,
+    "free_stream_lwc"         : 0.001,
+
+    "__comment__"             : "Other physical parameters.",
+    "atmospheric_pressure"    : 79540.125,
+    "recovery_factor"         : 0.89,
+    "skin_emissivity"         : 1.0e-8,
+
+    "__comment__"             : "Ais configuration.",
+    "heating_system" :
+    {
+        "elements" :
+        [
+            {
+                "zone"        : "POS1",
+                "start_time"  : 0.0,
+                "finish_time" : 180.0,
+                "intervals"   :
+                [
+                    {
+                        "length": 10.0,
+                        "q"     : 0.0
+                    },
+                    {
+                        "length": 170.0,
+                        "q"     : 40000.0
+                    }
+                ]
+            },
+            {
+                "zone"        : "POS2",
+                "start_time"  : 0.0,
+                "finish_time" : 180.0,
+                "intervals"   :
+                [
+                    {
+                        "length": 10.0,
+                        "q"     : 0.0
+                    },
+                    {
+                        "length": 170.0,
+                        "q"     : 40000.0
+                    }
+                ]
+            }
+        ]
+    }
+}
