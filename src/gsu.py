@@ -908,6 +908,13 @@ class Grid:
         :param face: face
         """
 
+        # Check if it is enable to link the face with the edge.
+        if len(edge.Faces) == 2:
+            raise Exception('Too many faces linking with this edge ({0} - {1},'
+                            'GloId = {2})'.format(edge.Nodes[0].P,
+                                                  edge.Nodes[1].P,
+                                                  edge.GloId))
+
         edge.Faces.append(face)
         face.Edges.append(edge)
 
@@ -931,7 +938,7 @@ class Grid:
 
     def complex_link_face_node_node_edge(self, face, node_a, node_b):
         """
-        Compllex link nodes with edge, and edge with face.
+        Complex link nodes with edge, and edge with face.
         :param face: face
         :param node_a: the first node
         :param node_b: th second node
