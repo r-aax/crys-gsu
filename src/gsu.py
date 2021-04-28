@@ -1553,6 +1553,11 @@ class Grid:
                         self.Mode = 'BASIC'
                     elif variables_oth == '"T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ"':
                         self.Mode = 'CHECK_POINT'
+                    elif variables_oth == '"MassImpinged", "WaterFilmHeight", "CurrentIceGrowth", ' \
+                                          '"TotalIceGrowth", "CurrentMassEvaporation", "SurfaceTemperature", ' \
+                                          '"FilmVx", "FilmVy", "FilmVz", "FilmV", ' \
+                                          '"IcesolConfective", "EvapHeatFlux", "IceThickness", "HTC"':
+                        self.Mode = 'CIAM'
                     else:
                         raise Exception('unknown export mode')
 
