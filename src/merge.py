@@ -9,7 +9,7 @@ import utils
 import gsu
 import time
 
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 
 def merge(grid_file, txt_files_dir, r_files_dir):
@@ -37,7 +37,8 @@ def merge(grid_file, txt_files_dir, r_files_dir):
         raise Exception('crys-gsu-merge : no such file ({0})'.format(grid_file))
 
     print('crys-gsu-merge : grid-file={0} (bs={1}, nm={2}, ts={3}, sf={4}), '
-          'txt_files_dir={5}, r_files_dir={6}'.format(grid_file, bs, nm, ts, sf, txt_files_dir, r_files_dir))
+          'txt_files_dir={5}, r_files_dir={6}'.format(grid_file, bs, nm, ts, sf,
+                                                      txt_files_dir, r_files_dir))
 
     all_files = os.listdir(txt_files_dir)
 
@@ -66,7 +67,7 @@ def merge(grid_file, txt_files_dir, r_files_dir):
     print('crys-gsu-merge : done ({0} _r_ files generated, '
           '{1:.3f} seconds spent)'.format(len(gmf.keys()), time.time() - start_time))
 
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 
 def print_help():
@@ -85,11 +86,14 @@ def print_help():
     print('    <r-files-dir> - name of directory with output *_r_* files')
     print('')
     print('[Examples]:')
-    print('            [bunny_00000_000000000100.txt bunny_00001_000000000100.txt] -> [bunny_r_000000000100.dat]')
-    print('bunny.dat + [bunny_00000_000000000200.txt bunny_00001_000000000200.txt] -> [bunny_r_000000000200.dat]')
-    print('            [bunny_00000_000000000300.txt bunny_00001_000000000300.txt] -> [bunny_r_000000000300.dat]')
+    print('            [bunny_00000_000000000100.txt bunny_00001_000000000100.txt] '
+          '-> [bunny_r_000000000100.dat]')
+    print('bunny.dat + [bunny_00000_000000000200.txt bunny_00001_000000000200.txt] '
+          '-> [bunny_r_000000000200.dat]')
+    print('            [bunny_00000_000000000300.txt bunny_00001_000000000300.txt] '
+          '-> [bunny_r_000000000300.dat]')
 
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 
 # Example of running merge.py script:
@@ -112,4 +116,4 @@ if __name__ == '__main__':
           txt_files_dir=sys.argv[2],
           r_files_dir=sys.argv[3])
 
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
