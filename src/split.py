@@ -7,16 +7,17 @@ import gsu
 import utils
 import sys
 import os
+import json
 
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 
-def split(grid_file, cry_dir, split_policy, fixed_zones=[]):
+def split(grid_file, cry_dir, split_strategy, fixed_zones=[]):
     """
     Split grid.
     :param grid_file: file with grid
     :param cry_dir: directory for *.cry files
-    :param split_policy: policy for grid splitting
+    :param split_strategy: strategy for grid splitting
     :param fixed_zones: list of fixed zones
     :return: actual count of zones after splitting
     """
@@ -47,22 +48,24 @@ def split(grid_file, cry_dir, split_policy, fixed_zones=[]):
     g.load(grid_file)
 
     # Decompose grid.
-    if split_policy[0] == 'h':
+    if split_strategy[0] == 'h':
         # Hierarchical split.
-        n = int(split_policy[1:])
+        n = int(split_strategy[1:])
         target_zones_count = 2 ** n + len(fixed_zones)
         print('crys-gsu-split : hierarchical, target-zones-count={0} '
               '(2^{1} + {2}) // {3}'.format(target_zones_count,
                                             n,
                                             len(fixed_zones),
                                             fixed_zones))
-        g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(), gsu.fun_face_cy(), gsu.fun_face_cz()],
+        g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(),
+                                                     gsu.fun_face_cy(),
+                                                     gsu.fun_face_cz()],
                                  levels=n + 1,
                                  fixed_zones=fixed_zones)
         actual_zones_count = len(g.Zones)
         print('crys-gsu-split : hierarchical, actual-zones-count={0}'.format(actual_zones_count))
     else:
-        raise Exception('crys-gsu-split : unknown split policy ({0})'.format(split_policy))
+        raise Exception('crys-gsu-split : unknown split strategy ({0})'.format(split_strategy))
 
     # Store for MPI.
     try:
@@ -76,7 +79,7 @@ def split(grid_file, cry_dir, split_policy, fixed_zones=[]):
 
     return actual_zones_count
 
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 
 def print_help():
@@ -85,42 +88,68 @@ def print_help():
     """
 
     print('[Overview]:')
-    print('split.py script reads *.dat file with surface grid and split it into several *.cry files')
+    print('split.py script reads *.dat file with surface grid and '
+          'splits it into several *.cry files.')
+    print('All additional parameters are contained in *.json file.')
     print('')
     print('[Usage]:')
-    print('split.py <grid-file> <output-dir> <split-strategy> <ais-zone-name-1> ... <ais-zone-name-n>')
+    print('split.py <grid-file> <output-dir> <json-file>')
     print('    <grid-file> - full name of grid file')
+    print('    <json-file> - json file with parameters')
     print('    <output-dir> - directory name for output files')
     print('        if there is no such directory, it will be created')
-    print('    <split-strategy>:')
-    print('        h<n> - hierarchical split into 2^n zones in addition to AIS zones')
-    print('    <json> - json file from which names of ones should be extracted')
     print('')
     print('[Examples]:')
     print('bunny.dat -> bunny_<mpi_i>_000000000000.cry')
     print('bunny_000000000100.dat -> bunny_<mpi_i>_000000000100.cry')
 
+# --------------------------------------------------------------------------------------------------
 
-# ----------------------------------------------------------------------------------------------------------------------
+
+def extract_strategy_from_json(filename):
+    """
+    Extract strategy from json file.
+    :param filename: file name
+    :return: strategy
+    """
+
+    if not os.path.isfile(filename):
+        raise Exception('crys-gsu-split : no such file ({0})'.format(filename))
+
+    with open(filename, 'r') as jf:
+        data = json.load(jf)
+        jf.close()
+
+    try:
+        return data['split_strategy']
+    except KeyError:
+        return 'h0'
+
+
+# --------------------------------------------------------------------------------------------------
+
 
 def extract_fixed_zones_from_json(filename):
     """
     Extract fixed zones from json.
     :param filename: file name
-    :return:
+    :return: list of zones' names
     """
 
-    f = open(filename, 'r')
-    ll = f.readlines()
-    f.close()
+    if not os.path.isfile(filename):
+        raise Exception('crys-gsu-split : no such file ({0})'.format(filename))
 
-    # Find zones for AIS.
-    ll = [s.split(':')[1] for s in ll if '"zone"' in s]
-    ll = [s[s.index('"') + 1: s.rindex('"')] for s in ll]
+    with open(filename, 'r') as jf:
+        data = json.load(jf)
+        jf.close()
 
-    return ll
+    try:
+        els = data['heating_system']['elements']
+        return [e['zone'] for e in els]
+    except KeyError:
+        return []
 
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 
 # split.py should be called from shell script in the following manner:
@@ -137,18 +166,18 @@ if __name__ == '__main__':
         print_help()
         exit(0)
 
-    if c < 4:
-        raise Exception('crys-gsu-split : not enough arguments')
-    elif c == 4:
-        fixed_zones = []
-    elif c == 5:
-        fixed_zones = extract_fixed_zones_from_json(sys.argv[4])
-    else:
-        raise Exception('crys-gsu-split : too many arguments')
+    if c != 4:
+        print('crys-gsu-split : script receives exactly 3 parameters')
+        print_help()
+        exit(0)
+
+    # Extract parameters.
+    strategy = extract_strategy_from_json(sys.argv[2])
+    fixed_zones = extract_fixed_zones_from_json(sys.argv[2])
 
     split(grid_file=sys.argv[1],
-          cry_dir=sys.argv[2],
-          split_policy=sys.argv[3],
+          cry_dir=sys.argv[3],
+          split_strategy=strategy,
           fixed_zones=fixed_zones)
 
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
