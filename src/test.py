@@ -136,7 +136,7 @@ def case_006_store_faces_t_hw_hi(test='bunny'):
     print('case_006_store_faces_t_hw_hi({0}):'.format(test))
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
-    g.store_faces_t_hw_hi('grids/{0}.txt'.format(test))
+    g.store_faces_calc_data('grids/{0}.txt'.format(test))
 
 # --------------------------------------------------------------------------------------------------
 
@@ -152,8 +152,8 @@ def case_007_load_faces_t_hw_hi(test='bunny'):
     print('case_007_load_faces_t_hw_hi({0}):'.format(test))
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
-    g.store_faces_t_hw_hi('grids/{0}.txt'.format(test))
-    g.load_faces_t_hw_hi('grids/{0}.txt'.format(test))
+    g.store_faces_calc_data('grids/{0}.txt'.format(test))
+    g.load_faces_calc_data('grids/{0}.txt'.format(test))
     g.store('grids/{0}_data.dat'.format(test))
 
 # --------------------------------------------------------------------------------------------------
