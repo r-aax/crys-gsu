@@ -56,5 +56,5 @@
     },
 
     "__comment__"             : "GSU-split parameters.",
-    "split_strategy"          : "h0"
+    "split_strategy"          : "n8"
 }

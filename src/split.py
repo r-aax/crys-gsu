@@ -64,6 +64,19 @@ def split(grid_file, cry_dir, split_strategy, fixed_zones=[]):
                                  fixed_zones=fixed_zones)
         actual_zones_count = len(g.Zones)
         print('crys-gsu-split : hierarchical, actual-zones-count={0}'.format(actual_zones_count))
+    elif split_strategy[0] == 'n':
+        # Split with exact n domains defined.
+        n = int(split_strategy[1:])
+        fz = len(fixed_zones)
+        if n == 0:
+            raise Exception('crys-gsu-split : zero zones count to split')
+        if fz >= n:
+            raise Exception('crys-gsu-split : fixed zones count is more or equal '
+                            'than target zones count ({0} zones, {1} fixed zones)'.format(n, fz))
+        print('crys-gsu-split : {0} zones ({1} fixed zones) : begin'.format(n, fz))
+        g.decompose_pressure(count=n - fz, fz_names=fixed_zones)
+        actual_zones_count = len(g.Zones)
+        print('crys-gsu-split : {0} zones : done'.format(actual_zones_count))
     else:
         raise Exception('crys-gsu-split : unknown split strategy ({0})'.format(split_strategy))
 

@@ -778,6 +778,16 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
+    def faces_count_in_fixed_zones(self):
+        """
+        Count of faces in fixed zones.
+        :return: faces count in fixed zones
+        """
+
+        return sum([z.faces_count() for z in self.Zones if z.IsFixed])
+
+    # ----------------------------------------------------------------------------------------------
+
     def random_face(self):
         """
         Get random face.
@@ -1626,19 +1636,24 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
-    def decompose_pressure(self, count=32, new_name=None):
+    def decompose_pressure(self, count=32, new_name=None, fz_names=[]):
         """
         Create distribution based on pressure algorithm.
         :param count: zones count
         :param new_name: grid new name
+        :param fz_names: list of fixed zones names
         """
+
+        # Mark fixed zones.
+        for z in self.Zones:
+            z.IsFixed = z.Name in fz_names
 
         if new_name is not None:
             self.Name = new_name
 
-        # Delete all zones.
-        # Create 'count' zones.
-        self.Zones.clear()
+        # Keep fixed zones and create additional.
+        self.Zones = [z for z in self.Zones if z.IsFixed]
+        fz_count = len(self.Zones)
         self.unlink_faces_from_zones()
         for i in range(count):
             zone = Zone('pressure ' + str(i))
@@ -1648,31 +1663,19 @@ class Grid:
         # Distribute faces between zones.
         #
 
-        fc = self.faces_count()
+        fc = self.faces_count() - self.faces_count_in_fixed_zones()
         zone_sizes = [fc // count + (fc % count > i) for i in range(count)]
 
         # Put right number of faces into each zone.
         start = self.Faces[0]
-        for i, z in enumerate(self.Zones):
+        for i in range(count):
+            z = self.Zones[i + fz_count]
             zone_size = zone_sizes[i]
-            path = self.bfs_path(start, lambda f: f.Zone is None)
+            path = self.bfs_path(start, lambda f: (f.Zone is None))
             for fi in range(zone_size):
                 z.add_face(path[fi])
             if len(path) > zone_size:
                 start = path[zone_size]
-
-        # Finalization.
-        # Empty zones are forbidden.
-        # If there are some faces without zone - add them to zone 0.
-        for z in self.Zones:
-            if z.faces_count() == 0:
-                f = self.random_face()
-                while f.Zone is None:
-                    f = self.random_face()
-                z.add_face(f)
-        for f in self.Faces:
-            if f.Zone is None:
-                self.Zones[0].add_face(f)
 
         # Link nodes.
         self.link_nodes_and_edges_to_zones()

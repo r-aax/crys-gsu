@@ -171,7 +171,7 @@ def case_007_load_faces_t_hw_hi(test='bunny'):
 # --------------------------------------------------------------------------------------------------
 
 
-def case_008_decompose_pressure(test='bunny'):
+def case_008_decompose_pressure(test='bunny_pos'):
     """
     Load grid and decompose with pressure algorithm.
     Test objective:
@@ -182,7 +182,7 @@ def case_008_decompose_pressure(test='bunny'):
     print('case_008_decompose_pressure({0}):'.format(test))
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
-    g.decompose_pressure(new_name=test + ' pressure')
+    g.decompose_pressure(new_name=test + ' pressure', fz_names=['POS1', 'POS2'])
     g.print_info(True, True, True)
     g.store('grids/{0}_pressure.dat'.format(test))
 
