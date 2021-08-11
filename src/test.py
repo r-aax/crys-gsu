@@ -189,15 +189,38 @@ def case_008_decompose_pressure(test='bunny'):
 # --------------------------------------------------------------------------------------------------
 
 
+def case_009_store_mpi(test='bunny'):
+    """
+    Load grid, decompose it and store in MPI.
+    Test objective:
+      Check we can store data for multiprocessing mode calculations.
+    :param test: test name
+    """
+
+    print('case_009_store_mpi({0}):'.format(test))
+    g = gsu.Grid()
+    g.load('grids/{0}.dat'.format(test))
+    g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(),
+                                                 gsu.fun_face_cy(),
+                                                 gsu.fun_face_cz()],
+                             levels=3,
+                             new_name=test + ' hierarchical')
+    g.store_mpi('grids/mpi', '2021-08-11-12-00-00')
+
+
+# --------------------------------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
-    # case_001_node_face_data()
-    # case_002_decompose()
-    # case_003_fixed_zones()
-    # case_004_load_store_load()
-    # case_005_explode_bunny()
-    # case_006_store_faces_t_hw_hi()
-    # case_007_load_faces_t_hw_hi()
+    case_001_node_face_data()
+    case_002_decompose()
+    case_003_fixed_zones()
+    case_004_load_store_load()
+    case_005_explode_bunny()
+    case_006_store_faces_t_hw_hi()
+    case_007_load_faces_t_hw_hi()
     case_008_decompose_pressure()
+    case_009_store_mpi()
 
     pass
 

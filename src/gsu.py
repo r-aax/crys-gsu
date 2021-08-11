@@ -1076,12 +1076,13 @@ class Grid:
 
         zam = ZonesAdjacencyMatrix(self.Edges, self.Zones)
 
+        # Local identifiers.
+        loc_nodes_ids = [-1] * len(self.Nodes)
+        loc_edges_ids = [-1] * len(self.Edges)
+
         for (zi, z) in enumerate(self.Zones):
             with open('{0}_{1:05d}_{2}{3}'.format(filename_base, zi, ts, sf),
                       'w', newline='\n') as file:
-
-                # Set local ids.
-                z.set_nodes_and_edges_local_ids()
 
                 nc = len(z.Nodes)
                 ec = len(z.Edges)
@@ -1109,15 +1110,19 @@ class Grid:
                     file.write(z.get_faces_data_slice_str(i) + ' \n')
 
                 # Write connectivity lists.
+                for i, node in enumerate(z.Nodes):
+                    loc_nodes_ids[node.GloId] = i
+                for i, edge in enumerate(z.Edges):
+                    loc_edges_ids[edge.GloId] = i
                 file.write('FACE-NODE CONNECTIVITY LIST:\n')
                 for f in z.Faces:
-                    file.write(' '.join([str(n.LocId) for n in f.Nodes]) + '\n')
+                    file.write(' '.join([str(loc_nodes_ids[n.GloId]) for n in f.Nodes]) + '\n')
                 file.write('FACE-EDGE CONNECTIVITY LIST:\n')
                 for f in z.Faces:
-                    file.write(' '.join([str(e.LocId) for e in f.Edges]) + '\n')
+                    file.write(' '.join([str(loc_edges_ids[e.GloId]) for e in f.Edges]) + '\n')
                 file.write('EDGE-NODE CONNECTIVITY LIST:\n')
                 for e in z.Edges:
-                    file.write(' '.join([str(n.LocId) for n in e.Nodes]) + '\n')
+                    file.write(' '.join([str(loc_nodes_ids[n.GloId]) for n in e.Nodes]) + '\n')
 
                 # Write MPI-borders.
                 file.write('MPI-BORDERS={0}\n'.format(zam.zone_cross_borders_count(zi)))
@@ -1130,11 +1135,8 @@ class Grid:
                         file.write('[{0}] '.format(li))
                         for e in z.Edges:
                             if e.is_connect_zones(z, lz):
-                                file.write('{0} '.format(e.LocId))
+                                file.write('{0} '.format(loc_edges_ids[e.GloId]))
                         file.write('\n')
-
-                # Reset local ids.
-                z.reset_nodes_and_edges_local_ids()
 
                 file.close()
 
