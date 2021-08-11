@@ -5,6 +5,7 @@ GSU main functions.
 import random
 import math
 
+
 # ==================================================================================================
 
 
@@ -17,6 +18,7 @@ def rounded_point(p, digits=10):
     """
 
     return round(p[0], digits), round(p[1], digits), round(p[2], digits)
+
 
 # --------------------------------------------------------------------------------------------------
 
@@ -34,6 +36,7 @@ def mean_nodes_point(ns):
 
     return sum(xs) / len(xs), sum(ys) / len(ys), sum(zs) / len(zs)
 
+
 # --------------------------------------------------------------------------------------------------
 
 
@@ -44,6 +47,7 @@ def fun_face_cx():
     """
 
     return lambda f: mean_nodes_point(f.Nodes)[0]
+
 
 # --------------------------------------------------------------------------------------------------
 
@@ -56,6 +60,7 @@ def fun_face_cy():
 
     return lambda f: mean_nodes_point(f.Nodes)[1]
 
+
 # --------------------------------------------------------------------------------------------------
 
 
@@ -66,6 +71,7 @@ def fun_face_cz():
     """
 
     return lambda f: mean_nodes_point(f.Nodes)[2]
+
 
 # ==================================================================================================
 
@@ -83,11 +89,8 @@ class Node:
         :param p: node point (tuple of coordinates)
         """
 
-        # Identifiers:
-        # Global - in grid numeration.
-        # Local - in zone numeration.
+        # Global identifier (in grid numeration).
         self.GloId = -1
-        self.LocId = -1
 
         self.P = p
 
@@ -124,11 +127,8 @@ class Edge:
         Constructor.
         """
 
-        # Identifiers:
-        # Global - in grid numeration.
-        # Local - in zone numeration.
+        # Global identifier (in grid numeration).
         self.GloId = -1
-        self.LocId = -1
 
         # Links to nodes and faces.
         self.Nodes = []
@@ -445,66 +445,6 @@ class Zone:
         self.Faces.append(f)
 
         return f
-
-    # ----------------------------------------------------------------------------------------------
-
-    def set_nodes_local_ids(self):
-        """
-        Set nodes local identifiers.
-        """
-
-        for (i, n) in enumerate(self.Nodes):
-            n.LocId = i
-
-    # ----------------------------------------------------------------------------------------------
-
-    def reset_nodes_local_ids(self):
-        """
-        Reset nodes local identifiers.
-        """
-
-        for n in self.Nodes:
-            n.LocId = -1
-
-    # ----------------------------------------------------------------------------------------------
-
-    def set_edges_local_ids(self):
-        """
-        Set edges local identifiers.
-        """
-
-        for (i, e) in enumerate(self.Edges):
-            e.LocId = i
-
-    # ----------------------------------------------------------------------------------------------
-
-    def reset_edges_local_ids(self):
-        """
-        Reset edges local identifiers.
-        """
-
-        for e in self.Edges:
-            e.LocId = -1
-
-    # ----------------------------------------------------------------------------------------------
-
-    def set_nodes_and_edges_local_ids(self):
-        """
-        Set nodes and edges local ids.
-        """
-
-        self.set_nodes_local_ids()
-        self.set_edges_local_ids()
-
-    # ----------------------------------------------------------------------------------------------
-
-    def reset_nodes_and_edges_local_ids(self):
-        """
-        Reset nodes and edges local ids.
-        """
-
-        self.reset_nodes_local_ids()
-        self.reset_edges_local_ids()
 
 # ==================================================================================================
 
@@ -1093,6 +1033,10 @@ class Grid:
             f.write('TITLE="{0}"\n'.format(self.Name))
             f.write('VARIABLES={0}\n'.format(self.VariablesStr))
 
+            # Additional structure for calculating local identifiers
+            # of the nodes for connectivity lists storing.
+            loc_ids = [-1] * len(self.Nodes)
+
             # Store zones.
             for zone in self.Zones:
 
@@ -1113,10 +1057,10 @@ class Grid:
                     f.write(zone.get_faces_data_slice_str(i) + ' \n')
 
                 # Write connectivity lists.
-                zone.set_nodes_local_ids()
+                for i, node in enumerate(zone.Nodes):
+                    loc_ids[node.GloId] = i
                 for face in zone.Faces:
-                    f.write(' '.join([str(n.LocId + 1) for n in face.Nodes]) + '\n')
-                zone.reset_nodes_local_ids()
+                    f.write(' '.join([str(loc_ids[n.GloId] + 1) for n in face.Nodes]) + '\n')
 
             f.close()
 
