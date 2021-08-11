@@ -136,7 +136,7 @@ def extract_strategy_from_json(filename):
     try:
         return data['split_strategy']
     except KeyError:
-        return 'h0'
+        return 'n1'
 
 
 # --------------------------------------------------------------------------------------------------
