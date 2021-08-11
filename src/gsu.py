@@ -1015,6 +1015,80 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
+    def bfs_path_connectivity_component(self, start, pred):
+        """
+        Connectivity component of BFS path from given face.
+        :param start: start face
+        :param pred: predicate for faces
+        :return: path for one connectivity component (list of faces)
+        """
+
+        # This function uses bfs_mark field for faces.
+
+        if start.bfs_mark or not pred(start):
+            # Start face does not satisfy conditions.
+            return []
+
+        # Initiate path.
+        start.bfs_mark = True
+        p = [start]
+        i = 0
+
+        # Walk.
+        while i < len(p):
+            f = p[i]
+            for e in f.Edges:
+                if not e.is_border():
+                    f2 = f.get_neighbour(e)
+                    if not f2.bfs_mark and pred(f2):
+                        f2.bfs_mark = True
+                        p.append(f2)
+            i = i + 1
+
+        return p
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_no_bfs_mark_face(self, pred):
+        """
+        Get first no bfs mark face.
+        :param pred: predicate for face
+        :return: first face with false bfs mark
+        """
+
+        for f in self.Faces:
+            if not f.bfs_mark and pred(f):
+                return f
+
+        return None
+
+    # ----------------------------------------------------------------------------------------------
+
+    def bfs_path(self, start, pred):
+        """
+        Get BFS path.
+        :param start: start face
+        :param pred: predicate for faces
+        :return: path for whole grid (list of faces)
+        """
+
+        # This function uses bfs_mark field for faces.
+
+        # Reset all faces bfs marks.
+        for f in self.Faces:
+            f.bfs_mark = False
+
+        p = []
+
+        # Walk while we can.
+        while True:
+            p = p + self.bfs_path_connectivity_component(start, pred)
+            start = self.get_no_bfs_mark_face(pred)
+            if start is None:
+                return p
+
+    # ----------------------------------------------------------------------------------------------
+
     def load(self, filename,
              is_merge_same_nodes=True):
         """
@@ -1552,7 +1626,7 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
-    def decompose_pressure(self, count=8, new_name=None):
+    def decompose_pressure(self, count=32, new_name=None):
         """
         Create distribution based on pressure algorithm.
         :param count: zones count
@@ -1574,26 +1648,28 @@ class Grid:
         # Distribute faces between zones.
         #
 
-        # Step 1.
-        # Each zone gets random face as initial point of domain grow.
-        for z in self.Zones:
-            f = self.random_face()
-            while f.Zone is not None:
-                f = self.random_face()
-            z.add_face(f)
+        fc = self.faces_count()
+        zone_sizes = [fc // count + (fc % count > i) for i in range(count)]
 
-        # Step 2.
-        # Grow zones/domains from initial points.
-        faces_before_step = self.faces_count_in_zones()
-        self.each_zone_capture_nearest_face()
-        faces_after_step = self.faces_count_in_zones()
-        while faces_after_step > faces_before_step:
-            faces_before_step = faces_after_step
-            self.each_zone_capture_nearest_face()
-            faces_after_step = self.faces_count_in_zones()
+        # Put right number of faces into each zone.
+        start = self.Faces[0]
+        for i, z in enumerate(self.Zones):
+            zone_size = zone_sizes[i]
+            path = self.bfs_path(start, lambda f: f.Zone is None)
+            for fi in range(zone_size):
+                z.add_face(path[fi])
+            if len(path) > zone_size:
+                start = path[zone_size]
 
-        # Step last.
+        # Finalization.
+        # Empty zones are forbidden.
         # If there are some faces without zone - add them to zone 0.
+        for z in self.Zones:
+            if z.faces_count() == 0:
+                f = self.random_face()
+                while f.Zone is None:
+                    f = self.random_face()
+                z.add_face(f)
         for f in self.Faces:
             if f.Zone is None:
                 self.Zones[0].add_face(f)

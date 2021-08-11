@@ -5,6 +5,7 @@ Utils functions.
 import re
 import pathlib
 
+
 # --------------------------------------------------------------------------------------------------
 
 
@@ -114,6 +115,7 @@ def is_filename_correct_crys_txt_file(fn, stem):
 
 # --------------------------------------------------------------------------------------------------
 
+
 def group_txt_files_by_timestamps(fs):
     """
     Group list of files [f1, f2, ..., fn] into set { timestamp : list of files }.
@@ -135,7 +137,6 @@ def group_txt_files_by_timestamps(fs):
     return d
 
 # --------------------------------------------------------------------------------------------------
-
 
 if __name__ == '__main__':
 
