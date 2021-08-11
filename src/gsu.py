@@ -72,7 +72,6 @@ def fun_face_cz():
 
     return lambda f: mean_nodes_point(f.Nodes)[2]
 
-
 # ==================================================================================================
 
 
@@ -737,7 +736,7 @@ class Grid:
             for node in self.Nodes:
                 if node.is_near(n):
                     return node
-            raise Exception('We expect to find node '\
+            raise Exception('We expect to find node ' \
                             'with coordinates {0} in the grid'.format(n.RoundedCoords))
 
         return None
@@ -957,7 +956,7 @@ class Grid:
                         raise Exception('Wrong packing line ({0}).'.format(packing_line))
                     if 'ZONETYPE=FETRIANGLE' != zonetype_line[:-1]:
                         raise Exception('Wrong zonetype line ({0}).'.format(zonetype_line))
-                    right_varlocation_line = 'VARLOCATION='\
+                    right_varlocation_line = 'VARLOCATION=' \
                                              '([4-{0}]=CELLCENTERED)'.format(len(self.Variables))
                     if right_varlocation_line != varlocation_line[:-1]:
                         raise Exception('Wrong varlocation line ({0}). '
@@ -994,7 +993,7 @@ class Grid:
                         face = zone.Faces[i]
                         nodes = [zone.Nodes[int(ss) - 1] for ss in line.split()]
                         if len(nodes) != 3:
-                            raise Exception('Wrong count of '\
+                            raise Exception('Wrong count of ' \
                                             'face linked nodes ({0}).'.format(len(nodes)))
                         Grid.link_node_face(nodes[0], face)
                         Grid.link_node_face(nodes[1], face)
@@ -1343,7 +1342,7 @@ class Grid:
 
         # Do not split zone if it is impossible.
         if len(zone.Faces) < 2:
-            print('Warning : not enough faces to split zone {0} '\
+            print('Warning : not enough faces to split zone {0} ' \
                   '({1} faces).'.format(zone.Name, len(zone.Faces)))
             # Replace to the end.
             self.Zones.remove(zone)
@@ -1445,9 +1444,14 @@ class Grid:
             zone = Zone('pressure ' + str(i))
             self.Zones.append(zone)
 
+        #
         # Distribute faces between zones.
+        #
+
+        # Step 1.
+        # Zone 0 - superzone - contains all faces.
         for face in self.Faces:
-            self.Zones[random.randint(0, count - 1)].add_face(face)
+            self.Zones[0].add_face(face)
 
         # Link nodes.
         self.link_nodes_and_edges_to_zones()
@@ -1529,11 +1533,11 @@ class Grid:
                         self.Mode = 'BASIC'
                     elif variables_oth == '"T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ"':
                         self.Mode = 'CHECK_POINT'
-                    elif variables_oth == '"MassImpinged", "WaterFilmHeight", "CurrentIceGrowth", '\
-                                          '"TotalIceGrowth", "CurrentMassEvaporation", '\
-                                          '"SurfaceTemperature", '\
-                                          '"FilmVx", "FilmVy", "FilmVz", "FilmV", '\
-                                          '"IcesolConvectiveFlux", '\
+                    elif variables_oth == '"MassImpinged", "WaterFilmHeight", "CurrentIceGrowth", ' \
+                                          '"TotalIceGrowth", "CurrentMassEvaporation", ' \
+                                          '"SurfaceTemperature", ' \
+                                          '"FilmVx", "FilmVy", "FilmVz", "FilmV", ' \
+                                          '"IcesolConvectiveFlux", ' \
                                           '"EvapHeatFlux", "IceThickness", "HTC"':
                         self.Mode = 'CIAM'
                     else:
