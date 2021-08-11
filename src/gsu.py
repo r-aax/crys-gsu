@@ -215,11 +215,8 @@ class Face:
         :param data: face data (tuple)
         """
 
-        # Identifiers:
-        # Global - in grid numeration.
-        # Local - in zone numeration.
+        # Global identifier (in grid numeration).
         self.GloId = -1
-        self.LocId = -1
 
         self.Data = data
 
@@ -438,8 +435,7 @@ class Zone:
         :return: added face
         """
 
-        # Just add and correct local id.
-        f.LocId = len(self.Faces)
+        # Just add and set link to the zone.
         f.Zone = self
         self.Faces.append(f)
 
