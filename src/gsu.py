@@ -1427,6 +1427,34 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
+    def decompose_pressure(self, count=8, new_name=None):
+        """
+        Create distribution based on pressure algorithm.
+        :param count: zones count
+        :param new_name: grid new name
+        """
+
+        if new_name is not None:
+            self.Name = new_name
+
+        # Delete all zones.
+        # Create 'count' zones.
+        self.Zones.clear()
+        self.unlink_faces_from_zones()
+        for i in range(count):
+            zone = Zone('pressure ' + str(i))
+            self.Zones.append(zone)
+
+        # Distribute faces between zones.
+        for face in self.Faces:
+            self.Zones[random.randint(0, count - 1)].add_face(face)
+
+        # Link nodes.
+        self.link_nodes_and_edges_to_zones()
+        self.check_faces_are_linked_to_zones()
+
+    # ----------------------------------------------------------------------------------------------
+
     def box(self):
         """
         Get box around grid (tuple with 6 values - XYZ of the left down back point
