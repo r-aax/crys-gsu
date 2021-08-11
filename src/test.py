@@ -5,6 +5,7 @@ Test module.
 import gsu
 import split
 
+
 # --------------------------------------------------------------------------------------------------
 
 
@@ -22,6 +23,7 @@ def case_001_node_face_data(test='wing_1_mz'):
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
     g.store('grids/{0}_original.dat'.format(test))
+
 
 # --------------------------------------------------------------------------------------------------
 
@@ -56,6 +58,11 @@ def case_002_decompose(test='bunny'):
                              new_name=test + ' hierarchical')
     g.store('grids/{0}_hierarchical.dat'.format(test))
 
+    # pressure
+    g.decompose_pressure(new_name=test + ' pressure')
+    g.store('grids/{0}_pressure.dat'.format(test))
+
+
 # --------------------------------------------------------------------------------------------------
 
 
@@ -79,6 +86,7 @@ def case_003_fixed_zones(test='bunny_pos'):
                              fixed_zones=['POS1', 'POS2'])
     g.store('grids/{0}_hierarchical.dat'.format(test))
 
+
 # --------------------------------------------------------------------------------------------------
 
 
@@ -96,6 +104,7 @@ def case_004_load_store_load(test='bunny'):
     g.store('grids/{0}_c1.dat'.format(test))
     g.load('grids/{0}_c1.dat'.format(test))
     g.store('grids/{0}_c2.dat'.format(test))
+
 
 # --------------------------------------------------------------------------------------------------
 
@@ -122,6 +131,7 @@ def case_005_explode_bunny(test='bunny_pos'):
     g.move_from_mean_point(0.25)
     g.store('grids/{0}_explode.dat'.format(test))
 
+
 # --------------------------------------------------------------------------------------------------
 
 
@@ -137,6 +147,7 @@ def case_006_store_faces_t_hw_hi(test='bunny'):
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
     g.store_faces_calc_data('grids/{0}.txt'.format(test))
+
 
 # --------------------------------------------------------------------------------------------------
 
@@ -156,6 +167,25 @@ def case_007_load_faces_t_hw_hi(test='bunny'):
     g.load_faces_calc_data('grids/{0}.txt'.format(test))
     g.store('grids/{0}_data.dat'.format(test))
 
+
+# --------------------------------------------------------------------------------------------------
+
+
+def case_008_decompose_pressure(test='bunny'):
+    """
+    Load grid and decompose with pressure algorithm.
+    Test objective:
+      Check decompose pressure algorithm.
+    :param test: test name
+    """
+
+    print('case_008_decompose_pressure({0}):'.format(test))
+    g = gsu.Grid()
+    g.load('grids/{0}.dat'.format(test))
+    g.decompose_pressure(new_name=test + ' pressure')
+    g.store('grids/{0}_pressure.dat'.format(test))
+
+
 # --------------------------------------------------------------------------------------------------
 
 
@@ -167,7 +197,9 @@ if __name__ == '__main__':
     # case_005_explode_bunny()
     # case_006_store_faces_t_hw_hi()
     # case_007_load_faces_t_hw_hi()
+    case_008_decompose_pressure()
 
     pass
+
 
 # --------------------------------------------------------------------------------------------------
