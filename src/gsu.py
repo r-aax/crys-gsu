@@ -693,6 +693,49 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
+    def nodes_count(self):
+        """
+        Get count of nodes.
+        :return: nodes count
+        """
+
+        return len(self.Nodes)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def edges_count(self):
+        """
+        Get count of edges.
+        :return: edges count
+        """
+
+        return len(self.Edges)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def faces_count(self):
+        """
+        Get count of faces.
+        :return: faces count.
+        """
+
+        return len(self.Faces)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def random_face(self):
+        """
+        Get random face.
+        :return: random face
+        """
+
+        fc = self.faces_count()
+        ind = random.randint(0, fc - 1)
+
+        return self.Faces[ind]
+
+    # ----------------------------------------------------------------------------------------------
+
     def print_info(self,
                    is_print_edges_statistics=False,
                    is_print_faces_distribution=False,
@@ -704,8 +747,8 @@ class Grid:
         :param is_print_zones_adjacency_matrix: flag for print zones adjacency matrix
         """
 
-        ec = len(self.Edges)
-        fc = len(self.Faces)
+        ec = self.edges_count()
+        fc = self.faces_count()
         zc = len(self.Zones)
 
         print('GSU: {0}'.format(self.Name))
@@ -1470,13 +1513,13 @@ class Grid:
         # Zone 0 - superzone - contains all faces.
         # Other zones get 1 face each (random).
         z0 = self.Zones[0]
-        for face in self.Faces:
-            z0.add_face(face)
-        for zone in self.Zones[1:]:
-            ind = random.randint(0, len(self.Faces) - 1)
-            while self.Faces[ind].Zone != z0:
-                ind = random.randint(0, len(self.Faces) - 1)
-            zone.add_face(self.Faces[ind])
+        for f in self.Faces:
+            z0.add_face(f)
+        for z in self.Zones[1:]:
+            f = self.random_face()
+            while f.Zone != z0:
+                f = self.random_face()
+            z.add_face(f)
 
         # Link nodes.
         self.link_nodes_and_edges_to_zones()
