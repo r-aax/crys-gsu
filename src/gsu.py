@@ -329,6 +329,21 @@ class Face:
         else:
             raise Exception('Wrong edge incident faces ({0}).'.format(incident_faces))
 
+    # ----------------------------------------------------------------------------------------------
+
+    def unlink_from_zone(self):
+        """
+        Unlink face from zone.
+        """
+
+        if self.Zone is None:
+            return
+
+        # Face is linked.
+        # Unlink it.
+        self.Zone.Faces.remove(self)
+        self.Zone = None
+
 # ==================================================================================================
 
 
@@ -434,6 +449,11 @@ class Zone:
         :param f: face
         :return: added face
         """
+
+        # If face is already link to some zome,
+        # we have to unlink it first.
+        if f.Zone is not None:
+            f.unlink_from_zone()
 
         # Just add and set link to the zone.
         f.Zone = self
@@ -1448,8 +1468,15 @@ class Grid:
 
         # Step 1.
         # Zone 0 - superzone - contains all faces.
+        # Other zones get 1 face each (random).
+        z0 = self.Zones[0]
         for face in self.Faces:
-            self.Zones[0].add_face(face)
+            z0.add_face(face)
+        for zone in self.Zones[1:]:
+            ind = random.randint(0, len(self.Faces) - 1)
+            while self.Faces[ind].Zone != z0:
+                ind = random.randint(0, len(self.Faces) - 1)
+            zone.add_face(self.Faces[ind])
 
         # Link nodes.
         self.link_nodes_and_edges_to_zones()
