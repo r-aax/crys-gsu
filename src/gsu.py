@@ -374,6 +374,36 @@ class Zone:
 
     # ----------------------------------------------------------------------------------------------
 
+    def nodes_count(self):
+        """
+        Get count of nodes.
+        :return: nodes count
+        """
+
+        return len(self.Nodes)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def edges_count(self):
+        """
+        Get count of edges.
+        :return: edges count
+        """
+
+        return len(self.Edges)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def faces_count(self):
+        """
+        Get count of faces.
+        :return: faces count.
+        """
+
+        return len(self.Faces)
+
+    # ----------------------------------------------------------------------------------------------
+
     def get_nodes_coord_slice_str(self, i):
         """
         Get string composed from i-th coord of all nodes.
@@ -460,6 +490,21 @@ class Zone:
         self.Faces.append(f)
 
         return f
+
+    # ----------------------------------------------------------------------------------------------
+
+    def capture_nearest_face(self):
+        """
+        Capture face nearest to zone (breadth-first search).
+        """
+
+        for f in self.Faces:
+            for e in f.Edges:
+                if not e.is_border():
+                    f2 = f.get_neighbour(e)
+                    if f2.Zone is None:
+                        self.add_face(f2)
+                        return
 
 # ==================================================================================================
 
@@ -720,6 +765,16 @@ class Grid:
         """
 
         return len(self.Faces)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def faces_count_in_zones(self):
+        """
+        Count of faces that are placed in zones.
+        :return: total faces count in zones
+        """
+
+        return sum([z.faces_count() for z in self.Zones])
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1487,6 +1542,16 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
+    def each_zone_capture_nearest_face(self):
+        """
+        Each zone capture nearest face.
+        """
+
+        for z in self.Zones:
+            z.capture_nearest_face()
+
+    # ----------------------------------------------------------------------------------------------
+
     def decompose_pressure(self, count=8, new_name=None):
         """
         Create distribution based on pressure algorithm.
@@ -1510,16 +1575,28 @@ class Grid:
         #
 
         # Step 1.
-        # Zone 0 - superzone - contains all faces.
-        # Other zones get 1 face each (random).
-        z0 = self.Zones[0]
-        for f in self.Faces:
-            z0.add_face(f)
-        for z in self.Zones[1:]:
+        # Each zone gets random face as initial point of domain grow.
+        for z in self.Zones:
             f = self.random_face()
-            while f.Zone != z0:
+            while f.Zone is not None:
                 f = self.random_face()
             z.add_face(f)
+
+        # Step 2.
+        # Grow zones/domains from initial points.
+        faces_before_step = self.faces_count_in_zones()
+        self.each_zone_capture_nearest_face()
+        faces_after_step = self.faces_count_in_zones()
+        while faces_after_step > faces_before_step:
+            faces_before_step = faces_after_step
+            self.each_zone_capture_nearest_face()
+            faces_after_step = self.faces_count_in_zones()
+
+        # Step last.
+        # If there are some faces without zone - add them to zone 0.
+        for f in self.Faces:
+            if f.Zone is None:
+                self.Zones[0].add_face(f)
 
         # Link nodes.
         self.link_nodes_and_edges_to_zones()
