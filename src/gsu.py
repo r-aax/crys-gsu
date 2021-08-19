@@ -2,8 +2,8 @@
 GSU main functions.
 """
 
-import random
 import math
+import random
 
 
 # ==================================================================================================
@@ -72,6 +72,7 @@ def fun_face_cz():
 
     return lambda f: mean_nodes_point(f.Nodes)[2]
 
+
 # ==================================================================================================
 
 
@@ -110,6 +111,7 @@ class Node:
         """
 
         return self.RoundedCoords == n.RoundedCoords
+
 
 # ==================================================================================================
 
@@ -687,6 +689,7 @@ class ZonesAdjacencyMatrix:
         """
 
         return len([x for x in self.zone_cross_edges_array(zi) if x > 0])
+
 
 # ==================================================================================================
 
@@ -1378,7 +1381,17 @@ class Grid:
                 face.Zone = None
 
     # ----------------------------------------------------------------------------------------------
+    def check_faces_are_linked_to_zones_wo_exception(self):
+        """
+        Check if all faces are linked to zones without exception..
+        """
 
+        for face in self.Faces:
+            if face.Zone is None:
+                return False
+        return True
+
+    # ----------------------------------------------------------------------------------------------
     def check_faces_are_linked_to_zones(self):
         """
         Check if all faces are linked to zones.
@@ -1683,6 +1696,65 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
+    def decompose_incremental(self, levels):
+        # ry:
+        # Delete all zones (not fixed) and links.
+        self.Zones = [z for z in self.Zones if z.IsFixed]
+        self.unlink_faces_from_zones()
+
+        # Initialize all zones with random faces.
+        for li in range(levels - 1):
+            zone = Zone(li)
+            self.Zones.append(zone)
+            face = random.choice(self.Faces)
+            zone.add_face(face)
+            zone.LastFace = list()
+            zone.LastFace.append(face)
+
+        i = 0
+        k = 0
+        found_new = True
+
+        while found_new:
+            for z in self.Zones:
+                # Trying to found neighbours faces to current zone.
+                faces = self.get_neighbours_for_zone(z)
+                k = k + len(faces)
+                found_new = False
+
+                # If found new faces, append it to zone and go to next zone.
+                for f in faces:
+                    if f in z.Faces:
+                        i = i + 1
+                        continue
+
+                    z.add_face(f)
+                    found_new = True
+
+        # Processing faces wo zone.
+        for f in self.Faces:
+            if f.Zone is None:
+                path = self.bfs_path(f, lambda f: (f.Zone is None))
+                z = Zone(len(path))
+                for ff in path:
+                    z.add_face(ff)
+
+                self.Zones.append(z)
+                # for e in f.Edges:
+                #     face = f.get_neighbour(e)
+                #     if face is not None and face.Zone is not None:
+                #         f.Zone = face.Zone
+                #         face.Zone.Faces.append(f)
+                #         break
+
+        self.check_faces_are_linked_to_zones()
+        self.link_nodes_and_edges_to_zones()
+
+        # except Exception as e:
+        # raise Exception(e)
+
+    # ----------------------------------------------------------------------------------------------
+
     def box(self):
         """
         Get box around grid (tuple with 6 values - XYZ of the left down back point
@@ -1781,5 +1853,20 @@ class Grid:
                 line = f.readline()
 
             f.close()
+
+    def get_neighbours_for_zone(self, zone):
+        faces = list()
+        for f in zone.LastFace:
+            for e in f.Edges:
+                face = f.get_neighbour(e)
+                if face is not None and face.Zone is None and face not in zone.Faces:
+                    faces.append(face)
+
+        if len(faces) == 0:
+            print(0)
+
+        # distincting by GloId
+        zone.LastFace = {x.GloId: x for x in faces}.values()
+        return faces
 
 # ==================================================================================================

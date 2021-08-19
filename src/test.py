@@ -1,6 +1,7 @@
 """
 Test module.
 """
+import os
 
 import gsu
 import split
@@ -211,6 +212,16 @@ def case_009_store_mpi(test='bunny'):
 
 # --------------------------------------------------------------------------------------------------
 
+def case_010_decompose_incremental(test='bunny'):
+    g = gsu.Grid()
+    g.load('grids/{0}.dat'.format(test))
+
+    g.decompose_incremental(32)
+    g.store('grids/{0}_incremental.dat'.format(test))
+    g.print_info()
+
+
+# --------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     # case_001_node_face_data()
@@ -222,8 +233,8 @@ if __name__ == '__main__':
     # case_007_load_faces_t_hw_hi()
     # case_008_decompose_pressure()
     # case_009_store_mpi()
+    case_010_decompose_incremental()
 
     pass
-
 
 # --------------------------------------------------------------------------------------------------
