@@ -104,29 +104,53 @@ class SpaceSeparator:
 
     # ----------------------------------------------------------------------------------------------
 
-    def fly(self, p, dt):
+    def fly(self, p, dt, g, max_steps):
         """
         Flying of a point.
         :param p: point
+        :param dt: time step
+        :param g: grid (surface)
+        :param max_steps: max count of fly steps
+        :return: tuple of 3 elements.
+                 first element - diagnostic
+                     'S' - stop on place
+                     'C' - cross surface
+                     'O' - left the box out
+                     'N' - too long flying
+                 second element - face if intersect (None otherwise)
+                 third element - trajectory
         """
 
         cp = p
-        a = []
+        tr = []
         i = 0
 
         while self.inside(cp):
-            a.append(cp)
+
+            tr.append(cp)
             np = self.find_nearest(cp)
             v = np[1]
             new_cp = utils.a_kb(cp, dt, v)
+
+            # If point stay on one place we can exit.
             if utils.dist2(cp, new_cp) < 1e-10:
-                break
+                return ('S', None, tr)
+
+            # Check intersection.
+            for f in g.Faces:
+                if utils.is_triangle_and_segment_intersect(f.Nodes[0].P,
+                                                           f.Nodes[1].P,
+                                                           f.Nodes[2].P,
+                                                           cp, new_cp):
+                    return ('C', f, tr)
+
             cp = new_cp
             i = i + 1
-            if i > 50:
-                break
+            if i > max_steps:
+                return ('N', None, tr)
 
-        return a
+        # We left box out.
+        return ('O', None, tr)
 
 # ==================================================================================================
 
@@ -181,12 +205,17 @@ def read_vel_field_from_file(grid_air_file):
 # --------------------------------------------------------------------------------------------------
 
 
-def drops(grid_file, grid_air_file, out_grid_file):
+def drops(grid_file, grid_air_file, out_grid_file,
+          d=0.0001, dt=0.00001, wet_thr=0.0004, max_fly_steps=50):
     """
     Calculate drops.
     :param grid_file: file with grid
     :param grid_air_file: file with air grid
     :param out_grid_file: out file
+    :param d: distance from face for flying point start
+    :param dt: time step
+    :param wet_thr: thresjold for hw, to make decision about water stall
+    :param max_fly_steps: max fly steps
     """
 
     # Check for grid file.
@@ -204,7 +233,13 @@ def drops(grid_file, grid_air_file, out_grid_file):
     # Read air from file.
     air = read_vel_field_from_file(grid_air_file)
     air.print_info()
-    air.fly((1.0, 0.0, 0.0), 0.001)
+
+    # Check all faces.
+    for f in g.Faces:
+        if f.get_hw() > wet_thr:
+            print('... face {0} is wet. Start flying.'.format(f.GloId))
+            res = air.fly(f.get_point_above(d), dt, g, max_fly_steps)
+            print(res[0], res[1])
 
     # Save grid back.
     g.store(out_grid_file)
