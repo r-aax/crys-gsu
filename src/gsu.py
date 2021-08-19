@@ -4,7 +4,7 @@ GSU main functions.
 
 import random
 import math
-
+import utils
 
 # ==================================================================================================
 
@@ -343,6 +343,72 @@ class Face:
         # Unlink it.
         self.Zone.Faces.remove(self)
         self.Zone = None
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_center(self):
+        """
+        Get center point.
+        :return: center point
+        """
+
+        a, b, c, = self.Nodes[0].P, self.Nodes[1].P, self.Nodes[2].P
+
+        return ((a[0] + b[0] + c[0]) / 3.0, (a[1] + b[1] + c[1]) / 3.0, (a[2] + b[2] + c[2]) / 3.0)
+
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_ab_vector(self):
+        """
+        Get vector from A point to B point.
+        :return: vector from A point to B point
+        """
+
+        a, b = self.Nodes[0].P, self.Nodes[1].P
+
+        return (b[0] - a[0], b[1] - a[1], b[2] - a[2])
+
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_bc_vector(self):
+        """
+        Get vector from B point to C point.
+        :return: vector from B point to C point
+        """
+
+        b, c = self.Nodes[1].P, self.Nodes[2].P
+
+        return (c[0] - b[0], c[1] - b[1], c[2] - b[2])
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_normal1(self):
+        """
+        Get outer normal, normalized to 1.0.
+        :return: normalized normal
+        """
+
+        ab, bc = self.get_ab_vector(), self.get_bc_vector()
+        n = utils.cross_product(ab, bc)
+
+        return utils.normalized(n)
+
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_point_above(self, d):
+        """
+        Get point above face (on distance d).
+        :param d: distance
+        :return: point
+        """
+
+        c = self.get_center()
+        n1 = self.get_normal1()
+
+        return utils.a_kb(c, d, n1)
 
 # ==================================================================================================
 

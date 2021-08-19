@@ -97,7 +97,7 @@ def print_help():
 
 
 # Example of running merge.py script:
-#     merge.py grid/bunny.dat dir_to_txt_files
+#     merge.py grids/bunny.dat dir_to_txt_files
 # Script produces out files for crys-remesh tool.
 if __name__ == '__main__':
 
