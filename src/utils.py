@@ -169,7 +169,7 @@ def is_triangle_and_segment_intersect(a, b, c, p, q):
                   [zb - za, zc - za, zp - zq]])
     d = np.linalg.det(m)
 
-    if abs(d) < 1e-6:
+    if abs(d) < 1e-10:
         return False
 
     im = np.linalg.inv(m)
