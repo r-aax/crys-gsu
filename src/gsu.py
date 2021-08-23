@@ -1274,6 +1274,17 @@ class Grid:
             # Relink.
             self.link_nodes_and_edges_to_zones()
 
+        # Correct grid if there is no Beta2 field present.
+        # crys#134
+        if not '"Beta2"' in self.VariablesStr:
+            self.VariablesStr = self.VariablesStr.replace('"Beta", ', '"Beta", "Beta2", ')
+            gi = self.Variables.index('Beta') + 1
+            li = gi - 3
+            self.Variables.insert(gi, 'Beta2')
+            self.FaceVariablesCount = self.FaceVariablesCount + 1
+            for f in self.Faces:
+                f.Data.insert(li, 0.0)
+
     # ----------------------------------------------------------------------------------------------
 
     def store(self, filename):
