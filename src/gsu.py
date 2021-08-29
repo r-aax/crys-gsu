@@ -1825,9 +1825,14 @@ class Grid:
                     # We know only basic modes.
                     if variables_oth == '"T", "Hw", "Hi"':
                         self.Mode = 'BASIC'
-                    elif variables_oth == '"T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ"':
+                    elif variables_oth == '"T", "Hw", "Hi", "HTC", "Beta", "Beta2", ' \
+                                          '"TauX", "TauY", "TauZ"':
                         self.Mode = 'CHECK_POINT'
-                    elif variables_oth == '"MassImpinged", "WaterFilmHeight", "CurrentIceGrowth", ' \
+                    elif variables_oth == '"T", "Hw", "Hi", "HTC", "Beta", "Beta2", "Stall",' \
+                                          '"TauX", "TauY", "TauZ"':
+                        self.Mode = 'STALL'
+                    elif variables_oth == '"MassImpinged", "WaterFilmHeight", ' \
+                                          '"CurrentIceGrowth", ' \
                                           '"TotalIceGrowth", "CurrentMassEvaporation", ' \
                                           '"SurfaceTemperature", ' \
                                           '"FilmVx", "FilmVy", "FilmVz", "FilmV", ' \
