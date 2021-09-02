@@ -1291,6 +1291,17 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
+    def get_variable_index(self, variable_name):
+        """
+        Get index of variable by its name.
+        :param variable_name: variable name
+        :return: variable index
+        """
+
+        return self.Variables.index(variable_name)
+
+    # ----------------------------------------------------------------------------------------------
+
     def store(self, filename):
         """
         Store grid to file.
