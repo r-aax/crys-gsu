@@ -209,7 +209,7 @@ def read_vel_field_from_file(grid_air_file):
 
 
 def drops(grid_file, grid_air_file, out_grid_file,
-          d=0.0001, dt=0.00001, wet_thr=0.0004, max_fly_steps=10):
+          d=0.0001, dt=0.00001, stall_thr=0.0004, max_fly_steps=10):
     """
     Calculate drops.
     :param grid_file: file with grid
@@ -217,7 +217,7 @@ def drops(grid_file, grid_air_file, out_grid_file,
     :param out_grid_file: out file
     :param d: distance from face for flying point start
     :param dt: time step
-    :param wet_thr: thresjold for hw, to make decision about water stall
+    :param stall_thr: threshold for Stall value, to make decision about water stall
     :param max_fly_steps: max fly steps
     """
 
@@ -231,8 +231,8 @@ def drops(grid_file, grid_air_file, out_grid_file,
 
     print('crys-gsu-drops : start, grid_file = {0}, grid_air_file = {1}, '
           'out_grid_file = {2}, d = {3}, dt = {4}, '
-          'wet_thr = {5}, max_fly_steps = {6}'.format(grid_file, grid_air_file, out_grid_file,
-                                                      d, dt, wet_thr, max_fly_steps))
+          'stall_thr = {5}, max_fly_steps = {6}'.format(grid_file, grid_air_file, out_grid_file,
+                                                        d, dt, stall_thr, max_fly_steps))
     start_time = time.time()
 
     # Load grid.
@@ -249,7 +249,7 @@ def drops(grid_file, grid_air_file, out_grid_file,
 
     # Check all faces.
     for f in g.Faces:
-        if f.get_hw() > wet_thr:
+        if f.get_hw() > stall_thr:
             # print('... face {0} is wet. Start flying.'.format(f.GloId))
             res = air.fly(f.get_point_above(d), dt, g, max_fly_steps)
             if res[0] == 'C':
@@ -281,7 +281,7 @@ def print_help():
     print('    <out-grid-file> - out file with result grid')
     print('    <d> - distance above face surface for start point of trajectory (default = 0.0001)')
     print('    <dt> - time step (default = 0.00001)')
-    print('    <wet_thr> - threshold for stall faces (default = 0.0004)')
+    print('    <stall_thr> - threshold for stall faces (default = 0.0004)')
     print('    <max_fly_steps> - maximum steps count for drops flying (default = 10)')
 
 # ==================================================================================================
@@ -312,7 +312,7 @@ if __name__ == '__main__':
               out_grid_file=sys.argv[3],
               d=float(sys.argv[4]),
               dt=float(sys.argv[5]),
-              wet_thr=float(sys.argv[6]),
+              stall_thr=float(sys.argv[6]),
               max_fly_steps=int(sys.argv[7]))
     else:
         raise Exception('crys-gsu-drops : wrong parameters count')
