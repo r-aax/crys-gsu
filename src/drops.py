@@ -239,9 +239,9 @@ def drops(grid_file, grid_air_file, out_grid_file,
     g = gsu.Grid()
     g.load(grid_file)
 
-    # Clean all ice.
-    for f in g.Faces:
-        f.set_hi(0.0)
+    # Indexes of Stall and MImp2 fields.
+    stall_ind = g.get_variable_index('Stall')
+    mimp2_ind = g.get_variable_index('MImp2')
 
     # Read air from file.
     air = read_vel_field_from_file(grid_air_file)
@@ -249,13 +249,14 @@ def drops(grid_file, grid_air_file, out_grid_file,
 
     # Check all faces.
     for f in g.Faces:
-        if f.get_hw() > stall_thr:
+        stall_value = f.Data[stall_ind - 3]
+        if stall_value > stall_thr:
             # print('... face {0} is wet. Start flying.'.format(f.GloId))
             res = air.fly(f.get_point_above(d), dt, g, max_fly_steps)
             if res[0] == 'C':
                 print('... secondary impingement '
                       'from face {0} to face {1}'.format(f.GloId, res[1].GloId))
-                res[1].set_hi(1.0)
+                res[1].Data[mimp2_ind - 3] = (stall_value / res[1].get_area())
 
     # Save grid back.
     g.store(out_grid_file)

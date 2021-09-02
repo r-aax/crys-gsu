@@ -403,6 +403,21 @@ class Face:
 
         return utils.a_kb(c, d, n1)
 
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_area(self):
+        """
+        Area of the face.
+        :return: area (m)
+        """
+
+        ab = self.get_ab_vector()
+        bc = self.get_bc_vector()
+        cp = utils.cross_product(ab, bc)
+
+        return 0.5 * utils.norm(cp)
+
 # ==================================================================================================
 
 
