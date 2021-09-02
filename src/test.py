@@ -203,18 +203,18 @@ def case_009_store_mpi(test='bunny'):
 # --------------------------------------------------------------------------------------------------
 
 
-def case_010_add_beta2(test='bunny'):
+def case_010_add_mimp2_vd(test='bunny'):
     """
-    Load grid without Beta2 field and save it with Beta2 field (all zeros).
+    Load grid without MImp2, Vd fields and save it with MImp2, Vd fields (all zeros).
     Test objective:
       Check that program supports work with grids of both formats.
     :param test: test name
     """
 
-    print('case_010_add_beta2({0})'.format(test))
+    print('case_010_add_mimp2_vd({0})'.format(test))
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
-    g.store('grids/{0}_beta2.dat'.format(test))
+    g.store('grids/{0}_mimp2_vd.dat'.format(test))
 
 # --------------------------------------------------------------------------------------------------
 
@@ -229,7 +229,7 @@ if __name__ == '__main__':
     # case_007_load_faces_t_hw_hi()
     # case_008_decompose_pressure()
     # case_009_store_mpi()
-    # case_010_add_beta2()
+    # case_010_add_mimp2_vd()
 
     pass
 
