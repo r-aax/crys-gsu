@@ -1829,10 +1829,12 @@ class Grid:
                     # We know only basic modes.
                     if variables_oth == '"T", "Hw", "Hi"':
                         self.Mode = 'BASIC'
-                    elif variables_oth == '"T", "Hw", "Hi", "HTC", "Beta", "Beta2", ' \
+                    elif variables_oth == '"T", "Hw", "Hi", "HTC", ' \
+                                          '"Beta", "MImp2", "Vd2", ' \
                                           '"TauX", "TauY", "TauZ"':
                         self.Mode = 'CHECK_POINT'
-                    elif variables_oth == '"T", "Hw", "Hi", "HTC", "Beta", "Beta2", "Stall", ' \
+                    elif variables_oth == '"T", "Hw", "Hi", "HTC", ' \
+                                          '"Beta", "MImp2", "Vd2", "Stall", ' \
                                           '"TauX", "TauY", "TauZ"':
                         self.Mode = 'STALL'
                     elif variables_oth == '"MassImpinged", "WaterFilmHeight", ' \
