@@ -1274,14 +1274,14 @@ class Grid:
             # Relink.
             self.link_nodes_and_edges_to_zones()
 
-        # Correct grid if there is no MImp2, Vd fields present.
+        # Correct grid if there is no MImp2, Vd2 fields present.
         # crys#141
-        if not '"MImp2", "Vd"' in self.VariablesStr:
-            self.VariablesStr = self.VariablesStr.replace('"Beta", ', '"Beta", "MImp2", "Vd", ')
+        if not '"MImp2", "Vd2"' in self.VariablesStr:
+            self.VariablesStr = self.VariablesStr.replace('"Beta", ', '"Beta", "MImp2", "Vd2", ')
             gi = self.Variables.index('Beta') + 1
             li = gi - 3
-            # Сначала вставляем 'Vd', а затем в ту же позицию 'MImp2'.
-            self.Variables.insert(gi, 'Vd')
+            # Сначала вставляем 'Vd2', а затем в ту же позицию 'MImp2'.
+            self.Variables.insert(gi, 'Vd2')
             self.Variables.insert(gi, 'MImp2')
             self.FaceVariablesCount = self.FaceVariablesCount + 2
             for f in self.Faces:

@@ -203,18 +203,18 @@ def case_009_store_mpi(test='bunny'):
 # --------------------------------------------------------------------------------------------------
 
 
-def case_010_add_mimp2_vd(test='bunny'):
+def case_010_add_mimp2_vd2(test='bunny'):
     """
-    Load grid without MImp2, Vd fields and save it with MImp2, Vd fields (all zeros).
+    Load grid without MImp2, Vd2 fields and save it with MImp2, Vd2 fields (all zeros).
     Test objective:
       Check that program supports work with grids of both formats.
     :param test: test name
     """
 
-    print('case_010_add_mimp2_vd({0})'.format(test))
+    print('case_010_add_mimp2_vd2({0})'.format(test))
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
-    g.store('grids/{0}_mimp2_vd.dat'.format(test))
+    g.store('grids/{0}_mimp2_vd2.dat'.format(test))
 
 # --------------------------------------------------------------------------------------------------
 
@@ -229,9 +229,8 @@ if __name__ == '__main__':
     # case_007_load_faces_t_hw_hi()
     # case_008_decompose_pressure()
     # case_009_store_mpi()
-    # case_010_add_mimp2_vd()
+    # case_010_add_mimp2_vd2()
 
     pass
-
 
 # --------------------------------------------------------------------------------------------------
