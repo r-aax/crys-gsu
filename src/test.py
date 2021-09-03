@@ -230,12 +230,16 @@ def case_011_align_borders(test='bunny'):
     print('case_011_align_borders({0})'.format(test))
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
-    g.decompose_pressure(count=8)
+    g.decompose_pressure(count=8, is_align=False)
     g.print_info(is_print_edges_statistics=True,
                  is_print_faces_distribution=True,
                  is_print_zones_adjacency_matrix=True)
-    g.print_cross_borders()
-    g.store('grids/{0}_pab.dat'.format(test))
+    g.store('grids/{0}_pab_no.dat'.format(test))
+    g.align_cross_borders()
+    g.print_info(is_print_edges_statistics=True,
+                 is_print_faces_distribution=True,
+                 is_print_zones_adjacency_matrix=True)
+    g.store('grids/{0}_pab_yes.dat'.format(test))
 
 # --------------------------------------------------------------------------------------------------
 

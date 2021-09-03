@@ -901,6 +901,9 @@ class EdgesChain:
             if count_after == count_before:
                 break
 
+        # Replace edges by ids.
+        self.Subchains = [[e.get_ids() for e in subchain] for subchain in self.Subchains]
+
     # ----------------------------------------------------------------------------------------------
 
     def get_edges_ids(self):
@@ -1903,6 +1906,54 @@ class Grid:
         Print cross borders.
         """
 
+        def subchain_hi_faces_dbl(s):
+            dbl = 0
+            for i in range(1, len(s)):
+                if s[i][4] == s[i - 1][4]:
+                    dbl = dbl + 1
+            return dbl
+
+        def subchain_lo_faces_dbl(s):
+            dbl = 0
+            for i in range(1, len(s)):
+                if s[i][5] == s[i - 1][5]:
+                    dbl = dbl + 1
+            return dbl
+
+        def subchain_hi_lo_faces_dbl(s):
+            return (subchain_hi_faces_dbl(s), subchain_lo_faces_dbl(s))
+
+        def need_align(dbl):
+            return (dbl[0] > 0) and (dbl[1] > 0)
+
+        def align_hi(s, g):
+            for i in range(1, len(s)):
+                if s[i][4] == s[i - 1][4]:
+                    # Index i - 1. Delete next and pass face to lo zone.
+                    s.pop(i)
+                    ids = s[i - 1]
+                    s[i - 1] = (0, 0, 0, 0, -i, ids[4])
+                    face = g.Faces[ids[4]]
+                    # old_zone = g.Zones[ids[2]]
+                    new_zone = g.Zones[ids[3]]
+                    # old_zone.Faces.remove(face)
+                    new_zone.add_face(face)
+                    return
+
+        def align_lo(s, g):
+            for i in range(1, len(s)):
+                if s[i][5] == s[i - 1][5]:
+                    # Index i - 1. Delete next and pass face to hi zone.
+                    s.pop(i)
+                    ids = s[i - 1]
+                    s[i - 1] = (0, 0, 0, 0, -i, ids[5])
+                    face = g.Faces[ids[5]]
+                    # old_zone = g.Zones[ids[3]]
+                    new_zone = g.Zones[ids[2]]
+                    # old_zone.Faces.remove(face)
+                    new_zone.add_face(face)
+                    return
+
         zc = self.zones_count()
 
         for zi in range(zc):
@@ -1912,24 +1963,35 @@ class Grid:
                 if ch.is_empty():
                     continue
 
-                print('Edges between zones {0} and {1}'.format(zi, zj))
+                # print('Edges between zones {0} and {1}'.format(zi, zj))
                 print('  {0}'.format(ch.get_edges_ids()))
                 for sch in ch.Subchains:
-                    print('    sch:')
-                    for e in sch:
-                        print('      {0}'.format(e.get_ids()))
+                    # print('    sch:')
+                    # for ids in sch:
+                    #     print('      {0}'.format(ids))
 
-                # We analyze only one cross border in debug mode.
-                return
+                    # Correct subchain.
+                    dbl = subchain_hi_lo_faces_dbl(sch)
+                    # print('DBL before {0}'.format(dbl))
+                    while need_align(dbl):
+                        align_hi(sch, self)
+                        if subchain_lo_faces_dbl(sch) > 0:
+                            align_lo(sch, self)
+                        dbl = subchain_hi_lo_faces_dbl(sch)
+                    # print('DBL after {0}'.format(dbl))
+
+        self.post_decompose()
 
     # ----------------------------------------------------------------------------------------------
 
-    def decompose_pressure(self, count=32, new_name=None, fz_names=[]):
+    def decompose_pressure(self, count=32, new_name=None,
+                           fz_names=[], is_align=False):
         """
         Create distribution based on pressure algorithm.
         :param count: zones count
         :param new_name: grid new name
         :param fz_names: list of fixed zones names
+        :param is_align: need for cross borders align
         """
 
         # Mark fixed zones.
@@ -1966,8 +2028,9 @@ class Grid:
                 start = path[zone_size]
 
         self.post_decompose()
-        self.align_cross_borders()
-        self.post_decompose()
+
+        if is_align:
+            self.align_cross_borders()
 
     # ----------------------------------------------------------------------------------------------
 
