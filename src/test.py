@@ -219,6 +219,27 @@ def case_010_add_mimp2_vd2(test='bunny'):
 # --------------------------------------------------------------------------------------------------
 
 
+def case_011_align_borders(test='bunny'):
+    """
+    Load grid, decompose it and align borders.
+    Test objective:
+      Verification of borders align algorithm.
+    :param test: test name
+    """
+
+    print('case_011_align_borders({0})'.format(test))
+    g = gsu.Grid()
+    g.load('grids/{0}.dat'.format(test))
+    g.decompose_pressure(count=8)
+    g.print_info(is_print_edges_statistics=True,
+                 is_print_faces_distribution=True,
+                 is_print_zones_adjacency_matrix=True)
+    g.print_cross_borders()
+    g.store('grids/{0}_pab.dat'.format(test))
+
+# --------------------------------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
     # case_001_node_face_data()
     # case_002_decompose()
@@ -230,6 +251,7 @@ if __name__ == '__main__':
     # case_008_decompose_pressure()
     # case_009_store_mpi()
     # case_010_add_mimp2_vd2()
+    # case_011_align_borders()
 
     pass
 

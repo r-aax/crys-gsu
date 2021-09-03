@@ -765,6 +765,43 @@ class ZonesAdjacencyMatrix:
 # ==================================================================================================
 
 
+class EdgesChain:
+    """
+    Chain of edges.
+    """
+
+    # ----------------------------------------------------------------------------------------------
+
+    def __init__(self):
+        """
+        Constructor.
+        """
+
+        self.Edges = []
+
+    # ----------------------------------------------------------------------------------------------
+
+    def add_edge(self, e):
+        """
+        Add edge into chain.
+        :param e: edge
+        """
+
+        self.Edges.append(e)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_edges_ids(self):
+        """
+        Get edges identifiers.
+        :return: list of identifiers
+        """
+
+        return [e.GloId for e in self.Edges]
+
+# ==================================================================================================
+
+
 class Grid:
     """
     Grid (Surface Unstructured).
@@ -809,6 +846,16 @@ class Grid:
         self.Faces.clear()
         self.Zones.clear()
         self.RoundedCoordsBag.clear()
+
+    # ----------------------------------------------------------------------------------------------
+
+    def zones_count(self):
+        """
+        Get zones count.
+        :return: zones count
+        """
+
+        return len(self.Zones)
 
     # ----------------------------------------------------------------------------------------------
 
@@ -919,6 +966,28 @@ class Grid:
             for i in range(zc + 1):
                 print(' '.join(['{0:5}'.format(e) for e in zam.M[i]]))
             print('  ~ max cross-zones border length : {0}'.format(zam.max_cross_border_len()))
+
+    # ----------------------------------------------------------------------------------------------
+
+    def print_cross_borders(self):
+        """
+        Print cross borders.
+        """
+
+        zc = self.zones_count()
+
+        for zi in range(zc):
+            for zj in range(zi + 1, zc):
+
+                print('Edges between zones {0} and {1}'.format(zi, zj))
+
+                ch = EdgesChain()
+
+                for e in self.Edges:
+                    if e.is_connect_zones(self.Zones[zi], self.Zones[zj]):
+                        ch.add_edge(e)
+
+                print('  {0}'.format(ch.get_edges_ids()))
 
     # ----------------------------------------------------------------------------------------------
 
