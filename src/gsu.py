@@ -195,6 +195,50 @@ class Edge:
 
         return ((z0 == fz0) and (z1 == fz1)) or ((z0 == fz1) and (z1 == fz0))
 
+    # ----------------------------------------------------------------------------------------------
+
+    def is_adjacent_with(self, e):
+        """
+        Check if edge adjacent with another edge.
+        :param e: another edge
+        :return: True - if edges are adjacent, False - otherwise
+        """
+
+        a0, a1 = self.Nodes[0], self.Nodes[1]
+        b0, b1 = e.Nodes[0], e.Nodes[1]
+
+        return (a0 == b0) or (a0 == b1) or (a1 == b0) or (a1 == b1)
+
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_ids(self):
+        """
+        Get 4 ids:
+            first node id,
+            second node id,
+            min zone face id,
+            max zone face id.
+        :return:
+        """
+
+        first_node_id = self.Nodes[0].GloId
+        second_node_id = self.Nodes[1].GloId
+        ff = self.Faces[0]
+        sf = self.Faces[1]
+        fzi = ff.Zone.Id
+        szi = sf.Zone.Id
+        min_zone_id = min(fzi, szi)
+        max_zone_id = max(fzi, szi)
+        if fzi < szi:
+            min_zone_face_id = ff.GloId
+            max_zone_face_id = sf.GloId
+        else:
+            min_zone_face_id = sf.GloId
+            max_zone_face_id = ff.GloId
+
+        return (first_node_id, second_node_id, min_zone_id, max_zone_id, min_zone_face_id, max_zone_face_id)
+
 # ==================================================================================================
 
 
@@ -772,12 +816,22 @@ class EdgesChain:
 
     # ----------------------------------------------------------------------------------------------
 
-    def __init__(self):
+    def __init__(self, g, zi, zj):
         """
         Constructor.
+        :param g: grid
+        :param zi: first zone index
+        :param zj: second zone index
         """
 
         self.Edges = []
+        self.Subchains = []
+
+        for e in g.Edges:
+            if e.is_connect_zones(g.Zones[zi], g.Zones[zj]):
+                self.add_edge(e)
+
+        self.split_edges_into_subchains()
 
     # ----------------------------------------------------------------------------------------------
 
@@ -788,6 +842,64 @@ class EdgesChain:
         """
 
         self.Edges.append(e)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def edges_count(self):
+        """
+        Get edges count.
+        :return: edges count
+        """
+
+        return len(self.Edges)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def is_empty(self):
+        """
+        Check if edges chain is empty.
+        :return: True - if is empty, False - otherwise.
+        """
+
+        return self.edges_count() == 0
+
+    # ----------------------------------------------------------------------------------------------
+
+    def split_edges_into_subchains(self):
+        """
+        Sort edges into right chain.
+        """
+
+        def try_to_add_subchain_to_subchains(subchains, n):
+            for subchain in subchains:
+                if n[-1].is_adjacent_with(subchain[0]):
+                    r = list(range(len(n)))
+                    r.reverse()
+                    for i in r:
+                        subchain.insert(0, n[i])
+                    return True
+                if n[0].is_adjacent_with(subchain[-1]):
+                    r = range(len(n))
+                    for i in r:
+                        subchain.append(n[i])
+                    return True
+                return False
+
+        # Empty subchains and
+        # set each edge into itw own subchain.
+        self.Subchains = [[e] for e in self.Edges]
+
+        # Try to connect subchains while it is possible.
+        while True:
+            count_before = len(self.Subchains)
+            rearranged_subchains = []
+            for s in self.Subchains:
+                if not try_to_add_subchain_to_subchains(rearranged_subchains, s):
+                    rearranged_subchains.append(s)
+            self.Subchains = rearranged_subchains
+            count_after = len(self.Subchains)
+            if count_after == count_before:
+                break
 
     # ----------------------------------------------------------------------------------------------
 
@@ -978,16 +1090,20 @@ class Grid:
 
         for zi in range(zc):
             for zj in range(zi + 1, zc):
+                ch = EdgesChain(self, zi, zj)
+
+                if ch.is_empty():
+                    continue
 
                 print('Edges between zones {0} and {1}'.format(zi, zj))
-
-                ch = EdgesChain()
-
-                for e in self.Edges:
-                    if e.is_connect_zones(self.Zones[zi], self.Zones[zj]):
-                        ch.add_edge(e)
-
                 print('  {0}'.format(ch.get_edges_ids()))
+                for sch in ch.Subchains:
+                    print('    sch:')
+                    for e in sch:
+                        print('      {0}'.format(e.get_ids()))
+
+                # We analyze only one cross border in debug mode.
+                return
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1576,9 +1692,10 @@ class Grid:
         for face in self.Faces:
             zone.add_face(face)
 
-        # Link nodes.
+        # Post.
         self.link_nodes_and_edges_to_zones()
         self.check_faces_are_linked_to_zones()
+        self.set_zones_ids()
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1602,9 +1719,10 @@ class Grid:
         for face in self.Faces:
             self.Zones[random.randint(0, count - 1)].add_face(face)
 
-        # Link nodes.
+        # Post.
         self.link_nodes_and_edges_to_zones()
         self.check_faces_are_linked_to_zones()
+        self.set_zones_ids()
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1642,9 +1760,10 @@ class Grid:
         if cur_face_i != fc:
             raise Exception('Wrong linera distribution mathematics.')
 
-        # Link nodes.
+        # Post.
         self.link_nodes_and_edges_to_zones()
         self.check_faces_are_linked_to_zones()
+        self.set_zones_ids()
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1789,9 +1908,10 @@ class Grid:
                 # print('split zone {0} -> {1}, {2}.'.format(nm, nm + 'l', nm + 'r'))
                 self.split_zone(self.Zones[0], extract_signs_funs)
 
-        # Links nodes.
+        # Post.
         self.link_nodes_and_edges_to_zones()
         self.check_faces_are_linked_to_zones()
+        self.set_zones_ids()
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1846,9 +1966,10 @@ class Grid:
             if len(path) > zone_size:
                 start = path[zone_size]
 
-        # Link nodes.
+        # Post.
         self.link_nodes_and_edges_to_zones()
         self.check_faces_are_linked_to_zones()
+        self.set_zones_ids()
 
     # ----------------------------------------------------------------------------------------------
 
