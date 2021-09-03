@@ -1081,32 +1081,6 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
-    def print_cross_borders(self):
-        """
-        Print cross borders.
-        """
-
-        zc = self.zones_count()
-
-        for zi in range(zc):
-            for zj in range(zi + 1, zc):
-                ch = EdgesChain(self, zi, zj)
-
-                if ch.is_empty():
-                    continue
-
-                print('Edges between zones {0} and {1}'.format(zi, zj))
-                print('  {0}'.format(ch.get_edges_ids()))
-                for sch in ch.Subchains:
-                    print('    sch:')
-                    for e in sch:
-                        print('      {0}'.format(e.get_ids()))
-
-                # We analyze only one cross border in debug mode.
-                return
-
-    # ----------------------------------------------------------------------------------------------
-
     def find_near_node(self, n):
         """
         Find in grid nodes collection node that is near to a given node.
@@ -1675,6 +1649,17 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
+    def post_decompose(self):
+        """
+        Post actions after decompose.
+        """
+
+        self.link_nodes_and_edges_to_zones()
+        self.check_faces_are_linked_to_zones()
+        self.set_zones_ids()
+
+    # ----------------------------------------------------------------------------------------------
+
     def decompose_mono(self, new_name=None):
         """
         Create mono distribution (with 1 zone).
@@ -1692,10 +1677,7 @@ class Grid:
         for face in self.Faces:
             zone.add_face(face)
 
-        # Post.
-        self.link_nodes_and_edges_to_zones()
-        self.check_faces_are_linked_to_zones()
-        self.set_zones_ids()
+        self.post_decompose()
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1719,10 +1701,7 @@ class Grid:
         for face in self.Faces:
             self.Zones[random.randint(0, count - 1)].add_face(face)
 
-        # Post.
-        self.link_nodes_and_edges_to_zones()
-        self.check_faces_are_linked_to_zones()
-        self.set_zones_ids()
+        self.post_decompose()
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1760,10 +1739,7 @@ class Grid:
         if cur_face_i != fc:
             raise Exception('Wrong linera distribution mathematics.')
 
-        # Post.
-        self.link_nodes_and_edges_to_zones()
-        self.check_faces_are_linked_to_zones()
-        self.set_zones_ids()
+        self.post_decompose()
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1908,10 +1884,7 @@ class Grid:
                 # print('split zone {0} -> {1}, {2}.'.format(nm, nm + 'l', nm + 'r'))
                 self.split_zone(self.Zones[0], extract_signs_funs)
 
-        # Post.
-        self.link_nodes_and_edges_to_zones()
-        self.check_faces_are_linked_to_zones()
-        self.set_zones_ids()
+        self.post_decompose()
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1922,6 +1895,32 @@ class Grid:
 
         for z in self.Zones:
             z.capture_nearest_face()
+
+    # ----------------------------------------------------------------------------------------------
+
+    def align_cross_borders(self):
+        """
+        Print cross borders.
+        """
+
+        zc = self.zones_count()
+
+        for zi in range(zc):
+            for zj in range(zi + 1, zc):
+                ch = EdgesChain(self, zi, zj)
+
+                if ch.is_empty():
+                    continue
+
+                print('Edges between zones {0} and {1}'.format(zi, zj))
+                print('  {0}'.format(ch.get_edges_ids()))
+                for sch in ch.Subchains:
+                    print('    sch:')
+                    for e in sch:
+                        print('      {0}'.format(e.get_ids()))
+
+                # We analyze only one cross border in debug mode.
+                return
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1966,10 +1965,9 @@ class Grid:
             if len(path) > zone_size:
                 start = path[zone_size]
 
-        # Post.
-        self.link_nodes_and_edges_to_zones()
-        self.check_faces_are_linked_to_zones()
-        self.set_zones_ids()
+        self.post_decompose()
+        self.align_cross_borders()
+        self.post_decompose()
 
     # ----------------------------------------------------------------------------------------------
 
