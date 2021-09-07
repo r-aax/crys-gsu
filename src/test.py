@@ -219,18 +219,19 @@ def case_010_add_mimp2_vd2(test='bunny'):
 # --------------------------------------------------------------------------------------------------
 
 
-def case_011_align_borders(test='bunny'):
+def case_011_align_borders(test='bunny', count=8):
     """
     Load grid, decompose it and align borders.
     Test objective:
       Verification of borders align algorithm.
     :param test: test name
+    :param count: count of domains
     """
 
-    print('case_011_align_borders({0})'.format(test))
+    print('case_011_align_borders({0}, {1})'.format(test, count))
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
-    g.decompose_pressure(count=8, is_align=False)
+    g.decompose_pressure(count=count, is_align=False)
     g.print_info(is_print_edges_statistics=True,
                  is_print_faces_distribution=True,
                  is_print_zones_adjacency_matrix=True)

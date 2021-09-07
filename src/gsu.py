@@ -1964,7 +1964,7 @@ class Grid:
                     continue
 
                 # print('Edges between zones {0} and {1}'.format(zi, zj))
-                print('  {0}'.format(ch.get_edges_ids()))
+                # print('  {0}'.format(ch.get_edges_ids()))
                 for sch in ch.Subchains:
                     # print('    sch:')
                     # for ids in sch:
