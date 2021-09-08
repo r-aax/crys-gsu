@@ -5,8 +5,8 @@ GSU main functions.
 import math
 import random
 
-
 # ==================================================================================================
+from itertools import groupby
 
 
 def rounded_point(p, digits=10):
@@ -201,6 +201,19 @@ class Edge:
 
         return ((z0 == fz0) and (z1 == fz1)) or ((z0 == fz1) and (z1 == fz0))
 
+    def get_weight(self):
+        if len(self.Nodes) < 1:
+            raise Exception("Less than two node")
+
+        return float(math.sqrt(math.pow(self.Nodes[0].P[0] - self.Nodes[1].P[0], 2) + math.pow(self.Nodes[0].P[1] - self.Nodes[1].P[1], 2)))
+
+    def get_metric(self):
+        if self.is_cross():
+            return float(self.get_weight())
+        else:
+            return 0
+
+
 # ==================================================================================================
 
 
@@ -228,6 +241,7 @@ class Face:
 
         # Link to zone (each face belongs only to one single zone).
         self.Zone = None
+        self.NeighbourZones = []
 
     # ----------------------------------------------------------------------------------------------
 
@@ -346,6 +360,16 @@ class Face:
         self.Zone.Faces.remove(self)
         self.Zone = None
 
+    # ----------------------------------------------------------------------------------------------
+
+    def get_metric(self):
+        metric = float(0)
+        for e in self.Edges:
+            metric = metric + float(e.get_metric())
+
+        return metric
+
+
 # ==================================================================================================
 
 
@@ -370,6 +394,7 @@ class Zone:
         self.Nodes = []
         self.Edges = []
         self.Faces = []
+        self.NeighbourZones = []
 
         # Fixed zone flag.
         self.IsFixed = False
@@ -507,6 +532,28 @@ class Zone:
                     if f2.Zone is None:
                         self.add_face(f2)
                         return
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_cross_faces(self):
+        list_faces = list()
+        for e in self.Edges:
+            if e.is_cross() and len(e.Faces) > 1 and e.Faces[0].Zone.Name != e.Faces[1].Zone.Name:
+                if e.Faces[0] not in list_faces:
+                    list_faces.append(e.Faces[0])
+
+                if e.Faces[1] not in list_faces:
+                    list_faces.append(e.Faces[1])
+
+        return list_faces
+
+    # ----------------------------------------------------------------------------------------------
+
+    def find_neighbour_zones(self):
+        for f in self.get_cross_faces():
+            if f.Zone not in self.NeighbourZones:
+                self.NeighbourZones.append(f.Zone)
+
 
 # ==================================================================================================
 
@@ -984,6 +1031,27 @@ class Grid:
 
         edge.Faces.append(face)
         face.Edges.append(edge)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def fill_neighbour_zones(self):
+        for e in self.Edges:
+            if e.is_cross():
+                if e.Faces[1].Zone not in e.Faces[0].NeighbourZones:
+                    e.Faces[0].NeighbourZones.append(e.Faces[1].Zone)
+                if e.Faces[0].Zone not in e.Faces[1].NeighbourZones:
+                    e.Faces[1].NeighbourZones.append(e.Faces[0].Zone)
+                if e.Faces[1].Zone not in e.Faces[0].Zone.NeighbourZones:
+                    e.Faces[0].Zone.NeighbourZones.append(e.Faces[1].Zone)
+                if e.Faces[0].Zone not in e.Faces[1].Zone.NeighbourZones:
+                    e.Faces[1].Zone.NeighbourZones.append(e.Faces[0].Zone)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def distinct_edge_faces(self):
+        for e in self.Edges:
+            e.Faces = list({x.GloId: x for x in e.Faces}.values())
+
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1752,6 +1820,105 @@ class Grid:
 
         # except Exception as e:
         # raise Exception(e)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def local_refinement(self):
+        try:
+            if len(self.Zones) == 0:
+                raise Exception("No zones specified.")
+
+            self.check_faces_are_linked_to_zones()
+
+            current_metric = self.get_metric()
+
+            self.distinct_edge_faces()
+            self.fill_neighbour_zones()
+
+            for z in self.Zones:
+                cross_faces = z.get_cross_faces()
+                for n_zone in z.NeighbourZones:
+                    n_zone_cross_faces = n_zone.get_cross_faces()
+                    for z_face in cross_faces:
+                        if n_zone in z_face.NeighbourZones:
+                            for n_face in n_zone_cross_faces:
+                                if n_face.Zone in z.NeighbourZones:
+                                    current_metric = self.try_local_refine(current_metric, z_face, n_face)
+
+            self.check_faces_are_linked_to_zones()
+            self.link_nodes_and_edges_to_zones()
+
+        except Exception as ex:
+            raise Exception(ex)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def try_local_refine(self, current_metric, face_x, face_y):
+        zone_x = face_x.Zone
+        zone_y = face_y.Zone
+        initial_face_x_metric = face_x.get_metric()
+        initial_face_y_metric = face_y.get_metric()
+
+        # Move two faces to zone_x and calc metric
+        zone_x_metric = current_metric - initial_face_y_metric
+        zone_x.add_face(face_y)
+        zone_x_metric = zone_x_metric + face_y.get_metric()
+
+        # Move two faces to zone_y and calc metric
+        zone_y_metric = current_metric - initial_face_y_metric - initial_face_x_metric
+        zone_y.add_face(face_y)
+        zone_y.add_face(face_x)
+        zone_y_metric = zone_y_metric + face_y.get_metric() + face_x.get_metric()
+
+        # If current metric is the best
+        if current_metric < zone_y_metric and current_metric < zone_x_metric:
+            zone_x.add_face(face_x)
+            return current_metric
+
+        # Zone x metric is better
+        if zone_x_metric < zone_y_metric:
+            zone_x.add_face(face_x)
+            zone_x.add_face(face_y)
+            return zone_x_metric
+
+        # Zone y metric is better
+        return zone_y_metric
+
+    # ----------------------------------------------------------------------------------------------
+
+    def swap_faces(self, face_x, face_y):
+        zone_x = face_x.Zone
+        zone_y = face_y.Zone
+
+        zone_x.add_face(face_y)
+        zone_y.add_face(face_x)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_metric(self):
+        """
+        Get sum of length of all cross edges.
+        :return: float
+        """
+        metric = 0
+
+        for e in self.Edges:
+            metric = metric + e.get_metric()
+
+        return metric
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_cross_faces(self):
+        list_faces = list()
+        try:
+            for z in self.Zones:
+                list_faces.extend(set(z.get_cross_faces()))
+
+        except Exception as ex:
+            raise Exception(ex)
+
+        return list_faces
 
     # ----------------------------------------------------------------------------------------------
 

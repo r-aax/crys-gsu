@@ -2,7 +2,6 @@
 Test module.
 """
 import os
-
 import gsu
 import split
 
@@ -217,10 +216,25 @@ def case_010_decompose_incremental(test='bunny'):
     g.load('grids/{0}.dat'.format(test))
 
     g.decompose_incremental(32)
+    g.print_info(True, True)
+    print(g.get_metric())
     g.store('grids/{0}_incremental.dat'.format(test))
-    g.print_info()
 
 
+def case_011_decompose_incremental_vs_local_refinement(test='bunny'):
+    g = gsu.Grid()
+    g.load('grids/{0}.dat'.format(test))
+
+    g.decompose_incremental(32)
+    g.print_info(True, True)
+    print(g.get_metric())
+    g.store('grids/{0}_incremental.dat'.format(test))
+
+    g.local_refinement()
+    g.print_info(True, True)
+    print(g.get_metric())
+
+    g.store('grids/{0}_incremental_refined.dat'.format(test))
 # --------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
@@ -233,7 +247,8 @@ if __name__ == '__main__':
     # case_007_load_faces_t_hw_hi()
     # case_008_decompose_pressure()
     # case_009_store_mpi()
-    case_010_decompose_incremental()
+    # case_010_decompose_incremental()
+    case_011_decompose_incremental_vs_local_refinement()
 
     pass
 
