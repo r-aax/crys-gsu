@@ -1836,17 +1836,23 @@ class Grid:
             return
 
         spl_index = metrics.index(min_metric)
+        extract_signs_fun = extract_signs_funs[spl_index]
 
         # Split.
-        signs = [extract_signs_funs[spl_index](f) for f in zone.Faces]
+        signs = [extract_signs_fun(f) for f in zone.Faces]
         signs.sort()
         blade = signs[len(signs) // 2]
 
-        for face in zone.Faces:
-            if extract_signs_funs[spl_index](face) < blade:
-                zl.add_face(face)
-            else:
-                zr.add_face(face)
+        # First we split faces into two sets: left and right and
+        # then move faces sets to zl and ar zones.
+        # Otherwise we have bug inside zone.Faces iterator when we
+        # remove faces from zone.Faces in the loop.
+        l_faces = [f for f in zone.Faces if extract_signs_fun(f) < blade]
+        r_faces = [f for f in zone.Faces if extract_signs_fun(f) >= blade]
+        for f in l_faces:
+            zl.add_face(f)
+        for f in r_faces:
+            zr.add_face(f)
 
     # ----------------------------------------------------------------------------------------------
 
