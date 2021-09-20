@@ -2117,8 +2117,9 @@ class Grid:
                                           '"TauX", "TauY", "TauZ"':
                         self.Mode = 'CHECK_POINT'
                     elif variables_oth == '"T", "Hw", "Hi", "HTC", ' \
-                                          '"Beta", "MImp2", "Vd2", "Stall", "StallD", ' \
-                                          '"TauX", "TauY", "TauZ"':
+                                          '"Beta", "MImp2", "Vd2", ' \
+                                          '"TauX", "TauY", "TauZ", ' \
+                                          '"Stall", "StallD", "StallVX", "StallVY", "StallVZ"':
                         self.Mode = 'STALL'
                     elif variables_oth == '"MassImpinged", "WaterFilmHeight", ' \
                                           '"CurrentIceGrowth", ' \
