@@ -260,6 +260,10 @@ def drops(grid_file, grid_air_file, out_grid_file,
 
     # Save grid back.
     g.convert_grid_stall_to_check_point()
+    for f in g.Faces:
+        f.set_t(0.0)
+        f.set_hw(0.0)
+        f.set_hi(0.0)
     g.store(out_grid_file)
 
     print('crys-gsu-drops : done (time estimated = {0} s)'.format(time.time() - start_time))
