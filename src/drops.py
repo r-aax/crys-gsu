@@ -259,6 +259,7 @@ def drops(grid_file, grid_air_file, out_grid_file,
                 res[1].Data[mimp2_ind - 3] = (stall_value / res[1].get_area())
 
     # Save grid back.
+    g.convert_grid_stall_to_check_point()
     g.store(out_grid_file)
 
     print('crys-gsu-drops : done (time estimated = {0} s)'.format(time.time() - start_time))
