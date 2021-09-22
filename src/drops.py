@@ -209,7 +209,7 @@ def read_vel_field_from_file(grid_air_file):
 
 
 def drops(grid_file, grid_air_file, out_grid_file,
-          d=0.0001, dt=0.000001, stall_thr=0.0004, max_fly_steps=200):
+          d=1.0e-4, dt=1.0e-6, stall_thr=1.0e-6, max_fly_steps=200):
     """
     Calculate drops.
     :param grid_file: file with grid
@@ -280,9 +280,9 @@ def print_help():
     print('    <grid-file> - grid file name')
     print('    <grid-air-file> - name of file with air grid')
     print('    <out-grid-file> - out file with result grid')
-    print('    <d> - distance above face surface for start point of trajectory (default = 0.0001)')
-    print('    <dt> - time step (default = 0.000001)')
-    print('    <stall_thr> - threshold for stall faces (default = 0.0004)')
+    print('    <d> - distance above face surface for start point of trajectory (default = 1.0e-4)')
+    print('    <dt> - time step (default = 1.0e-6)')
+    print('    <stall_thr> - threshold for stall faces (default = 1.0e-6)')
     print('    <max_fly_steps> - maximum steps count for drops flying (default = 200)')
 
 # ==================================================================================================
