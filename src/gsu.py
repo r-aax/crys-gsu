@@ -1519,6 +1519,27 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
+    def convert_grid_stall_to_check_point(self):
+        """
+        Convert grid from STALL mode to CHCEK_POINT mode.
+        """
+
+        if self.Mode != 'STALL':
+            raise Exception('convertion works only with STALL mode')
+
+        self.Mode = 'CHECK_POINT'
+        self.Variables = self.Variables[:-5]
+        self.VariablesStr = '"X", "Y", "Z", ' \
+                            '"T", "Hw", "Hi", "HTC", ' \
+                            '"Beta", "MImp2", "Vd2", ' \
+                            '"TauX", "TauY", "TauZ"'
+        self.FaceVariablesCount -= 5
+
+        for f in self.Faces:
+            f.Data = f.Data[:-5]
+
+    # ----------------------------------------------------------------------------------------------
+
     def store(self, filename):
         """
         Store grid to file.

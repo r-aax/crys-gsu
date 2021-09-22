@@ -297,6 +297,23 @@ def case_013_clean_grid(test='cyl'):
 # --------------------------------------------------------------------------------------------------
 
 
+def case_014_convert_grid_stall_to_check_point(test='cyl/cyl_1_stall'):
+    """
+    Load grid, convert and store.
+    Test objective:
+      Verification grids conversion.
+    :param test: test name
+    """
+
+    print('case_014_convert_grid_stall_to_check_point({0})'.format(test))
+    g = gsu.Grid()
+    g.load('grids/{0}.dat'.format(test))
+    g.convert_grid_stall_to_check_point()
+    g.store('grids/{0}_case_014.dat'.format(test))
+
+# --------------------------------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
     # case_001_node_face_data()
     # case_002_decompose()
@@ -311,6 +328,7 @@ if __name__ == '__main__':
     # case_011_align_borders()
     # case_012_align_borders()
     # case_013_clean_grid()
+    # case_014_convert_grid_stall_to_check_point()
 
     pass
 
