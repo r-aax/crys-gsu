@@ -275,6 +275,28 @@ def case_012_align_borders(test='bunny', levels=3):
 # --------------------------------------------------------------------------------------------------
 
 
+def case_013_clean_grid(test='cyl'):
+    """
+    Load grid, clean and store.
+    Test objective:
+      Verification of cleaning mechanism.
+    :param test: test name
+    """
+
+    print('case_013_clean_grid({0})'.format(test))
+    g = gsu.Grid()
+    g.load('grids/{0}.dat'.format(test))
+    for f in g.Faces:
+        f.set_t(0.0)
+        f.set_hw(0.0)
+        f.set_hi(0.0)
+        f.set_mimp2(0.0)
+        f.set_vd2(0.0)
+    g.store('grids/{0}_case_013.dat'.format(test))
+
+# --------------------------------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
     # case_001_node_face_data()
     # case_002_decompose()
@@ -288,6 +310,7 @@ if __name__ == '__main__':
     # case_010_add_mimp2_vd2()
     # case_011_align_borders()
     # case_012_align_borders()
+    # case_013_clean_grid()
 
     pass
 

@@ -329,6 +329,46 @@ class Face:
 
     # ----------------------------------------------------------------------------------------------
 
+    def get_mimp2(self):
+        """
+        Get MImp2 value.
+        :return: MImp2 value
+        """
+
+        return self.Data[5]
+
+    # ----------------------------------------------------------------------------------------------
+
+    def set_mimp2(self, mimp2):
+        """
+        Set MImp2 value.
+        :param mimp2: MImp2 value
+        """
+
+        self.Data[5] = mimp2
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_vd2(self):
+        """
+        Get Vd2 value.
+        :return: Vd2 value
+        """
+
+        return self.Data[6]
+
+    # ----------------------------------------------------------------------------------------------
+
+    def set_vd2(self, vd2):
+        """
+        Set Vd2 value.
+        :param vd2: Vd2 value
+        """
+
+        self.Data[6] = vd2
+
+    # ----------------------------------------------------------------------------------------------
+
     def get_glo_id_t_hw_hi_str(self):
         """
         Get string with global identifier, temperature, and water and ice heights.
