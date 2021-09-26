@@ -334,6 +334,9 @@ class Face:
 
         self.T = t
 
+        # Mark.
+        self.M = 0
+
 # ==================================================================================================
 
 
@@ -406,10 +409,10 @@ class Mesh:
 
         with open(filename, 'w', newline='\n') as of:
 
-            of.write('VARIABLES="X", "Y", "Z"\n')
+            of.write('VARIABLES="X", "Y", "Z", "M"\n')
             of.write('ZONE T="SINGLE" NODES={0} ELEMENTS={1} '
                      'DATAPACKING=BLOCK ZONETYPE=FETRIANGLE '
-                     'VARLOCATION=([4-3]=CELLCENTERED)\n'.format(self.nodes_count(),
+                     'VARLOCATION=([4-4]=CELLCENTERED)\n'.format(self.nodes_count(),
                                                                  self.faces_count()))
             of.write(' '.join(['{0} {1} {2}'.format(f.T.a().X, f.T.b().X, f.T.c().X)
                                  for f in self.Faces]))
@@ -419,6 +422,8 @@ class Mesh:
             of.write('\n')
             of.write(' '.join(['{0} {1} {2}'.format(f.T.a().Z, f.T.b().Z, f.T.c().Z)
                                  for f in self.Faces]))
+            of.write('\n')
+            of.write(' '.join([str(f.M) for f in self.Faces]))
             of.write('\n')
 
             for i in range(self.faces_count()):
