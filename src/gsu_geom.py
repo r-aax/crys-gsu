@@ -8,6 +8,10 @@ import gsu
 
 # ==================================================================================================
 
+eps = 1.0e-10
+
+# ==================================================================================================
+
 
 class Vect:
     """
@@ -100,7 +104,19 @@ class Vect:
         :return: Norm.
         """
 
-        return sqrt(self.norm2())
+        return math.sqrt(self.norm2())
+
+    # ----------------------------------------------------------------------------------------------
+
+    def orth(self):
+        """
+        Orth of the vector.
+        :return: Orth.
+        """
+
+        n = self.norm()
+
+        return Vect(self.X / n, self.Y / n, self.Z / n)
 
     # ----------------------------------------------------------------------------------------------
 
@@ -112,6 +128,53 @@ class Vect:
         """
 
         return (self - v).norm()
+
+    # ----------------------------------------------------------------------------------------------
+
+    def is_eq(self, v):
+        """
+        Check if eq to another vector.
+        :param v: Vector.
+        :return: True - if near to another vector,
+                 False - otherwise.
+        """
+
+        return abs(self.X - v.X) + abs(self.Y - v.Y) + abs(self.Z - v.Z) < eps
+
+    # ----------------------------------------------------------------------------------------------
+
+    def dot_product(self, v):
+        """
+        Dot product.
+        :param v: Vector.
+        :return: Dot product.
+        """
+
+        return self.X * v.X + self.Y * v.Y + self.Z * v.Z
+
+    # ----------------------------------------------------------------------------------------------
+
+    def angle_cos(self, v):
+        """
+        Cosine of angle between vectors.
+        :param v: Vector.
+        :return: Angle cosine.
+        """
+
+        return self.dot_product(v) / (self.norm() * v.norm())
+
+    # ----------------------------------------------------------------------------------------------
+
+    def cross_product(self, v):
+        """
+        Cross product.
+        :param v: Vector.
+        :return: Cross product.
+        """
+
+        return Vect(self.Y * v.Z - self.Z * v.Y,
+                    self.Z * v.X - self.X * v.Z,
+                    self.X * v.Y - self.Y * v.X)
 
 # ==================================================================================================
 
@@ -134,6 +197,16 @@ class Segment:
 
     # ----------------------------------------------------------------------------------------------
 
+    def __repr__(self):
+        """
+        String representation.
+        :return: String.
+        """
+
+        return 'S: {0} - {1}'.format(self.a(), self.b())
+
+    # ----------------------------------------------------------------------------------------------
+
     def a(self):
         """
         A point.
@@ -151,6 +224,22 @@ class Segment:
         """
 
         return self.Points[1]
+
+    # ----------------------------------------------------------------------------------------------
+
+    def is_eq(self, s):
+        """
+        Check if eq to another segment.
+        :param s: Segment.
+        :return: True - if near to another segment,
+                 False - otherwise.
+        """
+
+        a, b = self.a(), self.b()
+        sa, sb = s.a(), s.b()
+
+        return (a.is_eq(sa) and b.is_eq(sb)) \
+               or (a.is_eq(sb) and b.is_eq(sa))
 
     # ----------------------------------------------------------------------------------------------
 
@@ -264,6 +353,50 @@ class Triangle:
 
     # ----------------------------------------------------------------------------------------------
 
+    def is_eq(self, t):
+        """
+        Check if eq to another triangle.
+        :param t: Triangle.
+        :return: True - if near to another triangle,
+                 False - otherwise.
+        """
+
+        a, b, c, ab, bc, ac = self.a(), self.b(), self.c(), self.ab(), self.bc(), self.ac()
+        ta, tb, tc, tab, tbc, tac = t.a(), t.b(), t.c(), t.ab(), t.bc(), t.ac()
+
+        return (ab.is_eq(tab) and c.is_eq(tc)) \
+               or (ab.is_eq(tbc) and c.is_eq(ta)) \
+               or (ab.is_eq(tac) and c.is_eq(tb))
+
+    # ----------------------------------------------------------------------------------------------
+
+    def normal(self):
+        """
+        Normal.
+        :return: Normal.
+        """
+
+        a, b, c = self.a(), self.b(), self.c()
+
+        return (b - a).cross_product(c - a).orth()
+
+    # ----------------------------------------------------------------------------------------------
+
+    def is_parallel_to_triangle(self, t):
+        """
+        Check if parallel to triangle.
+        :param t: Triangle.
+        :return: True - if parallel to triangle,
+                 False - otherwise.
+        """
+
+        n1 = self.normal()
+        n2 = self.normal()
+
+        return n1.angle_cos(n2) < eps
+
+    # ----------------------------------------------------------------------------------------------
+
     def box_corner_ldb(self):
         """
         Box corner Left-Down-Back.
@@ -326,25 +459,20 @@ class Triangle:
 
     # ----------------------------------------------------------------------------------------------
 
-    def intersection_with_triangle(self, t):
+    def is_has_common_edge_with_triangle(self, t):
         """
-        Calculate intersection with another triangle.
+        Check if has common edge with another trianngle.
         :param t: Triangle.
-        :return: Intersection information.
+        :return: True - if has common edge with another triangle,
+                 False - otherwise.
         """
 
-        # Intersection between two triangles is described as array of points.
-        #   - empty array - no intersection,
-        #   - 1 point - one triangle touch another triangle with its node,
-        #   - 2 points - intersection by segment,
-        #   - 3 points - triangles lay in one plane,
-        #   - 4 points - triangles lay in one plane.
+        ab, bc, ac = self.ab(), self.bc(), self.ac()
+        tab, tbc, tac = t.ab(), t.bc(), t.ac()
 
-        # First of all check intersection by boxes.
-        if self.is_no_intersection_with_triangle_by_boxes(t):
-            return []
-
-        return [Vect(0.0, 0.0, 0.0)]
+        return ab.is_eq(tab) or ab.is_eq(tbc) or ab.is_eq(tac) \
+               or bc.is_eq(tab) or bc.is_eq(tbc) or bc.is_eq(tac) \
+               or ac.is_eq(tab) or ac.is_eq(tbc) or ac.is_eq(tac)
 
 # ==================================================================================================
 
@@ -479,21 +607,6 @@ class Mesh:
 
     # ----------------------------------------------------------------------------------------------
 
-    def mark_intersection(self):
-        """
-        Mark intersection.
-        """
-
-        for i in range(self.faces_count()):
-            for j in range(i + 1, self.faces_count()):
-                fi = self.Faces[i]
-                fj = self.Faces[j]
-                if fi.T.intersection_with_triangle(fj.T) != []:
-                    fi.M = 1
-                    fj.M = 1
-
-    # ----------------------------------------------------------------------------------------------
-
     def load(self, filename):
         """
         Load mesh.
@@ -564,6 +677,19 @@ if __name__ == '__main__':
     Main function.
     """
 
-    pass
+    # No intersection by boxes.
+    t1 = Triangle(Vect(0.0, 0.0, 0.0), Vect(1.0, 0.0, 0.0), Vect(0.0, 1.0, 0.0))
+    t2 = Triangle(Vect(6.0, 0.0, 0.0), Vect(5.0, 1.0, 0.0), Vect(5.0, 0.0, 0.0))
+    assert t1.is_no_intersection_with_triangle_by_boxes(t2)
+
+    # Exact equal.
+    t1 = Triangle(Vect(0.0, 0.0, 0.0), Vect(1.0, 0.0, 0.0), Vect(0.0, 1.0, 0.0))
+    t2 = Triangle(Vect(1.0, 0.0, 0.0), Vect(0.0, 1.0, 0.0), Vect(0.0, 0.0, 0.0))
+    assert t1.is_eq(t2)
+
+    # Common edge.
+    t1 = Triangle(Vect(0.0, 0.0, 0.0), Vect(1.0, 0.0, 0.0), Vect(0.0, 1.0, 0.0))
+    t2 = Triangle(Vect(1.0, 0.0, 0.0), Vect(0.0, 1.0, 0.0), Vect(1.0, 1.0, 0.0))
+    assert t1.is_has_common_edge_with_triangle(t2)
 
 # ==================================================================================================
