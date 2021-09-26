@@ -322,14 +322,10 @@ def case_015_self_intersection():
       Self intersection algorithm.
     """
 
-    g = gsu.Grid()
-    g.load('grids/bunny.dat')
-
     m = gsu_geom.Mesh()
-    m.add_from_gsu_grid(g)
-    m.move(gsu_geom.Vect(0.025, 0.0, 0.0))
-    m.add_from_gsu_grid(g)
-    m.store('grids/bunny_mesh.dat')
+    m.load('meshes/bunny_2_ears.dat')
+    m.mark_intersection()
+    m.store('meshes/bunny_2_ears_intersections.dat')
 
 # --------------------------------------------------------------------------------------------------
 

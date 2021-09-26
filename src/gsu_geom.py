@@ -62,6 +62,28 @@ class Vect:
 
     # ----------------------------------------------------------------------------------------------
 
+    def __mul__(self, k):
+        """
+        Mul.
+        :param k: Value.
+        :return: Result.
+        """
+
+        return Vect(self.X * k, self.Y * k, self.Z * k)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def __truediv__(self, k):
+        """
+        Div.
+        :param k: Value.
+        :return: Result.
+        """
+
+        return self * (1.0 / k)
+
+    # ----------------------------------------------------------------------------------------------
+
     def norm2(self):
         """
         Square norm.
@@ -199,6 +221,16 @@ class Triangle:
         """
 
         return self.Points[2]
+
+    # ----------------------------------------------------------------------------------------------
+
+    def center(self):
+        """
+        Center point.
+        :return: Center.
+        """
+
+        return (self.a() + self.b() + self.c()) / 3.0
 
     # ----------------------------------------------------------------------------------------------
 
@@ -374,6 +406,44 @@ class Mesh:
 
     # ----------------------------------------------------------------------------------------------
 
+    def box_corner_ldb(self):
+        """
+        Box corner Left-Down-Back.
+        :return: Box corner.
+        """
+
+        ps = [f.T.box_corner_ldb() for f in self.Faces]
+
+        return Vect(min([p.X for p in ps]),
+                    min([p.Y for p in ps]),
+                    min([p.Z for p in ps]))
+
+    # ----------------------------------------------------------------------------------------------
+
+    def box_corner_ruf(self):
+        """
+        Box corner Right-Up-Front.
+        :return: Box corner.
+        """
+
+        ps = [f.T.box_corner_ruf() for f in self.Faces]
+
+        return Vect(max([p.X for p in ps]),
+                    max([p.Y for p in ps]),
+                    max([p.Z for p in ps]))
+
+    # ----------------------------------------------------------------------------------------------
+
+    def box_corners(self):
+        """
+        Box corners points.
+        :return: Corner points.
+        """
+
+        return (self.box_corner_ldb(), self.box_corner_ruf())
+
+    # ----------------------------------------------------------------------------------------------
+
     def add_from_gsu_grid(self, g):
         """
         Import from GSU grid.
@@ -399,6 +469,16 @@ class Mesh:
 
     # ----------------------------------------------------------------------------------------------
 
+    def filter(self, fun):
+        """
+        Filter faces.
+        :param fun: Function.
+        """
+
+        self.Faces = [f for f in self.Faces if fun(f)]
+
+    # ----------------------------------------------------------------------------------------------
+
     def mark_intersection(self):
         """
         Mark intersection.
@@ -409,7 +489,6 @@ class Mesh:
                 fi = self.Faces[i]
                 fj = self.Faces[j]
                 if fi.T.intersection_with_triangle(fj.T) != []:
-                    print(i, j)
                     fi.M = 1
                     fj.M = 1
 
