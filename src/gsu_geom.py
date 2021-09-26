@@ -5,6 +5,9 @@ Geometry aspects of Grid Surface Unstructured.
 
 import math
 import gsu
+import numpy as np
+import scipy as sp
+import scipy.linalg as lalg
 
 # ==================================================================================================
 
@@ -353,6 +356,18 @@ class Triangle:
 
     # ----------------------------------------------------------------------------------------------
 
+    def is_my_vertex(self, p):
+        """
+        Check if point is vertex.
+        :param p: Point.
+        :return: True - if point is my vertex,
+                 False - otherwise.
+        """
+
+        return self.a().is_eq(p) or self.b().is_eq(p) or self.c().is_eq(p)
+
+    # ----------------------------------------------------------------------------------------------
+
     def is_eq(self, t):
         """
         Check if eq to another triangle.
@@ -474,6 +489,89 @@ class Triangle:
                or bc.is_eq(tab) or bc.is_eq(tbc) or bc.is_eq(tac) \
                or ac.is_eq(tab) or ac.is_eq(tbc) or ac.is_eq(tac)
 
+    # ----------------------------------------------------------------------------------------------
+
+    def area(self):
+        """
+        Area.
+        :return: Area.
+        """
+
+        ab = self.b() - self.a()
+        ac = self.c() - self.a()
+
+        return 0.5 * abs(ab.cross_product(ac).norm())
+
+    # ----------------------------------------------------------------------------------------------
+
+    def is_point_inside(self, p):
+        """
+        Triangle has point inside it.
+        :param p: Point.
+        :return: True - if point is inside triangle,
+                 False - otherwise.
+        """
+
+        a, b, c = self.a(), self.b(), self.c()
+        ar1 = self.area()
+        t1 = Triangle(a, b, p)
+        t2 = Triangle(b, c, p)
+        t3 = Triangle(a, c, p)
+        ar2 = t1.area() + t2.area() + t3.area()
+
+        return abs(ar1 - ar2) < eps
+
+    # ----------------------------------------------------------------------------------------------
+
+    def intersect_with_segment(self, s):
+        """
+        Intersection with segment.
+        :param s: Segment.
+        """
+
+        # Triangle ABC equation.
+        #   x = xa + (xb - xa) * alf + (xc - xa) * bet
+        #   y = ya + (yb - ya) * alf + (yc - ya) * bet
+        #   z = za + (zb - za) * alf + (zc - za) * bet
+        #   alf >= 0.0
+        #   bet >= 0.0
+        #   alf + bet <= 1.0
+        # Segment DE equation.
+        #   x = xd + (xe - xd) * gam
+        #   y = yd + (ye - yd) * gam
+        #   z = zd + (ze - zd) * gam
+        #   gam >= 0.0
+        #   gam <= 1.0
+        # Rewrite equations.
+        #   xa + (xb - xa) * alf + (xc - xa) * bet = xd + (xe - xd) * gam
+        #   ya + (yb - ya) * alf + (yc - ya) * bet = yd + (ye - yd) * gam
+        #   za + (zb - za) * alf + (zc - za) * bet = zd + (ze - zd) * gam
+        # ...
+        #   (xb - xa) * alf + (xc - xa) * bet + (xd - xe) * gam = xd - xa
+        #   (yb - ya) * alf + (yc - ya) * bet + (yd - ye) * gam = yd - ya
+        #   (zb - za) * alf + (zc - za) * bet + (zd - ze) * gam = zd - za
+
+        a, b, c = self.a(), self.b(), self.c()
+        d, e = s.a(), s.b()
+
+        matrix_a = np.array([[b.X - a.X, c.X - a.X, d.X - e.X],
+                             [b.Y - a.Y, c.Y - a.Y, d.Y - e.Y],
+                             [b.Z - a.Z, c.Z - a.Z, d.Z - e.Z]])
+        vector_b = np.array([d.X - a.X, d.Y - a.Y, d.Z - a.Z])
+
+        # matrix_a * [alf, bet, gam] = vector_b
+
+        if abs(lalg.det(matrix_a)) > eps:
+            r = lalg.solve(matrix_a, vector_b)
+            alf, bet, gam = r[0], r[1], r[2]
+            is_alf_bet = (alf >= 0.0) and (bet >= 0.0) and (alf + bet <= 1.0)
+            is_gam = (gam >= 0.0) and (gam <= 1.0)
+            if is_alf_bet and is_gam:
+                # print('POINT', d + (e - d) * gam)
+                return d + (e - d) * gam
+
+        return None
+
 # ==================================================================================================
 
 
@@ -494,6 +592,63 @@ class Face:
 
         # Mark.
         self.M = 0
+
+    # ----------------------------------------------------------------------------------------------
+
+    def add_point_to_sp(self, p):
+        """
+        Add point to SP.
+        :param p: Point.
+        """
+
+        # Do not add None point.
+        if p is None:
+            return
+
+        # Do not add vertex point.
+        if self.T.is_my_vertex(p):
+            return
+
+        # Double point check.
+        for pi in self.SP:
+            if pi.is_eq(p):
+                return
+
+        # Eventually add it.
+        self.SP.append(p)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def shred(self):
+        """
+        Shred.
+        """
+
+        fs = [self]
+
+        for p in self.SP:
+            nfs = []
+            for f in fs:
+                t = f.T
+                if f.T.is_point_inside(p):
+                    a, b, c = t.a(), t.b(), t.c()
+                    t1 = Triangle(a, b, p)
+                    t2 = Triangle(b, c, p)
+                    t3 = Triangle(c, a, p)
+                    if t1.area() > eps:
+                        nfs.append(Face(t1))
+                    if t2.area() > eps:
+                        nfs.append(Face(t2))
+                    if t3.area() > eps:
+                        nfs.append(Face(t3))
+                else:
+                    nfs.append(f)
+            fs = nfs
+
+        for f in fs:
+            f.M = 1.0
+
+        return fs
 
 # ==================================================================================================
 
@@ -586,6 +741,24 @@ class Mesh:
 
     # ----------------------------------------------------------------------------------------------
 
+    def add_vertical_square(self, x1, y1, x2, y2):
+        """
+        Add vertical square, divided by two triangles.
+        :param x1: First X.
+        :param y1: First Y.
+        :param x2: Second X.
+        :param y2: Second Y.
+        """
+
+        self.Faces.append(Face(Triangle(Vect(x1, y1, 0.0),
+                                        Vect(x2, y2, 0.0),
+                                        Vect(x2, y2, 1.0))))
+        self.Faces.append(Face(Triangle(Vect(x1, y1, 0.0),
+                                        Vect(x2, y2, 1.0),
+                                        Vect(x1, y1, 1.0))))
+
+    # ----------------------------------------------------------------------------------------------
+
     def move(self, v):
         """
         Move with vector.
@@ -669,6 +842,59 @@ class Mesh:
 
             of.close()
 
+    # ----------------------------------------------------------------------------------------------
+
+    def shred(self):
+        """
+        Shred mesh.
+        """
+
+        fc = self.faces_count()
+
+        for f in self.Faces:
+            f.SP = []
+
+        for i in range(fc):
+
+            fi = self.Faces[i]
+            print('processing {0} of {1}'.format(i, fc))
+
+            for j in range(i + 1, fc):
+
+                fj = self.Faces[j]
+
+                # Check boxes.
+                if fi.T.is_no_intersection_with_triangle_by_boxes(fj.T):
+                    continue
+
+                # Intersections.
+                ps = [fi.T.intersect_with_segment(fj.T.ab()),
+                      fi.T.intersect_with_segment(fj.T.bc()),
+                      fi.T.intersect_with_segment(fj.T.ac()),
+                      fj.T.intersect_with_segment(fi.T.ab()),
+                      fj.T.intersect_with_segment(fi.T.bc()),
+                      fj.T.intersect_with_segment(fi.T.ac())]
+
+                for p in ps:
+                    fi.add_point_to_sp(p)
+                    fj.add_point_to_sp(p)
+
+        # Array for new faces.
+        new_faces = []
+
+        # Ready to shred.
+        for f in self.Faces:
+            pc = len(f.SP)
+            # print(f.T, pc)
+            if pc == 0:
+                pass
+            else:
+                f.M = -1
+                new_faces = new_faces + f.shred()
+
+        self.Faces = self.Faces + new_faces
+        self.filter(lambda f: f.M > -1)
+
 # ==================================================================================================
 
 
@@ -691,5 +917,9 @@ if __name__ == '__main__':
     t1 = Triangle(Vect(0.0, 0.0, 0.0), Vect(1.0, 0.0, 0.0), Vect(0.0, 1.0, 0.0))
     t2 = Triangle(Vect(1.0, 0.0, 0.0), Vect(0.0, 1.0, 0.0), Vect(1.0, 1.0, 0.0))
     assert t1.is_has_common_edge_with_triangle(t2)
+
+    # Area.
+    t = Triangle(Vect(0.0, 0.0, 0.0), Vect(1.0, 0.0, 0.0), Vect(0.0, 1.0, 0.0))
+    assert abs(t.area() - 0.5) < eps
 
 # ==================================================================================================

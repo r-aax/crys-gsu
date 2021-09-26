@@ -323,9 +323,9 @@ def case_015_self_intersection():
     """
 
     m = gsu_geom.Mesh()
-    m.load('meshes/bunny_2_ears.dat')
-    m.mark_intersection()
-    m.store('meshes/bunny_2_ears_intersections.dat')
+    m.load('meshes/bunny_2.dat')
+    m.shred()
+    m.store('meshes/bunny_2_sh.dat')
 
 # --------------------------------------------------------------------------------------------------
 
