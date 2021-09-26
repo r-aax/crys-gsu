@@ -288,8 +288,6 @@ class Triangle:
         (left1, right1) = self.box_corners()
         (left2, right2) = t.box_corners()
 
-        print(left1, right1, left2, right2)
-
         return (left2.X > right1.X) or (right2.X < left1.X) \
                or (left2.Y > right1.Y) or (right2.Y < left1.Y) \
                or (left2.Z > right1.Z) or (right2.Z < left1.Z)
@@ -314,7 +312,7 @@ class Triangle:
         if self.is_no_intersection_with_triangle_by_boxes(t):
             return []
 
-        return []
+        return [Vect(0.0, 0.0, 0.0)]
 
 # ==================================================================================================
 
@@ -398,6 +396,54 @@ class Mesh:
 
         for f in self.Faces:
             f.T.move(v)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def mark_intersection(self):
+        """
+        Mark intersection.
+        """
+
+        for i in range(self.faces_count()):
+            for j in range(i + 1, self.faces_count()):
+                fi = self.Faces[i]
+                fj = self.Faces[j]
+                if fi.T.intersection_with_triangle(fj.T) != []:
+                    print(i, j)
+                    fi.M = 1
+                    fj.M = 1
+
+    # ----------------------------------------------------------------------------------------------
+
+    def load(self, filename):
+        """
+        Load mesh.
+        :param filename: Name of file.
+        """
+
+        with open(filename, 'r') as f:
+
+            # Zone head.
+            hl = f.readline()
+            hl = f.readline()
+            hls = hl.split()
+            faces_count = int(hls[3].split('=')[1])
+
+            # Coordinates.
+            xs = [float(xsi) for xsi in f.readline().split()]
+            ys = [float(ysi) for ysi in f.readline().split()]
+            zs = [float(zsi) for zsi in f.readline().split()]
+
+            # Create faces.
+            for i in range(faces_count):
+                a = Vect(xs[3 * i], ys[3 * i], zs[3 * i])
+                b = Vect(xs[3 * i + 1], ys[3 * i + 1], zs[3 * i + 1])
+                c = Vect(xs[3 * i + 2], ys[3 * i + 2], zs[3 * i + 2])
+                self.Faces.append(Face(Triangle(a, b, c)))
+
+            # We do not need to load links between faces and nodes.
+
+            f.close()
 
     # ----------------------------------------------------------------------------------------------
 
