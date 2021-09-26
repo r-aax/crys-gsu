@@ -326,7 +326,9 @@ def case_015_self_intersection():
     g.load('grids/bunny.dat')
 
     m = gsu_geom.Mesh()
-    m.import_from_gsu_grid(g)
+    m.add_from_gsu_grid(g)
+    m.move(gsu_geom.Vect(0.025, 0.0, 0.0))
+    m.add_from_gsu_grid(g)
     m.store('grids/bunny_mesh.dat')
 
 # --------------------------------------------------------------------------------------------------

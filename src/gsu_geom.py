@@ -40,6 +40,17 @@ class Vect:
 
     # ----------------------------------------------------------------------------------------------
 
+    def __add__(self, v):
+        """
+        Add.
+        :param v: Vector.
+        :return: Result.
+        """
+
+        return Vect(self.X + v.X, self.Y + v.Y, self.Z + v.Z)
+
+    # ----------------------------------------------------------------------------------------------
+
     def __sub__(self, v):
         """
         Sub.
@@ -255,6 +266,17 @@ class Triangle:
 
     # ----------------------------------------------------------------------------------------------
 
+    def move(self, v):
+        """
+        Move with vector.
+        :param v: Vector.
+        """
+
+        a, b, c = self.a(), self.b(), self.c()
+        self.Points = [a + v, b + v, c + v]
+
+    # ----------------------------------------------------------------------------------------------
+
     def is_no_intersection_with_triangle_by_boxes(self, t):
         """
         Check if there is no intersection with another triangle if we use boxes.
@@ -351,19 +373,28 @@ class Mesh:
 
     # ----------------------------------------------------------------------------------------------
 
-    def import_from_gsu_grid(self, g):
+    def add_from_gsu_grid(self, g):
         """
         Import from GSU grid.
         :param g: Grid.
         """
-
-        self.Faces = []
 
         for f in g.Faces:
             a = Vect(f.Nodes[0].P[0], f.Nodes[0].P[1], f.Nodes[0].P[2])
             b = Vect(f.Nodes[1].P[0], f.Nodes[1].P[1], f.Nodes[1].P[2])
             c = Vect(f.Nodes[2].P[0], f.Nodes[2].P[1], f.Nodes[2].P[2])
             self.Faces.append(Face(Triangle(a, b, c)))
+
+    # ----------------------------------------------------------------------------------------------
+
+    def move(self, v):
+        """
+        Move with vector.
+        :param v: Vector.
+        """
+
+        for f in self.Faces:
+            f.T.move(v)
 
     # ----------------------------------------------------------------------------------------------
 
