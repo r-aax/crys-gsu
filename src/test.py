@@ -3,6 +3,7 @@ Test module.
 """
 
 import gsu
+import gsu_geom
 import split
 
 
@@ -314,6 +315,23 @@ def case_014_convert_grid_stall_to_check_point(test='cyl/cyl_1_stall'):
 # --------------------------------------------------------------------------------------------------
 
 
+def case_015_self_intersection():
+    """
+    Self intersection of the grid.
+    Test objective:
+      Self intersection algorithm.
+    """
+
+    g = gsu.Grid()
+    g.load('grids/bunny.dat')
+
+    m = gsu_geom.Mesh()
+    m.import_from_gsu_grid(g)
+    m.store('grids/bunny_mesh.dat')
+
+# --------------------------------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
     # case_001_node_face_data()
     # case_002_decompose()
@@ -329,6 +347,7 @@ if __name__ == '__main__':
     # case_012_align_borders()
     # case_013_clean_grid()
     # case_014_convert_grid_stall_to_check_point()
+    # case_015_self_intersection()
 
     pass
 
