@@ -180,6 +180,16 @@ class Edge:
 
     # ----------------------------------------------------------------------------------------------
 
+    def is_outer(self):
+        """
+        Check if edge is outer for its zone.
+        :return: True - if edge is outer, False - otherwise
+        """
+
+        return not self.is_inner()
+
+    # ----------------------------------------------------------------------------------------------
+
     def is_connect_zones(self, z0, z1):
         """
         Check if edge connect two given zones.
@@ -552,6 +562,16 @@ class Zone:
 
     # ----------------------------------------------------------------------------------------------
 
+    def outer_edges_count(self):
+        """
+        Get count of outer edges.
+        :return: Outer edges count.
+        """
+
+        return len([e for e in self.Edges if e.is_outer()])
+
+    # ----------------------------------------------------------------------------------------------
+
     def faces_count(self):
         """
         Get count of faces.
@@ -559,6 +579,16 @@ class Zone:
         """
 
         return len(self.Faces)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def zone_quality_factor(self):
+        """
+        Zone quality factor.
+        :return: Zone quality factor.
+        """
+
+        return math.sqrt(self.faces_count()) / self.outer_edges_count()
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1107,14 +1137,22 @@ class Grid:
         if is_print_faces_distribution:
             print('  distribution faces between zones:')
             for zone in self.Zones:
-                print('    {0} : {1} faces'.format(zone.Name, len(zone.Faces)))
+                print('    {0} : {1} faces, '
+                      '{2} outer edges, QF = {3:.3f}'.format(zone.Name,
+                                                             zone.faces_count(),
+                                                             zone.outer_edges_count(),
+                                                             zone.zone_quality_factor()))
             zones_faces_count = [len(zone.Faces) for zone in self.Zones]
+            zones_quality_factors = [zone.zone_quality_factor() for zone in self.Zones]
             ideal_mean = len(self.Faces) / len(self.Zones)
             max_zone_faces_count = max(zones_faces_count)
             faces_distr_dev = 100.0 * (max_zone_faces_count - ideal_mean) / ideal_mean
             print('  ~ max zone faces {0}, '
                   'faces distribution deviation : {1:.2f}%'.format(max_zone_faces_count,
                                                                    faces_distr_dev))
+            print('  ~ min/max quality factor : '
+                  '{0:.3f}, {1:.3f}'.format(min(zones_quality_factors),
+                                            max(zones_quality_factors)))
 
         # Distribution edges between pairs of neighbours.
         if is_print_zones_adjacency_matrix:
