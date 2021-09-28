@@ -4,9 +4,11 @@ GSU main functions.
 
 import math
 import random
+from bisect import bisect_left
+import time
 
 # ==================================================================================================
-from itertools import groupby
+from collections import deque
 
 
 def rounded_point(p, digits=10):
@@ -205,13 +207,21 @@ class Edge:
         if len(self.Nodes) < 1:
             raise Exception("Less than two node")
 
-        return float(math.sqrt(math.pow(self.Nodes[0].P[0] - self.Nodes[1].P[0], 2) + math.pow(self.Nodes[0].P[1] - self.Nodes[1].P[1], 2)))
+        return float(math.sqrt(
+            math.pow(self.Nodes[0].P[0] - self.Nodes[1].P[0], 2) + math.pow(self.Nodes[0].P[1] - self.Nodes[1].P[1],
+                                                                            2)))
 
     def get_metric(self):
         if self.is_cross():
             return float(self.get_weight())
         else:
             return 0
+
+    def has_contact_with_zone(self, z):
+        """
+        Check if CROSS edge has contact with specified zone.
+        """
+        return len(self.Faces) > 1 and (self.Faces[0].Zone is z or self.Faces[1].Zone is z)
 
 
 # ==================================================================================================
@@ -242,6 +252,7 @@ class Face:
         # Link to zone (each face belongs only to one single zone).
         self.Zone = None
         self.NeighbourZones = []
+        self.BfsZones = []
 
     # ----------------------------------------------------------------------------------------------
 
@@ -395,9 +406,10 @@ class Zone:
         self.Edges = []
         self.Faces = []
         self.NeighbourZones = []
-
+        self.FacesBFS = deque()
         # Fixed zone flag.
         self.IsFixed = False
+        self.LastFaces = []
 
     # ----------------------------------------------------------------------------------------------
 
@@ -537,13 +549,19 @@ class Zone:
 
     def get_cross_faces(self):
         list_faces = list()
-        for e in self.Edges:
-            if e.is_cross() and len(e.Faces) > 1 and e.Faces[0].Zone.Name != e.Faces[1].Zone.Name:
-                if e.Faces[0] not in list_faces:
-                    list_faces.append(e.Faces[0])
+        for f in self.Faces:
+            if len(f.NeighbourZones) > 1:
+                list_faces.append(f)
 
-                if e.Faces[1] not in list_faces:
-                    list_faces.append(e.Faces[1])
+        return list_faces
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_cross_faces_to_zone(self, zone):
+        list_faces = list()
+        for f in self.Faces:
+            if zone in f.NeighbourZones:
+                list_faces.append(f)
 
         return list_faces
 
@@ -788,6 +806,15 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
+    def clear_patrition(self):
+        self.Zones = []
+        zone = Zone('ZONE 1')
+        self.Zones.append(zone)
+
+        for f in self.Faces:
+            f.NeighbourZones = []
+            self.Zones[0].add_face(f)
+
     def nodes_count(self):
         """
         Get count of nodes.
@@ -880,21 +907,28 @@ class Grid:
         # Distribution faces between zones.
         if is_print_faces_distribution:
             print('  distribution faces between zones:')
-            for zone in self.Zones:
-                print('    {0} : {1} faces'.format(zone.Name, len(zone.Faces)))
-            zones_faces_count = [len(zone.Faces) for zone in self.Zones]
-            ideal_mean = len(self.Faces) / len(self.Zones)
-            max_zone_faces_count = max(zones_faces_count)
-            faces_distr_dev = 100.0 * (max_zone_faces_count - ideal_mean) / ideal_mean
-            print('  ~ max zone faces {0}, '
-                  'faces distribution deviation : {1:.2f}%'.format(max_zone_faces_count,
-                                                                   faces_distr_dev))
+        for zone in self.Zones:
+            print('    {0} : {1} faces'.format(zone.Name, len(zone.Faces)))
+
+        faces_distr_dev, max_zone_faces_count = self.get_fd_deviation()
+        print('  ~ max zone faces {0}, '
+              'faces distribution deviation : {1:.2f}%'.format(max_zone_faces_count,
+                                                               faces_distr_dev))
 
         # Distribution edges between pairs of neighbours.
         if is_print_zones_adjacency_matrix:
             for i in range(zc + 1):
                 print(' '.join(['{0:5}'.format(e) for e in zam.M[i]]))
             print('  ~ max cross-zones border length : {0}'.format(zam.max_cross_border_len()))
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_fd_deviation(self):
+        zones_faces_count = [len(zone.Faces) for zone in self.Zones]
+        ideal_mean = len(self.Faces) / len(self.Zones)
+        max_zone_faces_count = max(zones_faces_count)
+        faces_distr_dev = 100.0 * (max_zone_faces_count - ideal_mean) / ideal_mean
+        return faces_distr_dev, max_zone_faces_count
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1051,7 +1085,6 @@ class Grid:
     def distinct_edge_faces(self):
         for e in self.Edges:
             e.Faces = list({x.GloId: x for x in e.Faces}.values())
-
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1764,56 +1797,75 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
-    def decompose_incremental(self, levels):
-        # ry:
+    def decompose_incremental_consistently(self, levels):
         # Delete all zones (not fixed) and links.
-        self.Zones = [z for z in self.Zones if z.IsFixed]
-        self.unlink_faces_from_zones()
+        self.clear_grid_and_create_random_zones(levels)
 
-        # Initialize all zones with random faces.
-        for li in range(levels - 1):
-            zone = Zone(li)
-            self.Zones.append(zone)
-            face = random.choice(self.Faces)
-            zone.add_face(face)
-            zone.LastFace = list()
-            zone.LastFace.append(face)
+        i = levels - 1
+        zone_fail_count = 0
+        while zone_fail_count < levels:
+            for z in self.Zones:
+                # Trying to found neighbours faces to current zone.
+                faces = self.get_neighbours_for_zone(z, True)
+                if not faces:
+                    zone_fail_count += 1
+                else:
+                    zone_fail_count = 0
 
-        i = 0
-        k = 0
-        found_new = True
+        face_bfs_len = len(self.Zones[0].FacesBFS)
+        for z in self.Zones:
+            if face_bfs_len != len(z.FacesBFS):
+                raise Exception("Wrong face BFS count.")
 
-        while found_new:
+        unproc_faces = []
+        for f in self.Faces:
+            if f not in self.Zones[0].FacesBFS:
+                unproc_faces.append(f)
+
+        for z in self.Zones:
+            for f in unproc_faces:
+                z.FacesBFS.append(f)
+
+        zone_fail_count = 0
+        while zone_fail_count < levels:
+            for z in self.Zones:
+                if len(z.FacesBFS) != 0:
+                    face = z.FacesBFS.popleft()
+                    if face.Zone is None:
+                        z.add_face(face)
+
+                    zone_fail_count = 0
+                else:
+                    zone_fail_count += 1
+
+        self.check_faces_are_linked_to_zones()
+        self.link_nodes_and_edges_to_zones()
+
+    # ----------------------------------------------------------------------------------------------
+
+    def decompose_incremental(self, levels):
+        # Delete all zones (not fixed) and links.
+        self.clear_grid_and_create_random_zones(levels)
+
+        i = levels - 1
+        k = len(self.Faces)
+        zone_find_new_faces_fail_count = 0
+        while zone_find_new_faces_fail_count < levels:
             for z in self.Zones:
                 # Trying to found neighbours faces to current zone.
                 faces = self.get_neighbours_for_zone(z)
-                k = k + len(faces)
-                found_new = False
+                if not faces:
+                    zone_find_new_faces_fail_count += 1
+                    continue
+                else:
+                    zone_find_new_faces_fail_count = 0
 
                 # If found new faces, append it to zone and go to next zone.
                 for f in faces:
-                    if f in z.Faces:
-                        i = i + 1
-                        continue
-
+                    i = i + 1
                     z.add_face(f)
-                    found_new = True
 
-        # Processing faces wo zone.
-        for f in self.Faces:
-            if f.Zone is None:
-                path = self.bfs_path(f, lambda f: (f.Zone is None))
-                z = Zone(len(path))
-                for ff in path:
-                    z.add_face(ff)
-
-                self.Zones.append(z)
-                # for e in f.Edges:
-                #     face = f.get_neighbour(e)
-                #     if face is not None and face.Zone is not None:
-                #         f.Zone = face.Zone
-                #         face.Zone.Faces.append(f)
-                #         break
+                # print('Processed {0} of {1} total.'.format(i, k))
 
         self.check_faces_are_linked_to_zones()
         self.link_nodes_and_edges_to_zones()
@@ -1823,27 +1875,53 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
+    def clear_grid_and_create_random_zones(self, levels):
+        self.Zones = [z for z in self.Zones if z.IsFixed]
+        self.unlink_faces_from_zones()
+        # Initialize all zones with random faces.
+        for li in range(levels):
+            zone = Zone(li)
+            self.Zones.append(zone)
+            while True:
+                face = random.choice(self.Faces)
+                if face.Zone is None:
+                    break
+
+            zone.add_face(face)
+            zone.LastFaces = list()
+            zone.LastFaces.append(face)
+
+    # ----------------------------------------------------------------------------------------------
+
     def local_refinement(self):
+        # print('Local refinement start')
+
         try:
             if len(self.Zones) == 0:
                 raise Exception("No zones specified.")
 
             self.check_faces_are_linked_to_zones()
 
-            current_metric = self.get_metric()
-
             self.distinct_edge_faces()
             self.fill_neighbour_zones()
 
-            for z in self.Zones:
-                cross_faces = z.get_cross_faces()
-                for n_zone in z.NeighbourZones:
-                    n_zone_cross_faces = n_zone.get_cross_faces()
-                    for z_face in cross_faces:
-                        if n_zone in z_face.NeighbourZones:
-                            for n_face in n_zone_cross_faces:
-                                if n_face.Zone in z.NeighbourZones:
-                                    current_metric = self.try_local_refine(current_metric, z_face, n_face)
+            for zone_a in self.Zones:  # идем по зонам
+                for zone_b in zone_a.NeighbourZones:  # идем по зонам, граничным с зоной выше
+                    zone_a_cf_list = zone_a.get_cross_faces_to_zone(zone_b)  # берем все граничные ячейки
+                    zone_b_cf_list = zone_b.get_cross_faces_to_zone(zone_a)
+                    # start_time = time.time()
+                    zone_a_cf_index = -1
+                    for zone_a_cf in zone_a_cf_list:
+                        zone_b_cf_index = -1
+                        zone_a_cf_index += 1
+                        # if zone_b in zone_a_cf.NeighbourZones:
+                        for zone_b_cf in zone_b_cf_list:
+                            # if n_face.Zone in zone_a.NeighbourZones:
+                            zone_b_cf_index += 1
+                            if zone_b_cf_index < zone_a_cf_index or zone_a_cf is zone_b_cf:
+                                continue
+                            self.try_local_refine(zone_a_cf, zone_b_cf)
+                    # print("--- %s seconds ---" % (time.time() - start_time))
 
             self.check_faces_are_linked_to_zones()
             self.link_nodes_and_edges_to_zones()
@@ -1853,36 +1931,82 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
-    def try_local_refine(self, current_metric, face_x, face_y):
-        zone_x = face_x.Zone
-        zone_y = face_y.Zone
+    def try_local_refine(self, face_x, face_y):
+        #
         initial_face_x_metric = face_x.get_metric()
         initial_face_y_metric = face_y.get_metric()
+        sum_initial_metric = initial_face_x_metric + initial_face_y_metric
 
-        # Move two faces to zone_x and calc metric
-        zone_x_metric = current_metric - initial_face_y_metric
-        zone_x.add_face(face_y)
-        zone_x_metric = zone_x_metric + face_y.get_metric()
+        zone_x_metric = 0
+        zone_y_metric = 0
 
-        # Move two faces to zone_y and calc metric
-        zone_y_metric = current_metric - initial_face_y_metric - initial_face_x_metric
-        zone_y.add_face(face_y)
-        zone_y.add_face(face_x)
-        zone_y_metric = zone_y_metric + face_y.get_metric() + face_x.get_metric()
+        cross_edge_set = set(face_x.Edges).intersection(face_y.Edges)
+        if cross_edge_set:  # If two faces contacts with each other.
+            cross_edge = cross_edge_set.pop()
+            face_y_non_cross_edges = face_y.Edges[:]  # Trying add face_y to face_x's zone.
+            face_y_non_cross_edges.remove(cross_edge)
+            zone_x_metric = initial_face_x_metric + face_y_non_cross_edges[0].get_weight() + face_y_non_cross_edges[
+                1].get_weight()
+            if zone_x_metric < sum_initial_metric:
+                face_x.Zone.add_face(face_y)
+                return
 
-        # If current metric is the best
-        if current_metric < zone_y_metric and current_metric < zone_x_metric:
-            zone_x.add_face(face_x)
-            return current_metric
+            face_x_non_cross_edges = face_x.Edges[:]  # Trying add face_x to face_y's zone.
+            face_x_non_cross_edges.remove(cross_edge)
+            zone_y_metric = initial_face_y_metric + face_x_non_cross_edges[0].get_weight() + face_x_non_cross_edges[
+                1].get_weight()
+            if zone_y_metric < sum_initial_metric:
+                face_y.Zone.add_face(face_x)
 
-        # Zone x metric is better
-        if zone_x_metric < zone_y_metric:
-            zone_x.add_face(face_x)
-            zone_x.add_face(face_y)
-            return zone_x_metric
+            return
 
-        # Zone y metric is better
-        return zone_y_metric
+        # If faces has no contact with each other.
+        for i in range(0, 3):
+            if not face_y.Edges[i].has_contact_with_zone(face_x.Zone):
+                zone_x_metric += face_y.Edges[i].get_weight()
+
+            if not face_x.Edges[i].has_contact_with_zone(face_y.Zone):
+                zone_y_metric += face_x.Edges[i].get_weight()
+
+        if zone_y_metric != 0 and zone_x_metric != 0 and zone_x_metric + zone_y_metric < sum_initial_metric:  # проверить что это лучше чем нижний вариант
+            face_x.Zone.add_face(face_y)
+            face_y.Zone.add_face(face_x)
+            return
+
+        zone_x_metric += initial_face_x_metric
+        zone_y_metric += initial_face_y_metric
+        if zone_y_metric != 0 and zone_x_metric != 0 and zone_x_metric < sum_initial_metric and zone_x_metric < zone_y_metric:
+            face_x.Zone.add_face(face_y)
+        elif zone_y_metric != 0 and zone_x_metric != 0 and zone_y_metric < sum_initial_metric:
+            face_y.Zone.add_face(face_x)
+
+        # zone_x = face_x.Zone
+        # zone_y = face_y.Zone
+        #
+        # # Move two faces to zone_x and calc metric
+        # zone_x_metric = current_metric - initial_face_y_metric
+        # zone_x.add_face(face_y)
+        # zone_x_metric = zone_x_metric + face_y.get_metric()
+        #
+        # # Move two faces to zone_y and calc metric
+        # zone_y_metric = current_metric - initial_face_y_metric - initial_face_x_metric
+        # zone_y.add_face(face_y)
+        # zone_y.add_face(face_x)
+        # zone_y_metric = zone_y_metric + face_y.get_metric() + face_x.get_metric()
+        #
+        # # If current metric is the best
+        # if current_metric < zone_y_metric and current_metric < zone_x_metric:
+        #     zone_x.add_face(face_x)
+        #     return current_metric
+        #
+        # # Zone x metric is better
+        # if zone_x_metric < zone_y_metric:
+        #     zone_x.add_face(face_x)
+        #     zone_x.add_face(face_y)
+        #     return zone_x_metric
+        #
+        # # Zone y metric is better
+        # return zone_y_metric
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1911,12 +2035,12 @@ class Grid:
 
     def get_cross_faces(self):
         list_faces = list()
-        try:
-            for z in self.Zones:
-                list_faces.extend(set(z.get_cross_faces()))
+        # try:
+        for z in self.Zones:
+            list_faces.extend(set(z.get_cross_faces()))
 
-        except Exception as ex:
-            raise Exception(ex)
+        # except Exception as ex:
+        #     raise Exception(ex)
 
         return list_faces
 
@@ -2021,19 +2145,28 @@ class Grid:
 
             f.close()
 
-    def get_neighbours_for_zone(self, zone):
-        faces = list()
-        for f in zone.LastFace:
-            for e in f.Edges:
-                face = f.get_neighbour(e)
-                if face is not None and face.Zone is None and face not in zone.Faces:
-                    faces.append(face)
+    def get_neighbours_for_zone(self, zone, push_to_faces_bfs=False):
+        try:
+            faces = list()
+            for f in zone.LastFaces:
+                for e in f.Edges:
+                    face = f.get_neighbour(e)
+                    if face is not None and face.Zone is None:
+                        if push_to_faces_bfs:
+                            if zone not in face.BfsZones:
+                                face.BfsZones.append(zone)
+                                faces.append(face)
+                        else:
+                            faces.append(face)
 
-        if len(faces) == 0:
-            print(0)
+            zone.LastFaces = set(faces)
+            if push_to_faces_bfs:
+                for f in zone.LastFaces:
+                    zone.FacesBFS.append(f)
 
-        # distincting by GloId
-        zone.LastFace = {x.GloId: x for x in faces}.values()
-        return faces
+        except Exception as ex:
+            raise Exception(ex)
+
+        return zone.LastFaces
 
 # ==================================================================================================

@@ -1,7 +1,11 @@
 """
 Test module.
 """
+from datetime import datetime
+import time
 import os
+import string
+
 import gsu
 import split
 
@@ -171,7 +175,7 @@ def case_007_load_faces_t_hw_hi(test='bunny'):
 # --------------------------------------------------------------------------------------------------
 
 
-def case_008_decompose_pressure(test='bunny_pos'):
+def case_008_decompose_pressure(test='lucy'):
     """
     Load grid and decompose with pressure algorithm.
     Test objective:
@@ -235,7 +239,81 @@ def case_011_decompose_incremental_vs_local_refinement(test='bunny'):
     print(g.get_metric())
 
     g.store('grids/{0}_incremental_refined.dat'.format(test))
-# --------------------------------------------------------------------------------------------------
+
+
+def case_012_decompose_pressure_vs_local_refinement(test='bunny'):
+    print('case_008_decompose_pressure({0}):'.format(test))
+    g = gsu.Grid()
+    g.load('grids/{0}.dat'.format(test))
+    g.decompose_pressure(new_name=test + ' pressure', fz_names=['POS1', 'POS2'])
+    g.print_info(True, True)
+    print(g.get_metric())
+    g.store('grids/{0}_pressure.dat'.format(test))
+
+    g.local_refinement()
+    g.print_info(True, True)
+    print(g.get_metric())
+
+    g.store('grids/{0}_pressure_refined.dat'.format(test))
+
+
+def case_013_get_notebook_stat():
+    grids = ['bunny']  # , 'dragon', 'lucy']
+    for i in range(0, 100):
+        for grid in grids:
+            process_grid(grid, i)
+
+
+def case_014_decompose_incremental_consistently(test='bunny'):
+    g = gsu.Grid()
+    g.load('grids/{0}.dat'.format(test))
+
+    g.decompose_incremental_consistently(32)
+    g.print_info(True, True)
+    print(g.get_metric())
+    g.store('grids/{0}_incremental.dat'.format(test))
+
+
+def process_grid(grid, ii):
+    cross_edges = []
+    max_border = []
+    fd = []
+    g = gsu.Grid()
+    g.load('grids/{0}.dat'.format(grid))
+    seconds = datetime.now()
+
+    for i in range(2, 64):
+        print('--------------------' + datetime.now().strftime("%H:%M:%S") + ' grid ' + grid + ' zones ' + str(
+            i) + ' attempt ' + str(ii) + ', prev take {0}  s --------------------'.format(datetime.now() - seconds))
+        g.decompose_incremental(i)
+
+        zam = gsu.ZonesAdjacencyMatrix(g.Edges, g.Zones)
+        cross_edges.append(zam.edges_statistics()[6])
+        max_border.append(zam.max_cross_border_len())
+        faces_distr_dev, max_zone_faces_count = g.get_fd_deviation()
+        fd.append(faces_distr_dev)
+
+        g.local_refinement()
+
+        zam = gsu.ZonesAdjacencyMatrix(g.Edges, g.Zones)
+        cross_edges.append(zam.edges_statistics()[6])
+        max_border.append(zam.max_cross_border_len())
+        fd.append(g.get_fd_deviation())
+        seconds = datetime.now()
+
+    print(grid)
+    print(grid + '_inc_ce=[' + ','.join(str(a) for a in cross_edges) + ']')
+    print(grid + '_inc_mb=[' + ','.join(str(a) for a in max_border) + ']')
+    print(grid + '_inc_fd=[' + ','.join(str(a) for a in fd) + ']')
+
+    f = open("{0}-{1}.txt".format(grid, ii), "a")
+    f.write(grid + '_inc_ce=[' + ','.join(str(a) for a in cross_edges) + ']')
+    f.write('\r\n')
+    f.write(grid + '_inc_mb=[' + ','.join(str(a) for a in max_border) + ']')
+    f.write('\r\n')
+    f.write(grid + '_inc_fd=[' + ','.join(str(a) for a in fd) + ']')
+    f.close()
+
 
 if __name__ == '__main__':
     # case_001_node_face_data()
@@ -248,8 +326,11 @@ if __name__ == '__main__':
     # case_008_decompose_pressure()
     # case_009_store_mpi()
     # case_010_decompose_incremental()
-    case_011_decompose_incremental_vs_local_refinement()
-
+    # case_011_decompose_incremental_vs_local_refinement()
+    # case_012_decompose_pressure_vs_local_refinement()
+    # case_013_decompose_hierarchical_vs_local_refinement()
+    # case_013_get_notebook_stat()
+    case_014_decompose_incremental_consistently()
     pass
 
 # --------------------------------------------------------------------------------------------------
