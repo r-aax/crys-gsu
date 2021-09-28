@@ -368,6 +368,18 @@ class Triangle:
 
     # ----------------------------------------------------------------------------------------------
 
+    def is_my_segment(self, s):
+        """
+        Check if segment is edge of this triangle.
+        :param s: Segment.
+        :return: True - if segment is an edge of triangle,
+                 False - otherwise.
+        """
+
+        return s.is_eq(self.ab()) or s.is_eq(self.bc()) or s.is_eq(self.ac())
+
+    # ----------------------------------------------------------------------------------------------
+
     def is_eq(self, t):
         """
         Check if eq to another triangle.
@@ -474,7 +486,7 @@ class Triangle:
 
     # ----------------------------------------------------------------------------------------------
 
-    def is_has_common_edge_with_triangle(self, t):
+    def has_common_edge_with_triangle(self, t):
         """
         Check if has common edge with another trianngle.
         :param t: Triangle.
@@ -650,6 +662,17 @@ class Face:
 
         return fs
 
+    # ----------------------------------------------------------------------------------------------
+
+    def edge_neighbours(self, s):
+        """
+        Neighbours over the segment.
+        :param s: Segment.
+        :return: List of neighbours.
+        """
+
+        return [l for l in self.L if l.T.is_my_segment(s)]
+
 # ==================================================================================================
 
 
@@ -806,6 +829,11 @@ class Mesh:
                 c = Vect(xs[3 * i + 2], ys[3 * i + 2], zs[3 * i + 2])
                 self.Faces.append(Face(Triangle(a, b, c)))
 
+            # Load marks.
+            ms = [float(msi) for msi in f.readline().split()]
+            for i in range(faces_count):
+                self.Faces[i].M = ms[i]
+
             # We do not need to load links between faces and nodes.
 
             f.close()
@@ -894,6 +922,60 @@ class Mesh:
 
         self.Faces = self.Faces + new_faces
         self.filter(lambda f: f.M > -1)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def wrap(self):
+        """
+        Wrap.
+        """
+
+        # Prepare edges.
+        for f in self.Faces:
+            f.L = []
+            f.M = 0
+
+        fc = self.faces_count()
+
+        # Imitate edges.
+        for i in range(fc):
+            print('process {0} of {1}'.format(i, fc))
+            fi = self.Faces[i]
+            for j in range(i + 1, fc):
+                fj = self.Faces[j]
+                if fi.T.has_common_edge_with_triangle(fj.T):
+                    fi.L.append(fj)
+                    fj.L.append(fi)
+        for f in self.Faces:
+            abl = f.edge_neighbours(f.T.ab())
+            bcl = f.edge_neighbours(f.T.bc())
+            acl = f.edge_neighbours(f.T.ac())
+            if (len(abl) > 1) or (len(bcl) > 1) or (len(acl) > 1):
+                f.M = 1
+
+        # TODO: initial nodes.
+        # stack = []
+        for f in stack:
+            f.M = 1
+        while len(stack) > 0:
+            f = stack.pop(0)
+            for ff in f.L:
+                if ff.M == 0:
+                    ff.M = 1
+                    stack.append(ff)
+
+        self.filter(lambda f: f.M == 0)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def select_neighbour(self, f, l):
+        """
+        Select from list.
+        :param f: Face.
+        :param l: List.
+        """
+
+        f.M = 1.0
 
 # ==================================================================================================
 

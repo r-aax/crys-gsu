@@ -323,9 +323,24 @@ def case_015_self_intersection():
     """
 
     m = gsu_geom.Mesh()
-    m.load('meshes/bunny_2.dat')
+    m.load('meshes/ex5.dat')
     m.shred()
-    m.store('meshes/bunny_2_sh.dat')
+    m.store('meshes/ex5_sh.dat')
+
+# --------------------------------------------------------------------------------------------------
+
+
+def case_016_wrapping():
+    """
+    Wrapping mechanism test.
+    Test objective:
+      Wrapping algorithm.
+    """
+
+    m = gsu_geom.Mesh()
+    m.load('meshes/cyl_100_sh.dat')
+    m.wrap()
+    m.store('meshes/cyl_100_sh_wr.dat')
 
 # --------------------------------------------------------------------------------------------------
 
@@ -346,6 +361,7 @@ if __name__ == '__main__':
     # case_013_clean_grid()
     # case_014_convert_grid_stall_to_check_point()
     # case_015_self_intersection()
+    # case_016_wrapping()
 
     pass
 
