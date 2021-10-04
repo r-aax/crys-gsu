@@ -504,81 +504,76 @@ def print_help():
 
 if __name__ == '__main__':
 
-    # Формирование имен файлов.
-    if (len(sys.argv)) < 5:
-        print('Использование скрипта:')
-        print('  ./ansys_to_crystal basename=<базовое имя сетки>')
-        print('                     zones=<список зон для фильтрации>')
-        print('                     ta=<температура свободного потока>')
-        print('                     normals=origin|reversed')
-        raise Exception('переданы не все входные данные')
-    else:
-        for arg in sys.argv[1:]:
-            splitarg = arg.split('=')
-            par = splitarg[0]
-            val = splitarg[1]
+    if len(sys.argv) < 5:
+        print_help()
+        exit(0)
 
-            if par == 'basename':
-                base_filename = val
-                fensap_filename = base_filename + '.fensap.dat'
-                drop3d_filename = base_filename + '.drop3d.dat'
-            elif par == 'zones':
-                zones_to_extract = val.split(',')
-            elif par == 'ta':
-                free_stream_temperature = float(val)
-            elif par == 'normals':
-                if val == 'origin':
-                    reversed_normals = False
-                elif val == 'reversed':
-                    reversed_normals = True
-                else:
-                    raise Exception('неизвестный параметр определения нормалей')
+    for arg in sys.argv[1:]:
+        splitarg = arg.split('=')
+        par = splitarg[0]
+        val = splitarg[1]
+
+        if par == 'basename':
+            base_filename = val
+            fensap_filename = base_filename + '.fensap.dat'
+            drop3d_filename = base_filename + '.drop3d.dat'
+        elif par == 'zones':
+            zones_to_extract = val.split(',')
+        elif par == 'ta':
+            free_stream_temperature = float(val)
+        elif par == 'normals':
+            if val == 'origin':
+                reversed_normals = False
+            elif val == 'reversed':
+                reversed_normals = True
             else:
-                raise Exception('неизвестный параметр')
+                raise Exception('неизвестный параметр определения нормалей')
+        else:
+            raise Exception('неизвестный параметр')
 
-        say('Входные данные :')
-        say('  basename = %s' % base_filename)
-        say('  файлы с данными : %s, %s.' % (fensap_filename, drop3d_filename))
-        say('  zones = %s' % zones_to_extract)
-        say('  ta = %f' % free_stream_temperature)
-        say('  normals = %s' % 'reversed' if reversed_normals else 'origin')
+    say('Входные данные :')
+    say('  basename = %s' % base_filename)
+    say('  файлы с данными : %s, %s.' % (fensap_filename, drop3d_filename))
+    say('  zones = %s' % zones_to_extract)
+    say('  ta = %f' % free_stream_temperature)
+    say('  normals = %s' % 'reversed' if reversed_normals else 'origin')
 
-    # Проверка существования файлов.
-    if not os.path.exists(fensap_filename):
-        raise Exception('файл %s не существует' % fensap_filename)
-    elif not os.path.exists(drop3d_filename):
-        raise Exception('файл %s не существует' % drop3d_filename)
-    else:
-        say('Входные файлы найдены.')
+# Проверка существования файлов.
+if not os.path.exists(fensap_filename):
+    raise Exception('файл %s не существует' % fensap_filename)
+elif not os.path.exists(drop3d_filename):
+    raise Exception('файл %s не существует' % drop3d_filename)
+else:
+    say('Входные файлы найдены.')
 
-    # Фильтрация зон.
-    fensap_filename_phase1 = base_filename + '.fensap.phase1.dat'
-    drop3d_filename_phase1 = base_filename + '.drop3d.phase1.dat'
-    say('phase1 : Фильтрация зон : %s' % str(zones_to_extract))
-    filter_zones(fensap_filename, fensap_filename_phase1)
-    filter_zones(drop3d_filename, drop3d_filename_phase1)
+# Фильтрация зон.
+fensap_filename_phase1 = base_filename + '.fensap.phase1.dat'
+drop3d_filename_phase1 = base_filename + '.drop3d.phase1.dat'
+say('phase1 : Фильтрация зон : %s' % str(zones_to_extract))
+filter_zones(fensap_filename, fensap_filename_phase1)
+filter_zones(drop3d_filename, drop3d_filename_phase1)
 
-    # Фильтрация переменных.
-    fensap_filename_phase2 = base_filename + '.fensap.phase2.dat'
-    drop3d_filename_phase2 = base_filename + '.drop3d.phase2.dat'
-    say('phase2 : Фильтрация переменных\n  fensap %s\n  drop3d %s'
-        % (str(fensap_variables_to_extract), str(drop3d_variables_to_extract)))
-    filter_variables(fensap_filename_phase1, fensap_filename_phase2, fensap_variables_to_extract)
-    filter_variables(drop3d_filename_phase1, drop3d_filename_phase2, drop3d_variables_to_extract)
+# Фильтрация переменных.
+fensap_filename_phase2 = base_filename + '.fensap.phase2.dat'
+drop3d_filename_phase2 = base_filename + '.drop3d.phase2.dat'
+say('phase2 : Фильтрация переменных\n  fensap %s\n  drop3d %s'
+    % (str(fensap_variables_to_extract), str(drop3d_variables_to_extract)))
+filter_variables(fensap_filename_phase1, fensap_filename_phase2, fensap_variables_to_extract)
+filter_variables(drop3d_filename_phase1, drop3d_filename_phase2, drop3d_variables_to_extract)
 
-    # Слияние файлов данных fensap и drop3d.
-    filename_phase3 = base_filename + '.phase3.dat'
-    say('phase3 : Слияние в единый файл')
-    merge_fensap_drop3d(fensap_filename_phase2, drop3d_filename_phase2, filename_phase3)
+# Слияние файлов данных fensap и drop3d.
+filename_phase3 = base_filename + '.phase3.dat'
+say('phase3 : Слияние в единый файл')
+merge_fensap_drop3d(fensap_filename_phase2, drop3d_filename_phase2, filename_phase3)
 
-    # Пересчет HTC.
-    filename_phase4 = base_filename + '.phase4.dat'
-    say('phase4 : Вычисление HTC')
-    calculate_htc(filename_phase3, filename_phase4, free_stream_temperature)
+# Пересчет HTC.
+filename_phase4 = base_filename + '.phase4.dat'
+say('phase4 : Вычисление HTC')
+calculate_htc(filename_phase3, filename_phase4, free_stream_temperature)
 
-    # Перевод данных с узлов в ячейки.
-    filename_phase5 = base_filename + '.dat'
-    say('phase5 : Перевод данных из узлов на грани')
-    data_from_nodes_to_faces(filename_phase4, filename_phase5, reversed_normals)
+# Перевод данных с узлов в ячейки.
+filename_phase5 = base_filename + '.dat'
+say('phase5 : Перевод данных из узлов на грани')
+data_from_nodes_to_faces(filename_phase4, filename_phase5, reversed_normals)
 
 # --------------------------------------------------------------------------------------------------
