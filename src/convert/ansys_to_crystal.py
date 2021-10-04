@@ -44,22 +44,6 @@ def say(obj):
 # --------------------------------------------------------------------------------------------------
 
 
-def del_whitespaces(s):
-    """
-    Удаление пробелов из строки.
-
-    Arguments:
-        s -- строка.
-
-    Result:
-        Строка без пробелов.
-    """
-
-    return ''.join(s.split(' '))
-
-# --------------------------------------------------------------------------------------------------
-
-
 def is_str_title(s):
     """
     Проверка, что строка является титульной.
@@ -167,7 +151,7 @@ def get_zone_nodes_and_elements_count(s):
     # Отрезаем часть строки после 'N=' и ищем в ней все целые числа.
     nums = re.findall('(\d+)', s.split('N=')[1])
 
-    return (int(nums[0]), int(nums[1]))
+    return int(nums[0]), int(nums[1])
 
 # --------------------------------------------------------------------------------------------------
 
@@ -216,24 +200,7 @@ def variables_names_and_mask(fnames, snames):
                 fnames[fi] = sn
                 mask[fi] = 1
 
-    return (fnames, mask)
-
-# --------------------------------------------------------------------------------------------------
-
-
-def join_with(a, c):
-    """
-    Соединить массив строк в единую строку с помощью символа.
-
-    Arguments:
-        a -- массив,
-        c -- соединительный символ.
-
-    Result:
-        Соединенная строка.
-    """
-
-    return reduce(lambda x, y: x + c + y, a)
+    return fnames, mask
 
 # --------------------------------------------------------------------------------------------------
 
@@ -334,7 +301,7 @@ def filter_variables(filename, ofilename, variables_names):
                         fnames = l.split('=')[1].replace('"', '').split(',')
                         (fnames, mask) = variables_names_and_mask(fnames, variables_names)
                         filtered_names = filter_with_mask(fnames, mask)
-                        joined_names = join_with(['"' + name + '"' for name in filtered_names], ', ')
+                        joined_names = ', '.join(['"' + name + '"' for name in filtered_names])
                         of.write('VARIABLES=' + joined_names + '\n')
                     elif is_str_zone(l):
                         (nodes_to_read, elements_to_read) = get_zone_nodes_and_elements_count(l)
@@ -343,7 +310,7 @@ def filter_variables(filename, ofilename, variables_names):
                     if nodes_to_read > 0:
                         floats = l.split()
                         filtered_floats = filter_with_mask(floats, mask)
-                        joined_floats = join_with(filtered_floats, ' ')
+                        joined_floats = ' '.join(filtered_floats)
                         of.write(joined_floats + '\n')
                         nodes_to_read -= 1
                     elif elements_to_read > 0:
@@ -396,7 +363,7 @@ def merge_fensap_drop3d(ffilename, dfilename, ofilename):
                             dfields = dl.split()
                             fields = [ffields[0], ffields[1], ffields[2], ffields[7], dfields[3], \
                                       ffields[4], ffields[5], ffields[6], ffields[3]]
-                            of.write(join_with(fields, ' ') + '\n')
+                            of.write(' '.join(fields) + '\n')
                             nodes_to_read -= 1
                         elif elements_to_read > 0:
                             of.write(fl)
@@ -456,7 +423,7 @@ def calculate_htc(filename, ofilename, ta):
                         # Отцепляем static temperature.
                         fields = fields[:-1]
 
-                        of.write(join_with(fields, ' ') + '\n')
+                        of.write(' '.join(fields) + '\n')
                         nodes_to_read -= 1
                     elif elements_to_read > 0:
                         of.write(l)
