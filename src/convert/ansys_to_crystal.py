@@ -502,58 +502,58 @@ if __name__ == '__main__':
     say('  ta = %f' % free_stream_temperature)
     say('  normals = %s' % 'reversed' if reversed_normals else 'origin')
 
-# Функции сборки имени файла.
-def cc(d, ph, b, s):
-    if ph == '':
-        ph_str = ''
+    # Функции сборки имени файла.
+    def cc(d, ph, b, s):
+        if ph == '':
+            ph_str = ''
+        else:
+            ph_str = '{0}.'.format(ph)
+        if s == '':
+            s_str = ''
+        else:
+            s_str = '.{0}'.format(s)
+        return '{0}/{1}{2}{3}.dat'.format(d, ph_str, b, s_str)
+    def cc2(d, ph, b):
+        return cc(d, ph, b, 'fensap'), cc(d, ph, b, 'drop3d')
+
+    # Начальные имена.
+    fensap_fn, drop3d_fn = cc2(dirname, '', basename)
+    print(fensap_fn, drop3d_fn)
+
+    # Проверка существования файлов.
+    if not os.path.exists(fensap_fn):
+        raise Exception('файл %s не существует' % fensap_fn)
+    elif not os.path.exists(drop3d_fn):
+        raise Exception('файл %s не существует' % drop3d_fn)
     else:
-        ph_str = '{0}.'.format(ph)
-    if s == '':
-        s_str = ''
-    else:
-        s_str = '.{0}'.format(s)
-    return '{0}/{1}{2}{3}.dat'.format(d, ph_str, b, s_str)
-def cc2(d, ph, b):
-    return cc(d, ph, b, 'fensap'), cc(d, ph, b, 'drop3d')
+        say('Входные файлы найдены.')
 
-# Начальные имена.
-fensap_fn, drop3d_fn = cc2(dirname, '', basename)
-print(fensap_fn, drop3d_fn)
+    # Фильтрация зон.
+    fensap_fn_ph1, drop3d_fn_ph1 = cc2(dirname, 'phase1', basename)
+    say('phase1 : Фильтрация зон : %s' % str(zones_to_extract))
+    filter_zones(fensap_fn, fensap_fn_ph1)
+    filter_zones(drop3d_fn, drop3d_fn_ph1)
 
-# Проверка существования файлов.
-if not os.path.exists(fensap_fn):
-    raise Exception('файл %s не существует' % fensap_fn)
-elif not os.path.exists(drop3d_fn):
-    raise Exception('файл %s не существует' % drop3d_fn)
-else:
-    say('Входные файлы найдены.')
+    # Фильтрация переменных.
+    fensap_fn_ph2, drop3d_fn_ph2 = cc2(dirname, 'phase2', basename)
+    say('phase2 : Фильтрация переменных\n  fensap %s\n  drop3d %s'
+        % (str(fensap_variables_to_extract), str(drop3d_variables_to_extract)))
+    filter_variables(fensap_fn_ph1, fensap_fn_ph2, fensap_variables_to_extract)
+    filter_variables(drop3d_fn_ph1, drop3d_fn_ph2, drop3d_variables_to_extract)
 
-# Фильтрация зон.
-fensap_fn_ph1, drop3d_fn_ph1 = cc2(dirname, 'phase1', basename)
-say('phase1 : Фильтрация зон : %s' % str(zones_to_extract))
-filter_zones(fensap_fn, fensap_fn_ph1)
-filter_zones(drop3d_fn, drop3d_fn_ph1)
+    # Слияние файлов данных fensap и drop3d.
+    fn_ph3 = cc(dirname, 'phase3', basename, '')
+    say('phase3 : Слияние в единый файл')
+    merge_fensap_drop3d(fensap_fn_ph2, drop3d_fn_ph2, fn_ph3)
 
-# Фильтрация переменных.
-fensap_fn_ph2, drop3d_fn_ph2 = cc2(dirname, 'phase2', basename)
-say('phase2 : Фильтрация переменных\n  fensap %s\n  drop3d %s'
-    % (str(fensap_variables_to_extract), str(drop3d_variables_to_extract)))
-filter_variables(fensap_fn_ph1, fensap_fn_ph2, fensap_variables_to_extract)
-filter_variables(drop3d_fn_ph1, drop3d_fn_ph2, drop3d_variables_to_extract)
+    # Пересчет HTC.
+    fn_ph4 = cc(dirname, 'phase4', basename, '')
+    say('phase4 : Вычисление HTC')
+    calculate_htc(fn_ph3, fn_ph4, free_stream_temperature)
 
-# Слияние файлов данных fensap и drop3d.
-fn_ph3 = cc(dirname, 'phase3', basename, '')
-say('phase3 : Слияние в единый файл')
-merge_fensap_drop3d(fensap_fn_ph2, drop3d_fn_ph2, fn_ph3)
-
-# Пересчет HTC.
-fn_ph4 = cc(dirname, 'phase4', basename, '')
-say('phase4 : Вычисление HTC')
-calculate_htc(fn_ph3, fn_ph4, free_stream_temperature)
-
-# Перевод данных с узлов в ячейки.
-fn_ph5 = cc(dirname, '', basename, '')
-say('phase5 : Перевод данных из узлов на грани')
-data_from_nodes_to_faces(fn_ph4, fn_ph5, reversed_normals)
+    # Перевод данных с узлов в ячейки.
+    fn_ph5 = cc(dirname, '', basename, '')
+    say('phase5 : Перевод данных из узлов на грани')
+    data_from_nodes_to_faces(fn_ph4, fn_ph5, reversed_normals)
 
 # --------------------------------------------------------------------------------------------------

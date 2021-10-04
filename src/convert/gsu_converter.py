@@ -323,7 +323,7 @@ class Grid:
             while l:
 
                 # Обработка строки.
-                if 'EXPORT MODE' in l:
+                if 'EXPORT_MODE' in l:
                     # Пропускаем шапку.
                     pass
                 elif 'TITLE' in l:
@@ -406,7 +406,7 @@ class Grid:
         """
 
         fl = open(filename, 'w')
-        fl.write('# EXPORT MODE: CHECK_POINT\n')
+        fl.write('# EXPORT_MODE=CHECK_POINT\n')
         fl.write('TITLE="FE Surface Data ASCII"\n')
         fl.write('VARIABLES="X", "Y", "Z", "T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ"\n')
 

@@ -7,19 +7,17 @@
 import sys
 import os
 import re
-import gsu
+import gsu_converter
 from functools import reduce
+import itertools
 
-#---------------------------------------------------------------------------------------------------
-# Глобальные переменные.
-#---------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 # Признак режима тишины (сообщения о ходе работы скрипта не выводятся).
 is_silent = False
 
-#---------------------------------------------------------------------------------------------------
-# Общие функции.
-#---------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
+
 
 def say(obj):
     """
@@ -32,91 +30,90 @@ def say(obj):
     if not is_silent:
         print(obj)
 
-#---------------------------------------------------------------------------------------------------
-# Запуск скрипта.
-#---------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
+
+def extract_numbers_from_lines(lines):
+    """
+    Извлечение чисел из строк.
+    :param lines: Строки.
+    :return: Числа.
+    """
+
+    nlines = [[float(s) for s in line.split()] for line in lines]
+
+    return list(itertools.chain(*nlines))
+
+# --------------------------------------------------------------------------------------------------
+
 
 if __name__ == '__main__':
 
-    say('Запуск lazurit_to_crystal.')
-
     if (len(sys.argv)) < 3:
         print('Использование скрипта:')
-        print('  ./lazurit_to_crystal in=<имя входного файла>')
-        print('                       out=<имя выходного файла>')
-        raise Exception('переданы не все входные данные')
-    else:
-        for arg in sys.argv[1:]:
-            splitarg = arg.split('=')
-            par = splitarg[0]
-            val = splitarg[1]
+        print('  ./lazurit_to_crystal in_dir=<имя входной директории>')
+        print('                       out_file=<имя выходного файла>')
+        exit(0)
 
-            if par == 'in':
-                in_filename = val
-            elif par == 'out':
-                out_filename = val
-            else:
-                raise Exception('неизвестный параметр')
+    say('Запуск lazurit_to_crystal.')
 
-        say('Входные данные :')
-        say('  in = %s,' % in_filename)
-        say('  out = %s.' % out_filename)
+    for arg in sys.argv[1:]:
+        [par, val] = arg.split('=')
+
+        if par == 'in_dir':
+            in_dir = val
+        elif par == 'out_file':
+            out_file = val
+        else:
+            raise Exception('неизвестный параметр')
+
+    say('Входные данные :')
+    say('  in_dir = %s,' % in_dir)
+    say('  out_file = %s' % out_file)
 
     # Проверка существования файла.
-    if not os.path.exists(in_filename):
-        raise Exception('файл %s не существует' % in_filename)
+    if not os.path.exists(in_dir):
+        raise Exception('директория %s не существует' % in_dir)
     else:
-        say('Входной файл найден.')
+        say('Входная директория найдена.')
 
-    # Чтение файла.
-    g = gsu.Grid()
-    with open(in_filename, 'r') as f:
+    # В списке всех файлов сначала идут сетки, потом решения.
+    all_files = [fn for fn in os.listdir(in_dir) if '.TEC' in fn]
+    n = len(all_files)
 
-        l = f.readline()
-        while l:
+    with open(out_file, 'w') as of:
 
-            if 'VARIABLES' in l:
-                pass
-            elif 'ZONE' in l:
-                ss = l.split()
-                zone_title = ss[1][3:-1]
-                zone_i = int(ss[3])
-                zone_j = int(ss[5])
-                zone_k = int(ss[7])
-                if zone_k != 1:
-                    raise Exception('размер зоны K должен быть равен единице')
-                nodes_count = zone_i * zone_j * zone_k
-                # Добавление новой зоны.
-                zone = gsu.Zone(zone_title)
-                g.Zones.append(zone)
-                # Зачитываем все узлы.
-                for i in range(nodes_count):
-                    l = f.readline()
-                    ss = l.split()
-                    zone.Nodes.append(gsu.Node(len(zone.Nodes),
-                                               float(ss[0]), float(ss[1]), float(ss[2]),
-                                               float(ss[13]), float(ss[14]),
-                                               float(ss[10]), float(ss[11]), float(ss[12])))
-                # Теперь добавляем все зоны (четырехугольные).
-                for i in range(zone_i - 1):
-                    for j in range(zone_j - 1):
-                        ni00 = (i)     + (j)     * zone_i
-                        ni01 = (i)     + (j + 1) * zone_i
-                        ni10 = (i + 1) + (j)     * zone_i
-                        ni11 = (i + 1) + (j + 1) * zone_i
-                        n00 = zone.Nodes[ni00]
-                        n01 = zone.Nodes[ni01]
-                        n10 = zone.Nodes[ni10]
-                        n11 = zone.Nodes[ni11]
-                        zone.Faces.append(gsu.Face(n00, n01, n11))
-                        zone.Faces.append(gsu.Face(n00, n11, n10))
-            else:
-                raise Exception('unexpected line : %s' % l)
+        # Проходим по парам всех файлов.
+        for fi in range(n // 2):
+            gfn, sfn = all_files[fi], all_files[fi + n // 2]
+            say('Обработка файлов {0}, {1}'.format(gfn, sfn))
 
-            l = f.readline()
+            # Открываем пару файлов.
+            gf = open('{0}/{1}'.format(in_dir, gfn), 'r')
+            sf = open('{0}/{1}'.format(in_dir, sfn), 'r')
 
-        # Сохраняем.
-        g.ConvertDataFromNodesToFaces()
-        g.Export(out_filename)
+            # Читаем все, что нужно.
+            for _ in range(4):
+                gl = gf.readline()
+            ss = gl.split()
+            i, j, k = int(ss[1]), int(ss[3]), int(ss[5])
+            assert k == 1
+            for _ in range(2):
+                gl = gf.readline()
+            for _ in range(6):
+                sl = sf.readline()
 
-#---------------------------------------------------------------------------------------------------
+            glines = gf.readlines()
+            slines = sf.readlines()
+            gnumbers = extract_numbers_from_lines(glines)
+            snumbers = extract_numbers_from_lines(slines)
+
+            print(len(gnumbers))
+            print(len(snumbers))
+
+            # Закрываем пару файлов.
+            gf.close()
+            sf.close()
+
+        of.close()
+
+# --------------------------------------------------------------------------------------------------
