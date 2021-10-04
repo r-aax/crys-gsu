@@ -9,6 +9,7 @@
 import sys
 import os
 import re
+import pathlib
 import gsu
 from functools import reduce
 
@@ -509,14 +510,11 @@ if __name__ == '__main__':
         exit(0)
 
     for arg in sys.argv[1:]:
-        splitarg = arg.split('=')
-        par = splitarg[0]
-        val = splitarg[1]
+        [par, val] = arg.split('=')
 
         if par == 'basename':
-            base_filename = val
-            fensap_filename = base_filename + '.fensap.dat'
-            drop3d_filename = base_filename + '.drop3d.dat'
+            pp = pathlib.PurePath(val)
+            dirname, basename = pp.parent, pp.name
         elif par == 'zones':
             zones_to_extract = val.split(',')
         elif par == 'ta':
@@ -532,48 +530,63 @@ if __name__ == '__main__':
             raise Exception('неизвестный параметр')
 
     say('Входные данные :')
-    say('  basename = %s' % base_filename)
-    say('  файлы с данными : %s, %s.' % (fensap_filename, drop3d_filename))
+    say('  dir = %s, base = %s' % (dirname, basename))
     say('  zones = %s' % zones_to_extract)
     say('  ta = %f' % free_stream_temperature)
     say('  normals = %s' % 'reversed' if reversed_normals else 'origin')
 
+# Функции сборки имени файла.
+def cc(d, ph, b, s):
+    if ph == '':
+        ph_str = ''
+    else:
+        ph_str = '{0}.'.format(ph)
+    if s == '':
+        s_str = ''
+    else:
+        s_str = '.{0}'.format(s)
+    return '{0}/{1}{2}{3}.dat'.format(d, ph_str, b, s_str)
+def cc2(d, ph, b):
+    return cc(d, ph, b, 'fensap'), cc(d, ph, b, 'drop3d')
+
+# Начальные имена.
+fensap_fn, drop3d_fn = cc2(dirname, '', basename)
+print(fensap_fn, drop3d_fn)
+
 # Проверка существования файлов.
-if not os.path.exists(fensap_filename):
-    raise Exception('файл %s не существует' % fensap_filename)
-elif not os.path.exists(drop3d_filename):
-    raise Exception('файл %s не существует' % drop3d_filename)
+if not os.path.exists(fensap_fn):
+    raise Exception('файл %s не существует' % fensap_fn)
+elif not os.path.exists(drop3d_fn):
+    raise Exception('файл %s не существует' % drop3d_fn)
 else:
     say('Входные файлы найдены.')
 
 # Фильтрация зон.
-fensap_filename_phase1 = base_filename + '.fensap.phase1.dat'
-drop3d_filename_phase1 = base_filename + '.drop3d.phase1.dat'
+fensap_fn_ph1, drop3d_fn_ph1 = cc2(dirname, 'phase1', basename)
 say('phase1 : Фильтрация зон : %s' % str(zones_to_extract))
-filter_zones(fensap_filename, fensap_filename_phase1)
-filter_zones(drop3d_filename, drop3d_filename_phase1)
+filter_zones(fensap_fn, fensap_fn_ph1)
+filter_zones(drop3d_fn, drop3d_fn_ph1)
 
 # Фильтрация переменных.
-fensap_filename_phase2 = base_filename + '.fensap.phase2.dat'
-drop3d_filename_phase2 = base_filename + '.drop3d.phase2.dat'
+fensap_fn_ph2, drop3d_fn_ph2 = cc2(dirname, 'phase2', basename)
 say('phase2 : Фильтрация переменных\n  fensap %s\n  drop3d %s'
     % (str(fensap_variables_to_extract), str(drop3d_variables_to_extract)))
-filter_variables(fensap_filename_phase1, fensap_filename_phase2, fensap_variables_to_extract)
-filter_variables(drop3d_filename_phase1, drop3d_filename_phase2, drop3d_variables_to_extract)
+filter_variables(fensap_fn_ph1, fensap_fn_ph2, fensap_variables_to_extract)
+filter_variables(drop3d_fn_ph1, drop3d_fn_ph2, drop3d_variables_to_extract)
 
 # Слияние файлов данных fensap и drop3d.
-filename_phase3 = base_filename + '.phase3.dat'
+fn_ph3 = cc(dirname, 'phase3', basename, '')
 say('phase3 : Слияние в единый файл')
-merge_fensap_drop3d(fensap_filename_phase2, drop3d_filename_phase2, filename_phase3)
+merge_fensap_drop3d(fensap_fn_ph2, drop3d_fn_ph2, fn_ph3)
 
 # Пересчет HTC.
-filename_phase4 = base_filename + '.phase4.dat'
+fn_ph4 = cc(dirname, 'phase4', basename, '')
 say('phase4 : Вычисление HTC')
-calculate_htc(filename_phase3, filename_phase4, free_stream_temperature)
+calculate_htc(fn_ph3, fn_ph4, free_stream_temperature)
 
 # Перевод данных с узлов в ячейки.
-filename_phase5 = base_filename + '.dat'
+fn_ph5 = cc(dirname, '', basename, '')
 say('phase5 : Перевод данных из узлов на грани')
-data_from_nodes_to_faces(filename_phase4, filename_phase5, reversed_normals)
+data_from_nodes_to_faces(fn_ph4, fn_ph5, reversed_normals)
 
 # --------------------------------------------------------------------------------------------------
