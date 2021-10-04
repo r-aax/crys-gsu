@@ -10,7 +10,7 @@ import sys
 import os
 import re
 import pathlib
-import gsu
+import gsu_converter
 from functools import reduce
 
 # --------------------------------------------------------------------------------------------------
@@ -448,7 +448,7 @@ def data_from_nodes_to_faces(filename, ofilename, is_reversed_normals):
     """
 
     say('  data_from_nodes_to_faces : %s -> %s' % (filename, ofilename))
-    g = gsu.Grid()
+    g = gsu_converter.Grid()
     g.LoadNodesData(filename, is_reversed_normals)
     g.ConvertDataFromNodesToFaces()
     g.Export(ofilename)
