@@ -32,16 +32,43 @@ def say(obj):
 
 # --------------------------------------------------------------------------------------------------
 
-def extract_numbers_from_lines(lines):
+def leap_lines(lines):
     """
-    Извлечение чисел из строк.
+    Соединение строк.
     :param lines: Строки.
-    :return: Числа.
+    :return: Строки элементов.
     """
 
-    nlines = [[float(s) for s in line.split()] for line in lines]
+    nlines = [[s for s in line.split()] for line in lines]
 
     return list(itertools.chain(*nlines))
+
+# --------------------------------------------------------------------------------------------------
+
+def get_block_name(s):
+    """
+    Get name of block.
+    :param s: Name of block.
+    :return: Name of block.
+    """
+
+    for i in range(len(s) - 1, -1, -1):
+        if s[i] == 'B':
+            return s[i:-4]
+
+# --------------------------------------------------------------------------------------------------
+
+def double_list(li):
+    """
+    Double elements in the list.
+    :param li: List.
+    :return: Doubled list.
+    """
+
+    dli = [[e, e] for e in li]
+
+    return list(itertools.chain(*dli))
+
 
 # --------------------------------------------------------------------------------------------------
 
@@ -81,6 +108,9 @@ if __name__ == '__main__':
     n = len(all_files)
 
     with open(out_file, 'w') as of:
+        of.write('# EXPORT_MODE=CHECK_POINT\n')
+        of.write('TITLE="FE Surface Data ASCII"\n')
+        of.write('VARIABLES="X", "Y", "Z", "T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ"\n')
 
         # Проходим по парам всех файлов.
         for fi in range(n // 2):
@@ -95,8 +125,10 @@ if __name__ == '__main__':
             for _ in range(4):
                 gl = gf.readline()
             ss = gl.split()
-            i, j, k = int(ss[1]), int(ss[3]), int(ss[5])
-            assert k == 1
+            zone_i, zone_j, zone_k = int(ss[1]), int(ss[3]), int(ss[5])
+            nc = zone_i * zone_j * zone_k
+            hec = (zone_i - 1) * (zone_j - 1)
+            assert zone_k == 1
             for _ in range(2):
                 gl = gf.readline()
             for _ in range(6):
@@ -104,11 +136,40 @@ if __name__ == '__main__':
 
             glines = gf.readlines()
             slines = sf.readlines()
-            gnumbers = extract_numbers_from_lines(glines)
-            snumbers = extract_numbers_from_lines(slines)
+            gelems = leap_lines(glines)
+            selems = leap_lines(slines)
 
-            print(len(gnumbers))
-            print(len(snumbers))
+            of.write('ZONE T="{0}"\n'.format(get_block_name(gfn)))
+            of.write('NODES={0}\n'.format(nc))
+            of.write('ELEMENTS={0}\n'.format(2 * hec))
+            of.write('DATAPACKING=BLOCK\n')
+            of.write('ZONETYPE=FETRIANGLE\n')
+            of.write('VARLOCATION=([4-11]=CELLCENTERED)\n')
+
+            # Печать координат.
+            of.write(' '.join(gelems[0: nc]) + '\n')
+            of.write(' '.join(gelems[nc: 2 * nc]) + '\n')
+            of.write(' '.join(gelems[2 * nc: 3 * nc]) + '\n')
+
+            # Печать данных.
+            of.write(' '.join(double_list(selems[0: hec])) + '\n')
+            of.write(' '.join(double_list(selems[hec: 2 * hec])) + '\n')
+            of.write(' '.join(double_list(selems[2 * hec: 3 * hec])) + '\n')
+            of.write(' '.join(double_list(selems[3 * hec: 4 * hec])) + '\n')
+            of.write(' '.join(double_list(selems[4 * hec: 5 * hec])) + '\n')
+            of.write(' '.join(double_list(selems[5 * hec: 6 * hec])) + '\n')
+            of.write(' '.join(double_list(selems[6 * hec: 7 * hec])) + '\n')
+            of.write(' '.join(double_list(selems[7 * hec: 8 * hec])) + '\n')
+
+            # Печать линков.
+            for i in range(zone_i - 1):
+                for j in range(zone_j - 1):
+                    ni00 = (i)     + (j)     * zone_i
+                    ni01 = (i)     + (j + 1) * zone_i
+                    ni10 = (i + 1) + (j)     * zone_i
+                    ni11 = (i + 1) + (j + 1) * zone_i
+                    of.write('{0} {1} {2}\n'.format(ni00 + 1, ni01 + 1, ni11 + 1))
+                    of.write('{0} {1} {2}\n'.format(ni00 + 1, ni11 + 1, ni10 + 1))
 
             # Закрываем пару файлов.
             gf.close()
