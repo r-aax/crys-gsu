@@ -323,9 +323,9 @@ def case_015_self_intersection():
     """
 
     m = gsu_geom.Mesh()
-    m.load('meshes/ex5.dat')
+    m.load('meshes/cyl_100.dat')
     m.shred()
-    m.store('meshes/ex5_sh.dat')
+    m.store('meshes/cyl_100_sh.dat')
 
 # --------------------------------------------------------------------------------------------------
 
