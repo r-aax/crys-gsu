@@ -10,6 +10,11 @@ import os
 import re
 from functools import reduce
 import itertools
+sys.path.append(sys.path[0] + '/../')
+print(sys.path)
+import gsu
+import utils
+import numpy as np
 
 # --------------------------------------------------------------------------------------------------
 
@@ -68,5 +73,21 @@ if __name__ == '__main__':
         raise Exception('файл %s не существует' % ansys_grid)
     else:
         say('Файлы найдены.')
+
+    lgrid = gsu.Grid()
+    lgrid.load(lazurit_grid)
+    agrid = gsu.Grid()
+    agrid.load(ansys_grid)
+
+    #
+    adata = [(f.get_center(), f.get_beta()) for f in agrid.Faces]
+    for f in lgrid.Faces:
+        c = f.get_center()
+        a = np.array([utils.dist2(c, ac) for (ac, _) in adata])
+        f.set_beta(adata[a.argmin()][1])
+    #
+
+    lgrid.store(out_grid)
+    say('Файл %s сохранен.' % out_grid)
 
 # --------------------------------------------------------------------------------------------------
