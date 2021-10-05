@@ -269,9 +269,14 @@ def case_014_decompose_incremental_consistently(test='bunny'):
     g.load('grids/{0}.dat'.format(test))
 
     g.decompose_incremental_consistently(32)
-    g.print_info(True, True)
+    g.print_info(True)
     print(g.get_metric())
-    g.store('grids/{0}_incremental.dat'.format(test))
+
+    g.local_refinement()
+    g.print_info(True)
+    print(g.get_metric())
+
+    g.store('grids/{0}_incremental_cons.dat'.format(test))
 
 
 def process_grid(grid, ii):

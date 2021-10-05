@@ -1829,14 +1829,17 @@ class Grid:
         zone_fail_count = 0
         while zone_fail_count < levels:
             for z in self.Zones:
-                if len(z.FacesBFS) != 0:
+                while True:
+                    if len(z.FacesBFS) == 0:
+                        zone_fail_count += 1
+                        break
+
                     face = z.FacesBFS.popleft()
                     if face.Zone is None:
                         z.add_face(face)
+                        break
 
                     zone_fail_count = 0
-                else:
-                    zone_fail_count += 1
 
         self.check_faces_are_linked_to_zones()
         self.link_nodes_and_edges_to_zones()
