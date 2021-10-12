@@ -105,10 +105,32 @@ class SpaceSeparator:
 
     # ----------------------------------------------------------------------------------------------
 
-    def fly(self, p, dt, g, max_steps):
+    def fly_step(self, p, v, v_air, dt):
+        """
+        Step of flying.
+        :param p: point
+        :param v: velocity
+        :param v_air: air velocity
+        :param dt: time step
+        :return: new point position and new velocity
+        """
+
+        # Calculate new point with old velocity.
+        new_p = utils.a_kb(p, dt, v_air)
+
+        # Calculate new velocity.
+        new_v = v
+
+        return new_p, new_v
+
+    # ----------------------------------------------------------------------------------------------
+
+    def fly(self, p, vel, d, dt, g, max_steps):
         """
         Flying of a point.
         :param p: point
+        :param vel: velocity
+        :param d: diameter
         :param dt: time step
         :param g: grid (surface)
         :param max_steps: max count of fly steps
@@ -130,8 +152,8 @@ class SpaceSeparator:
         while self.inside(cp):
 
             np = self.find_nearest(cp)
-            v = np[1]
-            new_cp = utils.a_kb(cp, dt, v)
+            v = vel
+            new_cp, v = self.fly_step(cp, v, np[1], dt)
 
             # If point stay on one place we can exit.
             if utils.dist2(cp, new_cp) < 1e-10:
@@ -241,6 +263,10 @@ def drops(grid_file, grid_air_file, out_grid_file,
 
     # Indexes of Stall and MImp2 fields.
     stall_ind = g.get_variable_index('Stall')
+    stall_d_ind = g.get_variable_index('StallD')
+    stall_vx_ind = g.get_variable_index('StallVX')
+    stall_vy_ind = g.get_variable_index('StallVY')
+    stall_vz_ind = g.get_variable_index('StallVZ')
     mimp2_ind = g.get_variable_index('MImp2')
 
     # Read air from file.
@@ -252,7 +278,11 @@ def drops(grid_file, grid_air_file, out_grid_file,
         stall_value = f.Data[stall_ind - 3]
         if stall_value > stall_thr:
             # print('... face {0} is wet. Start flying.'.format(f.GloId))
-            res = air.fly(f.get_point_above(d), dt, g, max_fly_steps)
+            stall_d = f.Data[stall_d_ind - 3]
+            stall_vel = (f.Data[stall_vx_ind - 3],
+                         f.Data[stall_vy_ind - 3],
+                         f.Data[stall_vz_ind - 3])
+            res = air.fly(f.get_point_above(d), stall_vel, stall_d, dt, g, max_fly_steps)
             if res[0] == 'C':
                 print('... secondary impingement '
                       'from face {0} to face {1}'.format(f.GloId, res[1].GloId))
