@@ -32,6 +32,7 @@ def say(obj):
 
 # --------------------------------------------------------------------------------------------------
 
+
 def leap_lines(lines):
     """
     Соединение строк.
@@ -44,6 +45,7 @@ def leap_lines(lines):
     return list(itertools.chain(*nlines))
 
 # --------------------------------------------------------------------------------------------------
+
 
 def get_block_name(s):
     """
@@ -58,6 +60,7 @@ def get_block_name(s):
 
 # --------------------------------------------------------------------------------------------------
 
+
 def double_list(li):
     """
     Double elements in the list.
@@ -68,7 +71,6 @@ def double_list(li):
     dli = [[e, e] for e in li]
 
     return list(itertools.chain(*dli))
-
 
 # --------------------------------------------------------------------------------------------------
 
@@ -103,9 +105,15 @@ if __name__ == '__main__':
     else:
         say('Входная директория найдена.')
 
-    # В списке всех файлов сначала идут сетки, потом решения.
-    all_files = [fn for fn in os.listdir(in_dir) if '.TEC' in fn]
+    # В списке всех файлов сначала должны идти все сетки, потом все решения.
+    # Так как функция listdir этого не гарантирует то сортируем список вручную.
+    # Ниже есть проверки корректности списка.
+    all_files = sorted([fn for fn in os.listdir(in_dir) if '.TEC' in fn])
     n = len(all_files)
+
+    # Если все верно, то количество файлов должно быть четным.
+    if n % 2 == 1:
+        raise Exception('количество файлов *.TEC во входной директории должно быть четным')
 
     with open(out_file, 'w') as of:
         of.write('# EXPORT_MODE=CHECK_POINT\n')
@@ -116,6 +124,18 @@ if __name__ == '__main__':
         for fi in range(n // 2):
             gfn, sfn = all_files[fi], all_files[fi + n // 2]
             say('Обработка файлов {0}, {1}'.format(gfn, sfn))
+
+            # Первый файл должен быть файлом сетки.
+            if gfn[:14] != 'TEC_WALL_Grid_':
+                raise Exception('файл {0} не является файлом сетки'.format(gfn))
+
+            # Второй файл должен быть файлом решения.
+            if sfn[:18] != 'TEC_WALL_Solution_':
+                raise Exception('файл {0} не является файлом решения'.format(sfn))
+
+            # Файл сетки и файл решения должны принадлежать одному и тому же блоку.
+            if gfn[14:] != sfn[18:]:
+                raise Exception('файлы {0} и {1} не соответствуют одному блоку'.format(gfn, sfn))
 
             # Открываем пару файлов.
             gf = open('{0}/{1}'.format(in_dir, gfn), 'r')
