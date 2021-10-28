@@ -8,6 +8,7 @@ import gsu
 import numpy as np
 import utils
 import time
+import math
 
 # ==================================================================================================
 
@@ -105,21 +106,30 @@ class SpaceSeparator:
 
     # ----------------------------------------------------------------------------------------------
 
-    def fly_step(self, p, v, v_air, dt):
+    def fly_step(self, p, v, v_air, d, dt):
         """
         Step of flying.
         :param p: point
         :param v: velocity
         :param v_air: air velocity
+        :param d: diameter
         :param dt: time step
         :return: new point position and new velocity
         """
 
         # Calculate new point with old velocity.
-        new_p = utils.a_kb(p, dt, v_air)
+        new_p = utils.a_kb(p, dt, v)
 
         # Calculate new velocity.
-        new_v = v
+        vis = 1.4607 * 0.00001
+        re = utils.dist(v, v_air) * d / vis
+        if re <= 350.0:
+            cd = (24.0 / re) * (1 + 0.166 * math.pow(re, 0.33))
+        else:
+            cd = 0.178 * math.pow(re, 0.217)
+        k = (3.0 / 4.0) * ((cd * 1.3) / (d * 1000.0)) * utils.dist(v, v_air) * dt
+        vv = ((v_air[0] - v[0]), (v_air[1] - v[1]), (v_air[2] - v[2]))
+        new_v = utils.a_kb(v, k, vv)
 
         return new_p, new_v
 
@@ -147,16 +157,16 @@ class SpaceSeparator:
         # Trajectory is initilized with start point.
         cp = p
         tr = [cp]
+        v = vel
         i = 0
 
         while self.inside(cp):
 
             np = self.find_nearest(cp)
-            v = vel
-            new_cp, v = self.fly_step(cp, v, np[1], dt)
+            new_cp, v = self.fly_step(cp, v, np[1], d, dt)
 
             # If point stay on one place we can exit.
-            if utils.dist2(cp, new_cp) < 1e-10:
+            if utils.dist2(cp, new_cp) < 1e-15:
                 return ('S', None, tr)
 
             tr.append(new_cp)

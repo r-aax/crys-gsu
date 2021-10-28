@@ -2007,8 +2007,8 @@ class Grid:
         for li in range(levels - 1):
             c = len(self.Zones)
             for zi in range(c):
-                # nm = self.Zones[0].Name
-                # print('split zone {0} -> {1}, {2}.'.format(nm, nm + 'l', nm + 'r'))
+                nm = self.Zones[0].Name
+                print('split zone {0} -> {1}, {2}.'.format(nm, nm + 'l', nm + 'r'))
                 self.split_zone(self.Zones[0], extract_signs_funs)
 
         self.post_decompose()
