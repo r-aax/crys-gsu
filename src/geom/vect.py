@@ -136,7 +136,7 @@ class Vect:
         :return: Angle cosine.
         """
 
-        return Vect.dot_product(a, b) / (a.norm() * b.norm())
+        return Vect.dot_product(a, b) / (a.mod() * b.mod())
 
     # ----------------------------------------------------------------------------------------------
 

@@ -9,85 +9,11 @@ import numpy as np
 import scipy as sp
 import scipy.linalg as lalg
 from geom.vect import Vect
+from geom.segment import Segment
 
 # ==================================================================================================
 
 eps = 1.0e-10
-
-# ==================================================================================================
-
-
-class Segment:
-    """
-    Segment.
-    """
-
-    # ----------------------------------------------------------------------------------------------
-
-    def __init__(self, a, b):
-        """
-        Constructor.
-        :param a: A point.
-        :param b: B point.
-        """
-
-        self.Points = [a, b]
-
-    # ----------------------------------------------------------------------------------------------
-
-    def __repr__(self):
-        """
-        String representation.
-        :return: String.
-        """
-
-        return 'S: {0} - {1}'.format(self.a(), self.b())
-
-    # ----------------------------------------------------------------------------------------------
-
-    def a(self):
-        """
-        A point.
-        :return: A point.
-        """
-
-        return self.Points[0]
-
-    # ----------------------------------------------------------------------------------------------
-
-    def b(self):
-        """
-        B point.
-        :return: B point.
-        """
-
-        return self.Points[1]
-
-    # ----------------------------------------------------------------------------------------------
-
-    def is_eq(self, s):
-        """
-        Check if eq to another segment.
-        :param s: Segment.
-        :return: True - if near to another segment,
-                 False - otherwise.
-        """
-
-        a, b = self.a(), self.b()
-        sa, sb = s.a(), s.b()
-
-        return (a.is_eq(sa) and b.is_eq(sb)) \
-               or (a.is_eq(sb) and b.is_eq(sa))
-
-    # ----------------------------------------------------------------------------------------------
-
-    def len(self):
-        """
-        Length.
-        :return: Length.
-        """
-
-        return (self.a() - self.b()).norm()
 
 # ==================================================================================================
 
