@@ -8,176 +8,11 @@ import gsu
 import numpy as np
 import scipy as sp
 import scipy.linalg as lalg
+from geom.vect import Vect
 
 # ==================================================================================================
 
 eps = 1.0e-10
-
-# ==================================================================================================
-
-
-class Vect:
-    """
-    Vect.
-    """
-
-    # ----------------------------------------------------------------------------------------------
-
-    def __init__(self, x=0.0, y=0.0, z=0.0):
-        """
-        Constructor.
-        :param x: X coord.
-        :param y: Y coord.
-        :param z: Z coord.
-        """
-
-        self.X = x
-        self.Y = y
-        self.Z = z
-
-    # ----------------------------------------------------------------------------------------------
-
-    def __repr__(self):
-        """
-        String representation.
-        :return: String.
-        """
-
-        return '({0}, {1}, {2})'.format(self.X, self.Y, self.Z)
-
-    # ----------------------------------------------------------------------------------------------
-
-    def __add__(self, v):
-        """
-        Add.
-        :param v: Vector.
-        :return: Result.
-        """
-
-        return Vect(self.X + v.X, self.Y + v.Y, self.Z + v.Z)
-
-    # ----------------------------------------------------------------------------------------------
-
-    def __sub__(self, v):
-        """
-        Sub.
-        :param v: Vector.
-        :return: Result.
-        """
-
-        return Vect(self.X - v.X, self.Y - v.Y, self.Z - v.Z)
-
-    # ----------------------------------------------------------------------------------------------
-
-    def __mul__(self, k):
-        """
-        Mul.
-        :param k: Value.
-        :return: Result.
-        """
-
-        return Vect(self.X * k, self.Y * k, self.Z * k)
-
-    # ----------------------------------------------------------------------------------------------
-
-    def __truediv__(self, k):
-        """
-        Div.
-        :param k: Value.
-        :return: Result.
-        """
-
-        return self * (1.0 / k)
-
-    # ----------------------------------------------------------------------------------------------
-
-    def norm2(self):
-        """
-        Square norm.
-        :return: Square norm.
-        """
-
-        return self.X * self.X + self.Y * self.Y + self.Z * self.Z
-
-    # ----------------------------------------------------------------------------------------------
-
-    def norm(self):
-        """
-        Norm.
-        :return: Norm.
-        """
-
-        return math.sqrt(self.norm2())
-
-    # ----------------------------------------------------------------------------------------------
-
-    def orth(self):
-        """
-        Orth of the vector.
-        :return: Orth.
-        """
-
-        n = self.norm()
-
-        return Vect(self.X / n, self.Y / n, self.Z / n)
-
-    # ----------------------------------------------------------------------------------------------
-
-    def dist_to(self, v):
-        """
-        Distance to.
-        :param v: Vector.
-        :return: Distance.
-        """
-
-        return (self - v).norm()
-
-    # ----------------------------------------------------------------------------------------------
-
-    def is_eq(self, v):
-        """
-        Check if eq to another vector.
-        :param v: Vector.
-        :return: True - if near to another vector,
-                 False - otherwise.
-        """
-
-        return abs(self.X - v.X) + abs(self.Y - v.Y) + abs(self.Z - v.Z) < eps
-
-    # ----------------------------------------------------------------------------------------------
-
-    def dot_product(self, v):
-        """
-        Dot product.
-        :param v: Vector.
-        :return: Dot product.
-        """
-
-        return self.X * v.X + self.Y * v.Y + self.Z * v.Z
-
-    # ----------------------------------------------------------------------------------------------
-
-    def angle_cos(self, v):
-        """
-        Cosine of angle between vectors.
-        :param v: Vector.
-        :return: Angle cosine.
-        """
-
-        return self.dot_product(v) / (self.norm() * v.norm())
-
-    # ----------------------------------------------------------------------------------------------
-
-    def cross_product(self, v):
-        """
-        Cross product.
-        :param v: Vector.
-        :return: Cross product.
-        """
-
-        return Vect(self.Y * v.Z - self.Z * v.Y,
-                    self.Z * v.X - self.X * v.Z,
-                    self.X * v.Y - self.Y * v.X)
 
 # ==================================================================================================
 
@@ -364,7 +199,7 @@ class Triangle:
                  False - otherwise.
         """
 
-        return self.a().is_eq(p) or self.b().is_eq(p) or self.c().is_eq(p)
+        return self.a().is_near(p, eps) or self.b().is_near(p, eps) or self.c().is_near(p, eps)
 
     # ----------------------------------------------------------------------------------------------
 
@@ -512,7 +347,7 @@ class Triangle:
         ab = self.b() - self.a()
         ac = self.c() - self.a()
 
-        return 0.5 * abs(ab.cross_product(ac).norm())
+        return 0.5 * abs(Vect.cross_product(ab, ac).mod())
 
     # ----------------------------------------------------------------------------------------------
 
@@ -623,7 +458,7 @@ class Face:
 
         # Double point check.
         for pi in self.SP:
-            if pi.is_eq(p):
+            if pi.is_near(p, eps):
                 return
 
         # Eventually add it.
