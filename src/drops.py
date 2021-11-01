@@ -122,19 +122,26 @@ class SpaceSeparator:
         :return:      New point position and new velocity.
         """
 
-        # Calculate new point with old velocity.
-        new_p = p + v * dt
+        # Air viscosity and density for zero temperature.
+        air_dns = 1.292
+        wtr_dns = 1000.0
+        air_vis = 1.736e-5
 
-        # Calculate new velocity.
-        vis = 1.4607 * 0.00001
-        re = (v - v_air).mod() * d / vis
+        # Reynolds number and C_d.
+        vsm = (v - v_air).mod()
+        re = vsm * d / air_vis
         if re <= 350.0:
-            cd = (24.0 / re) * (1 + 0.166 * math.pow(re, 0.33))
+            cd = (24.0 / re) * (1.0 + 0.166 * math.pow(re, 0.33))
         else:
             cd = 0.178 * math.pow(re, 0.217)
-        k = (3.0 / 4.0) * ((cd * 1.3) / (d * 1000.0)) * (v - v_air).mod() * dt
-        vv = v_air - v
-        new_v = v + vv * k
+
+        # Speedup.
+        a = (v_air - v) * 0.75 * ((cd * air_dns) / (d * wtr_dns)) * vsm
+
+        # Calculate new position through velocity,
+        # and new velocity through speedup.
+        new_p = p + v * dt
+        new_v = v + a * dt
 
         return new_p, new_v
 
