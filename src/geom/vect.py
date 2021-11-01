@@ -40,7 +40,7 @@ class Vect:
 
     def __add__(self, v):
         """
-        Add.
+        Addition of two vectors.
         :param v: Vector.
         :return: Result.
         """
@@ -51,7 +51,7 @@ class Vect:
 
     def __sub__(self, v):
         """
-        Sub.
+        Subtraction of two vectors.
         :param v: Vector.
         :return: Result.
         """
@@ -62,7 +62,7 @@ class Vect:
 
     def __mul__(self, k):
         """
-        Mul.
+        Multiplication vector on number.
         :param k: Value.
         :return: Result.
         """
@@ -74,7 +74,7 @@ class Vect:
     @staticmethod
     def dot_product(a, b):
         """
-        Dot product.
+        Dot product of two vectors.
         :param a: First vector.
         :param b: Second vector.
         :return: Dot product.
@@ -106,7 +106,7 @@ class Vect:
 
     def dist_to(self, v):
         """
-        Distance to.
+        Distance to another vector.
         :param v: Vector.
         :return: Distance.
         """
@@ -143,7 +143,7 @@ class Vect:
     @staticmethod
     def cross_product(a, b):
         """
-        Cross product.
+        Cross product of two vectors.
         :param a: First vector.
         :param b: Second vector.
         :return: Cross product.
