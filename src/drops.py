@@ -284,6 +284,11 @@ def drops(grid_file, grid_air_file, out_grid_file,
     air = read_vel_field_from_file(grid_air_file)
     air.print_info()
 
+    tr_f = open(out_grid_file + '.tr.dat', 'w')
+    tr_f.write('# Trajectories file.\n')
+    tr_f.write('TITLE="Trajectories"\n')
+    tr_f.write('VARIABLES="X", "Y", "Z"\n')
+
     # Check all faces.
     for f in g.Faces:
         stall_value = f.Data[stall_ind - 3]
@@ -294,7 +299,10 @@ def drops(grid_file, grid_air_file, out_grid_file,
                          f.Data[stall_vy_ind - 3],
                          f.Data[stall_vz_ind - 3])
             res = air.fly(f.get_point_above(d), stall_vel, stall_d, dt, g, max_fly_steps)
-            print(res[2])
+            traj = res[2]
+            print(traj)
+            traj.dump(tr_f, 'Trajectory-{0}'.format(f.GloId))
+
             if res[0] == 'C':
                 print('... secondary impingement '
                       'from face {0} to face {1}'.format(f.GloId, res[1].GloId))
@@ -307,6 +315,8 @@ def drops(grid_file, grid_air_file, out_grid_file,
         f.set_hw(0.0)
         f.set_hi(0.0)
     g.store(out_grid_file)
+
+    tr_f.close()
 
     print('crys-gsu-drops : done (time estimated = {0} s)'.format(time.time() - start_time))
 
