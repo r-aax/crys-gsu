@@ -75,6 +75,20 @@ def double_list(li):
 # --------------------------------------------------------------------------------------------------
 
 
+def double_and_neg_list(li):
+    """
+    Double elements in the list and negate all of them.
+    :param li: List.
+    :return: Doubled and negated list.
+    """
+
+    dli = [[str(-float(e)), str(-float(e))] for e in li]
+
+    return list(itertools.chain(*dli))
+
+# --------------------------------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
 
     if (len(sys.argv)) < 3:
@@ -172,14 +186,16 @@ if __name__ == '__main__':
             of.write(' '.join(gelems[2 * nc: 3 * nc]) + '\n')
 
             # Печать данных.
+            # Данные нужно удваивать, так как на вход подаются 4-угольники,
+            # а нам нужны треугольники (каждый четырехугольник делится пополам).
             of.write(' '.join(double_list(selems[0: hec])) + '\n')
             of.write(' '.join(double_list(selems[hec: 2 * hec])) + '\n')
             of.write(' '.join(double_list(selems[2 * hec: 3 * hec])) + '\n')
             of.write(' '.join(double_list(selems[3 * hec: 4 * hec])) + '\n')
             of.write(' '.join(double_list(selems[4 * hec: 5 * hec])) + '\n')
-            of.write(' '.join(double_list(selems[5 * hec: 6 * hec])) + '\n')
-            of.write(' '.join(double_list(selems[6 * hec: 7 * hec])) + '\n')
-            of.write(' '.join(double_list(selems[7 * hec: 8 * hec])) + '\n')
+            of.write(' '.join(double_and_neg_list(selems[5 * hec: 6 * hec])) + '\n')
+            of.write(' '.join(double_and_neg_list(selems[6 * hec: 7 * hec])) + '\n')
+            of.write(' '.join(double_and_neg_list(selems[7 * hec: 8 * hec])) + '\n')
 
             # Печать линков.
             for i in range(zone_i - 1):
