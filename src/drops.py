@@ -305,7 +305,7 @@ def drops(grid_file, grid_air_file, out_grid_file,
             tri = Triangle(Vect(f.Nodes[0].P[0], f.Nodes[0].P[1], f.Nodes[0].P[2]),
                            Vect(f.Nodes[1].P[0], f.Nodes[1].P[1], f.Nodes[1].P[2]),
                            Vect(f.Nodes[2].P[0], f.Nodes[2].P[1], f.Nodes[2].P[2]))
-            start_point = tri.centroid()
+            start_point = tri.centroid() + tri.normal_orth() * d
             res = air.fly(start_point, stall_vel, stall_d, dt, g, max_fly_steps)
             traj = res[2]
             print(traj)

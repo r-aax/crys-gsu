@@ -3,6 +3,7 @@ Triangle realization.
 """
 
 import math
+from geom.vect import Vect
 
 # ==================================================================================================
 
@@ -63,6 +64,18 @@ class Triangle:
         """
 
         return self.Points[2]
+
+    # ----------------------------------------------------------------------------------------------
+
+    def normal_orth(self):
+        """
+        Get normal with length 1.0.
+        :return: Normal orth.
+        """
+
+        n = Vect.cross_product(self.b() - self.a(), self.c() - self.b())
+
+        return n.orth()
 
     # ----------------------------------------------------------------------------------------------
 
