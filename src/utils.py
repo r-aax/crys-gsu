@@ -7,44 +7,6 @@ import pathlib
 import math
 import numpy as np
 
-# --------------------------------------------------------------------------------------------------
-
-
-def norm2(v):
-    """
-    Norm^2 for vector.
-    :param v: vector
-    :return: norm^2
-    """
-
-    (vx, vy, vz) = v
-
-    return vx * vx + vy * vy + vz * vz
-
-# --------------------------------------------------------------------------------------------------
-
-
-def norm(v):
-    """
-    Norm.
-    :param v: vector
-    :return: norm
-    """
-
-    return math.sqrt(norm2(v))
-
-# --------------------------------------------------------------------------------------------------
-
-
-def cross_product(a, b):
-    """
-    Cross product of two vectors.
-    :param a: vector
-    :param b: vector
-    :return: result of cross product
-    """
-
-    return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
 
 # --------------------------------------------------------------------------------------------------
 
