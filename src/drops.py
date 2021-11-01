@@ -32,9 +32,9 @@ class SpacePartition:
         self.Ds = ds
 
         # Construct box.
-        xs = [d[0][0] for d in ds]
-        ys = [d[0][1] for d in ds]
-        zs = [d[0][2] for d in ds]
+        xs = [d[0].X for d in ds]
+        ys = [d[0].Y for d in ds]
+        zs = [d[0].Z for d in ds]
         self.Box = (min(xs), min(ys), min(zs), max(xs), max(ys), max(zs))
 
 # ==================================================================================================
@@ -83,10 +83,7 @@ class SpaceSeparator:
         # Warning! This works only if one partition is present.
         #
 
-        def dist2(t1, t2):
-            return (t1[0] - t2[0])**2 + (t1[1] - t2[1])**2 + (t1[2] - t2[2])**2
-
-        m = np.array([dist2((p.X, p.Y, p.Z), pi) for (pi, _) in self.Partitions[0].Ds])
+        m = np.array([(p - pi).mod2() for (pi, _) in self.Partitions[0].Ds])
 
         return self.Partitions[0].Ds[m.argmin()]
 
@@ -169,8 +166,7 @@ class SpaceSeparator:
         while self.inside(cp):
 
             np = self.find_nearest(cp)
-            new_cp, v = self.fly_step(cp, v,
-                                      Vect(np[1][0], np[1][1], np[1][2]), d, dt)
+            new_cp, v = self.fly_step(cp, v, np[1], d, dt)
 
             # If point stay on one place we can exit.
             if (cp - new_cp).mod2() < 1e-15:
@@ -201,7 +197,8 @@ class SpaceSeparator:
 def read_vel_field_from_file(grid_air_file):
     """
     Read velocity field from 3D grid.
-    :param grid_air_file: file with air grid
+    :param grid_air_file: File with air grid.
+    :return: Space separator.
     """
 
     ds = []
@@ -222,8 +219,8 @@ def read_vel_field_from_file(grid_air_file):
                     for i in range(ns):
                         l = f.readline()
                         d = l.split()
-                        p = float(d[0]), float(d[1]), float(d[2])
-                        v = float(d[5]), float(d[6]), float(d[7])
+                        p = Vect(float(d[0]), float(d[1]), float(d[2]))
+                        v = Vect(float(d[5]), float(d[6]), float(d[7]))
                         ds.append((p, v))
                     # Ignore all febricks links.
                     for i in range(es):
