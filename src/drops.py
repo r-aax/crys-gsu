@@ -13,6 +13,7 @@ from geom.vect import Vect
 from geom.segment import Segment
 from geom.triangle import Triangle
 from geom.trajectory import Trajectory
+from geom.box import Box
 
 # ==================================================================================================
 
@@ -45,12 +46,7 @@ class SpacePartition:
         """
 
         self.Ds = ds
-
-        # Construct box.
-        xs = [d[0].X for d in ds]
-        ys = [d[0].Y for d in ds]
-        zs = [d[0].Z for d in ds]
-        self.Box = (min(xs), min(ys), min(zs), max(xs), max(ys), max(zs))
+        self.Bx = Box([d[0] for d in ds])
 
 # ==================================================================================================
 
@@ -83,7 +79,7 @@ class SpaceSeparator:
 
         for i, p in enumerate(self.Partitions):
             print('    : part {0} : {1} points'.format(i, len(p.Ds)))
-            print('      box {0}'.format(p.Box))
+            print('      {0}'.format(p.Bx))
 
     # ----------------------------------------------------------------------------------------------
 
@@ -111,16 +107,7 @@ class SpaceSeparator:
         :return: True - if point in box, False - otherwise.
         """
 
-        #
-        # Warning! This works only if one partition is present.
-        #
-
-        (min_x, min_y, min_z, max_x, max_y, max_z) = self.Partitions[0].Box
-        px, py, pz = p.X, p.Y, p.Z
-
-        return (px >= min_x) and (px <= max_x)\
-               and (py >= min_y) and (py <= max_y)\
-               and (pz >= min_z) and (pz <= max_z)
+        return self.Partitions[0].Bx.is_inside(p)
 
     # ----------------------------------------------------------------------------------------------
 
