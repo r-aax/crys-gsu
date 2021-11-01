@@ -11,78 +11,6 @@ import numpy as np
 # --------------------------------------------------------------------------------------------------
 
 
-def is_triangle_and_segment_intersect(a, b, c, p, q):
-    """
-    Check if triangle and segment inntersect.
-    :param a: point of triangle
-    :param b: point of triangle
-    :param c: point of triangle
-    :param p: point of segment
-    :param q: point of segment
-    :return: True - if there is intersection, False - otherwise.
-    """
-
-    #
-    # Point (x, y, z) inside triangle can be represented as
-    # x = x_a + (x_b - x_a) * alfa + (x_c - x_a) * beta
-    # y = y_a + (y_b - y_a) * alfa + (y_c - y_a) * beta
-    # z = z_a + (z_b - z_a) * alfa + (z_c - z_a) * beta
-    # ...
-    # x = x_a + x_ba * alfa + x_ca * beta
-    # y = y_a + y_ba * alfa + y_ca * beta
-    # z = z_a + z_ba * alfa + z_ca * beta
-    #
-    # Point (x, y, z) on segment can be represented as
-    # x = x_p + (x_q - x_p) * phi
-    # y = y_p + (y_q - y_p) * phi
-    # x = z_p + (z_q - z_p) * phi
-    # ...
-    # x = x_p + x_qp * phi
-    # y = y_p + y_qp * phi
-    # x = z_p + z_qp * phi
-    #
-    # So to find intersection we have to solve system
-    # x_a + x_ba * alfa + x_ca * beta = x_p + x_qp * phi
-    # y_a + y_ba * alfa + y_ca * beta = y_p + y_qp * phi
-    # z_a + z_ba * alfa + z_ca * beta = z_p + z_qp * phi
-    # ...
-    # x_ba * alfa + x_ca * beta + (-x_qp) * phi = x_p - x_a
-    # y_ba * alfa + y_ca * beta + (-y_qp) * phi = y_p - y_a
-    # z_ba * alfa + z_ca * beta + (-z_qp) * phi = z_p - z_a
-    # ...
-    # x_ba * alfa + x_ca * beta + x_pq * phi = x_pa
-    # y_ba * alfa + y_ca * beta + y_pq * phi = y_pa
-    # z_ba * alfa + z_ca * beta + z_pq * phi = z_pa
-    #
-    # Matrix of this system can be written in the following view
-    # [x_ba x_ca x_pq
-    #  y_ba y_ca y_pq
-    #  z_ba z_ca z_pq]
-
-    (xa, ya, za) = a
-    (xb, yb, zb) = b
-    (xc, yc, zc) = c
-    (xp, yp, zp) = p
-    (xq, yq, zq) = q
-
-    m = np.array([[xb - xa, xc - xa, xp - xq],
-                  [yb - ya, yc - ya, yp - yq],
-                  [zb - za, zc - za, zp - zq]])
-    d = np.linalg.det(m)
-
-    if abs(d) < 1e-10:
-        return False
-
-    im = np.linalg.inv(m)
-    r = im.dot(np.array([xp - xa, yp - ya, zp - za]))
-    alfa, beta, phi = r[0], r[1], r[2]
-
-    return (alfa >= 0.0) and (beta >= 0.0) and (alfa + beta <= 1.0)\
-           and (phi >= 0.0) and (phi <= 1.0)
-
-# --------------------------------------------------------------------------------------------------
-
-
 def flatten(ar):
     """
     Flatten array.
@@ -214,18 +142,6 @@ def group_txt_files_by_timestamps(fs):
 
 
 if __name__ == '__main__':
-
-    # is_triangle_and_segment_intersect
-    assert(is_triangle_and_segment_intersect((0.0, 0.0, 0.0),
-                                             (1.0, 0.0, 0.0),
-                                             (0.0, 0.0, 1.0),
-                                             (0.25, 1.0, 0.25),
-                                             (0.25, -1.0, 0.25)))
-    assert(not is_triangle_and_segment_intersect((0.0, 0.0, 0.0),
-                                                 (1.0, 0.0, 0.0),
-                                                 (0.0, 0.0, 1.0),
-                                                 (1.0, 1.0, 1.0),
-                                                 (1.0, -1.0, 1.0)))
 
     # flatten
     assert(flatten([]) == [])
