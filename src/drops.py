@@ -134,7 +134,7 @@ class SpaceSeparator:
             cd = 0.178 * math.pow(re, 0.217)
         k = (3.0 / 4.0) * ((cd * 1.3) / (d * 1000.0)) * (v - v_air).mod() * dt
         vv = v_air - v
-        new_v = v #+ vv * k
+        new_v = v + vv * k
 
         return new_p, new_v
 
