@@ -151,44 +151,50 @@ class SpaceSeparator:
         :param max_steps: Max count of fly steps.
         :return: Tuple of 3 elements.
                  first element - diagnostic
+                     'N' - too long flying
+                     'O' - left the box out
                      'S' - stop on place
                      'C' - cross surface
-                     'O' - left the box out
-                     'N' - too long flying
                  second element - face if intersect (None otherwise)
                  third element - trajectory
         """
 
-        # Trajectory is initilized with start point.
-        cp = p
-        tr = Trajectory(cp)
+        tr = Trajectory(p)
         v = vel
-        i = 0
 
-        while self.inside(cp):
+        # Infinite loop.
+        while True:
 
-            np = self.find_nearest(cp)
-            new_cp, v = self.fly_step(cp, v, np[1], d, dt)
+            # Get last point (lp) in trajectory.
+            lp = tr.last_point()
+
+            # Check if there is too many points in trajectory.
+            if tr.points_count() > max_steps:
+                return ('N', None, tr)
+
+            # Check if we still in our space.
+            if not self.inside(lp):
+                return ('O', None, tr)
+
+            # Find air velocity.
+            v_air = self.find_nearest(lp)[1]
+
+            # Calculate future point (fp) and new velocity value.
+            fp, v = self.fly_step(lp, v, v_air, d, dt)
 
             # If point stay on one place we can exit.
-            if (cp - new_cp).mod2() < 1e-15:
+            if fp.is_near(lp, 1e-15):
                 return ('S', None, tr)
 
-            tr.add_point(new_cp)
+            # Add point to trajectory.
+            tr.add_point(fp)
 
+            # Everything is OK.
             # Check intersection.
             for f in g.Faces:
                 tri = face_triangle(f)
-                if tri.intersection_with_segment(Segment(cp, new_cp)) != []:
+                if tri.intersection_with_segment(Segment(lp, fp)) != []:
                     return ('C', f, tr)
-
-            cp = new_cp
-            i = i + 1
-            if i > max_steps:
-                return ('N', None, tr)
-
-        # We left box out.
-        return ('O', None, tr)
 
 # ==================================================================================================
 

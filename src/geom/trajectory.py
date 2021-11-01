@@ -75,6 +75,16 @@ class Trajectory:
 
     # ----------------------------------------------------------------------------------------------
 
+    def last_point(self):
+        """
+        Last point.
+        :return: Last point.
+        """
+
+        return self.Points[-1]
+
+    # ----------------------------------------------------------------------------------------------
+
     def dump(self, f, zone_name):
         """
         Dump trajectory as separate zone to file.
