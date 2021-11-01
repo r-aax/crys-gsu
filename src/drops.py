@@ -83,7 +83,10 @@ class SpaceSeparator:
         # Warning! This works only if one partition is present.
         #
 
-        m = np.array([utils.dist2((p.X, p.Y, p.Z), pi) for (pi, _) in self.Partitions[0].Ds])
+        def dist2(t1, t2):
+            return (t1[0] - t2[0])**2 + (t1[1] - t2[1])**2 + (t1[2] - t2[2])**2
+
+        m = np.array([dist2((p.X, p.Y, p.Z), pi) for (pi, _) in self.Partitions[0].Ds])
 
         return self.Partitions[0].Ds[m.argmin()]
 
@@ -302,9 +305,9 @@ def drops(grid_file, grid_air_file, out_grid_file,
             stall_vel = Vect(f.Data[stall_vx_ind - 3],
                              f.Data[stall_vy_ind - 3],
                              f.Data[stall_vz_ind - 3])
-            tri = Triangle(Vect(f.Nodes[0].P[0], f.Nodes[0].P[1], f.Nodes[0].P[2]),
-                           Vect(f.Nodes[1].P[0], f.Nodes[1].P[1], f.Nodes[1].P[2]),
-                           Vect(f.Nodes[2].P[0], f.Nodes[2].P[1], f.Nodes[2].P[2]))
+            tri = Triangle(Vect.from_tuple(f.Nodes[0].P),
+                           Vect.from_tuple(f.Nodes[1].P),
+                           Vect.from_tuple(f.Nodes[2].P))
             start_point = tri.centroid() + tri.normal_orth() * d
             res = air.fly(start_point, stall_vel, stall_d, dt, g, max_fly_steps)
             traj = res[2]

@@ -28,6 +28,18 @@ class Vect:
 
     # ----------------------------------------------------------------------------------------------
 
+    @staticmethod
+    def from_tuple(t):
+        """
+        Constructor from tuple.
+        :param t: Tuple.
+        :return: Vector.
+        """
+
+        return Vect(t[0], t[1], t[2])
+
+    # ----------------------------------------------------------------------------------------------
+
     def __str__(self):
         """
         String representation.

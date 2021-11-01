@@ -67,6 +67,16 @@ class Triangle:
 
     # ----------------------------------------------------------------------------------------------
 
+    def area(self):
+        """
+        Area.
+        :return: Area.
+        """
+
+        return 0.5 * Vect.cross_product(self.b() - self.a(), self.c() - self.b()).mod()
+
+    # ----------------------------------------------------------------------------------------------
+
     def normal_orth(self):
         """
         Get normal with length 1.0.
