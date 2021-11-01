@@ -36,52 +36,6 @@ def norm(v):
 # --------------------------------------------------------------------------------------------------
 
 
-def dist2(a, b):
-    """
-    Distance^2 between points.
-    :param a: point
-    :param b: point
-    :return: distance^2
-    """
-
-    (ax, ay, az) = a
-    (bx, by, bz) = b
-
-    return norm2((ax - bx, ay - by, az - bz))
-
-# --------------------------------------------------------------------------------------------------
-
-
-def dist(a, b):
-    """
-    Distance between points.
-    :param a: point
-    :param b: point
-    :return: distance
-    """
-
-    return math.sqrt(dist2(a, b))
-
-# --------------------------------------------------------------------------------------------------
-
-
-def a_kb(a, k, b):
-    """
-    Calculate a + k * b
-    :param a: point
-    :param k: coeff
-    :param b: point
-    :return: new point
-    """
-
-    (ax, ay, az) = a
-    (bx, by, bz) = b
-
-    return (ax + k * bx, ay + k * by, az + k * bz)
-
-# --------------------------------------------------------------------------------------------------
-
-
 def cross_product(a, b):
     """
     Cross product of two vectors.
@@ -91,21 +45,6 @@ def cross_product(a, b):
     """
 
     return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
-
-# --------------------------------------------------------------------------------------------------
-
-
-def normalized(v):
-    """
-    Calculate normalized vector.
-    :param v: vector
-    :return: normalized vecror
-    """
-
-    (vx, vy, vz) = v
-    n = norm(v)
-
-    return (vx / n, vy / n, vz / n)
 
 # --------------------------------------------------------------------------------------------------
 

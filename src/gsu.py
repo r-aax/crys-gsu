@@ -492,33 +492,6 @@ class Face:
 
     # ----------------------------------------------------------------------------------------------
 
-    def get_normal1(self):
-        """
-        Get outer normal, normalized to 1.0.
-        :return: normalized normal
-        """
-
-        ab, bc = self.get_ab_vector(), self.get_bc_vector()
-        n = utils.cross_product(ab, bc)
-
-        return utils.normalized(n)
-
-    # ----------------------------------------------------------------------------------------------
-
-    def get_point_above(self, d):
-        """
-        Get point above face (on distance d).
-        :param d: distance
-        :return: point
-        """
-
-        c = self.get_center()
-        n1 = self.get_normal1()
-
-        return utils.a_kb(c, d, n1)
-
-    # ----------------------------------------------------------------------------------------------
-
     def get_area(self):
         """
         Area of the face.
