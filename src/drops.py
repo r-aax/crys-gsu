@@ -250,36 +250,36 @@ def read_vel_field_from_file(grid_air_file):
 # --------------------------------------------------------------------------------------------------
 
 
-def drops(grid_file, grid_air_file, out_grid_file,
-          d=1.0e-4, dt=1.0e-6, stall_thr=1.0e-6, max_fly_steps=200):
+def drops(grid_stall_file, grid_air_file, out_grid_file,
+          d, dt, stall_thr, max_fly_steps):
     """
     Calculate drops.
-    :param grid_file: File with grid.
-    :param grid_air_file: File with air grid.
-    :param out_grid_file: Out file.
-    :param d: Distance from face for flying point start.
-    :param dt: Time step.
-    :param stall_thr: Threshold for Stall value, to make decision about water stall.
-    :param max_fly_steps: Max fly steps.
+    :param grid_stall_file: File with grid.
+    :param grid_air_file:   File with air grid.
+    :param out_grid_file:   Out file.
+    :param d:               Distance from face for flying point start.
+    :param dt:              Time step.
+    :param stall_thr:       Threshold for Stall value, to make decision about water stall.
+    :param max_fly_steps:   Max fly steps.
     """
 
     # Check for grid file.
-    if not os.path.isfile(grid_file):
-        raise Exception('crys-gsu-drops : no such file ({0})'.format(grid_file))
+    if not os.path.isfile(grid_stall_file):
+        raise Exception('crys-gsu-drops : no such file ({0})'.format(grid_stall_file))
 
     # Check for grid file.
     if not os.path.isfile(grid_air_file):
         raise Exception('crys-gsu-drops : no such air file ({0})'.format(grid_file))
 
-    print('crys-gsu-drops : start, grid_file = {0}, grid_air_file = {1}, '
-          'out_grid_file = {2}, d = {3}, dt = {4}, '
-          'stall_thr = {5}, max_fly_steps = {6}'.format(grid_file, grid_air_file, out_grid_file,
-                                                        d, dt, stall_thr, max_fly_steps))
+    print('crys-gsu-drops : start, grid_stall_file = {0}, grid_air_file = {1}, '
+          'out_grid_file = {2}, d = {3}, dt = {4}, stall_thr = {5}, '
+          'max_fly_steps = {6}'.format(grid_stall_file, grid_air_file, out_grid_file,
+                                       d, dt, stall_thr, max_fly_steps))
     start_time = time.time()
 
     # Load grid.
     g = gsu.Grid()
-    g.load(grid_file)
+    g.load(grid_stall_file)
 
     # Indexes of Stall and MImp2 fields.
     stall_ind = g.get_variable_index('Stall')
@@ -338,50 +338,73 @@ def print_help():
     """
 
     print('[Overview]:')
-    print('drops.py script calculates drops trajectories and secondary impingement')
-    print('')
+    print('    drops.py script calculates drops trajectories and secondary impingement')
     print('[Usage]:')
-    print('merge.py <grid-file> <grid-air-file> <out-grid-file> ')
-    print('         [<d> <dt> <wet_thr> <max_fly_steps>]')
-    print('    <grid-file> - grid file name')
-    print('    <grid-air-file> - name of file with air grid')
-    print('    <out-grid-file> - out file with result grid')
-    print('    <d> - distance above face surface for start point of trajectory (default = 1.0e-4)')
-    print('    <dt> - time step (default = 1.0e-6)')
-    print('    <stall_thr> - threshold for stall faces (default = 1.0e-6)')
-    print('    <max_fly_steps> - maximum steps count for drops flying (default = 200)')
+    print('    drops.py <options>')
+    print('[Options]:')
+    print('    grid-stall-file=<grid-stall-file> - grid file name in STALL format')
+    print('    grid-air-file=<grid-air-file>     - name of file with air grid')
+    print('    out-grid-file=<out-grid-file>     - out file with result grid')
+    print('    d=<d>                             - distance above face surface for start')
+    print('                                        point of trajectory, default value is 1.0e-4 m')
+    print('    dt=<dt>                           - time step, default value is 1.0e-5 s')
+    print('    stall-thr=<stall-thr>             - threshold for stall faces,')
+    print('                                        default value is 1.0e-6 kg / (m^2 * s)')
+    print('    max-fly-steps=<max-fly-steps>     - maximum points in droplets trajectory,')
+    print('                                        default value is 200 points')
 
 # ==================================================================================================
 
 
 # Example of running drops.py script:
-#     drops.py grids/cyl.dat grids/cyl_air.dat grids/out_cyl.dat
+#     drops.py \
+#         grid-stall-file=grids/cyl_stall.dat \
+#         grid-air-file=grids/cyl_air.dat \
+#         out-grid-file=grids/out_cyl.dat
 if __name__ == '__main__':
 
+    # Print help if there is no parameters.
     if len(sys.argv) == 1:
         print_help()
         exit(0)
 
+    # Print help if user asks for it.
     if (sys.argv[1] == '-h') or (sys.argv[1] == '--help'):
         print_help()
         exit(0)
 
-    if len(sys.argv) < 4:
-        raise Exception('crys-gsu-drops : not enough arguments')
+    # Init default parameters.
+    grid_stall_file = None
+    grid_air_file = None
+    out_grid_file = None
+    d = 1.0e-4
+    dt = 1.0e-5
+    stall_thr = 1.0e-6
+    max_fly_steps = 200
 
-    if len(sys.argv) == 4:
-        drops(grid_file=sys.argv[1],
-              grid_air_file=sys.argv[2],
-              out_grid_file=sys.argv[3])
-    elif len(sys.argv) == 8:
-        drops(grid_file=sys.argv[1],
-              grid_air_file=sys.argv[2],
-              out_grid_file=sys.argv[3],
-              d=float(sys.argv[4]),
-              dt=float(sys.argv[5]),
-              stall_thr=float(sys.argv[6]),
-              max_fly_steps=int(sys.argv[7]))
-    else:
-        raise Exception('crys-gsu-drops : wrong parameters count')
+    # Parse parameters.
+    for arg in sys.argv[1:]:
+        [par, val] = arg.split('=')
+
+        if par == 'grid-stall-file':
+            grid_stall_file = val
+        elif par == 'grid-air-file':
+            grid_air_file = val
+        elif par == 'out-grid-file':
+            out_grid_file = val
+        elif par == 'd':
+            d = float(val)
+        elif par == 'dt':
+            dt = float(val)
+        elif par == 'stall-thr':
+            stall_thr = float(val)
+        elif par == 'max-fly-steps':
+            max_fly_steps = int(val)
+        else:
+            raise Exception('unknown parameter {0}'.format(par))
+
+    # Run.
+    drops(grid_stall_file, grid_air_file, out_grid_file,
+          d, dt, stall_thr, max_fly_steps)
 
 # ==================================================================================================
