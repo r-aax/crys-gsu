@@ -33,7 +33,7 @@ class Vect:
         """
         Constructor from iterable object.
         :param t: Tuple.
-        :return: Vector.
+        :return:  Vector.
         """
 
         return Vect(t[0], t[1], t[2])
@@ -54,7 +54,7 @@ class Vect:
         """
         Addition of two vectors.
         :param v: Vector.
-        :return: Result.
+        :return:  Result.
         """
 
         return Vect(self.X + v.X, self.Y + v.Y, self.Z + v.Z)
@@ -65,7 +65,7 @@ class Vect:
         """
         Subtraction of two vectors.
         :param v: Vector.
-        :return: Result.
+        :return:  Result.
         """
 
         return Vect(self.X - v.X, self.Y - v.Y, self.Z - v.Z)
@@ -76,7 +76,7 @@ class Vect:
         """
         Multiplication vector on number.
         :param k: Value.
-        :return: Result (vector).
+        :return:  Result (vector).
         """
 
         return Vect(self.X * k, self.Y * k, self.Z * k)
@@ -87,7 +87,7 @@ class Vect:
         """
         Division on float value.
         :param k: Value.
-        :return: Result (vector).
+        :return:  Result (vector).
         """
 
         return self * (1.0 / k)
@@ -100,7 +100,7 @@ class Vect:
         Dot product of two vectors.
         :param a: First vector.
         :param b: Second vector.
-        :return: Dot product.
+        :return:  Dot product.
         """
 
         return a.X * b.X + a.Y * b.Y + a.Z * b.Z
@@ -131,7 +131,7 @@ class Vect:
         """
         Distance to another vector.
         :param v: Vector.
-        :return: Distance.
+        :return:  Distance.
         """
 
         return (self - v).mod()
@@ -141,9 +141,9 @@ class Vect:
     def is_near(self, v, eps):
         """
         Check if vector near another vector.
-        :param v: Vector.
+        :param v:   Vector.
         :param eps: Epsilon.
-        :return: true - if near, false - otherwise.
+        :return:    True - if near, False - otherwise.
         """
 
         return self.dist_to(v) < eps
@@ -166,7 +166,7 @@ class Vect:
         Cosine of angle between vectors.
         :param a: First vector.
         :param b: Second vector.
-        :return: Angle cosine.
+        :return:  Angle cosine.
         """
 
         return Vect.dot_product(a, b) / (a.mod() * b.mod())
@@ -179,7 +179,7 @@ class Vect:
         Cross product of two vectors.
         :param a: First vector.
         :param b: Second vector.
-        :return: Cross product.
+        :return:  Cross product.
         """
 
         return Vect(a.Y * b.Z - a.Z * b.Y,

@@ -51,7 +51,7 @@ class Box:
         """
         Check if point inside box.
         :param p: Point.
-        :return: True - if point is inside box, False - otherwise.
+        :return:  True - if point is inside box, False - otherwise.
         """
 
         return (p.X >= self.MinX) and (p.X <= self.MaxX) \

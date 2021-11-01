@@ -104,7 +104,7 @@ class Triangle:
         """
         Calculate intersection with segment.
         :param s: Segment.
-        :return: Intersection points.
+        :return:  Intersection points.
         """
 
         # Get all points.

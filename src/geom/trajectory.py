@@ -88,7 +88,7 @@ class Trajectory:
     def dump(self, f, zone_name):
         """
         Dump trajectory as separate zone to file.
-        :param f: File.
+        :param f:         File.
         :param zone_name: Name of zone.
         """
 
