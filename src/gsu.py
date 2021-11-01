@@ -466,44 +466,6 @@ class Face:
 
         return ((a[0] + b[0] + c[0]) / 3.0, (a[1] + b[1] + c[1]) / 3.0, (a[2] + b[2] + c[2]) / 3.0)
 
-    # ----------------------------------------------------------------------------------------------
-
-    def get_ab_vector(self):
-        """
-        Get vector from A point to B point.
-        :return: vector from A point to B point
-        """
-
-        a, b = self.Nodes[0].P, self.Nodes[1].P
-
-        return (b[0] - a[0], b[1] - a[1], b[2] - a[2])
-
-    # ----------------------------------------------------------------------------------------------
-
-    def get_bc_vector(self):
-        """
-        Get vector from B point to C point.
-        :return: vector from B point to C point
-        """
-
-        b, c = self.Nodes[1].P, self.Nodes[2].P
-
-        return (c[0] - b[0], c[1] - b[1], c[2] - b[2])
-
-    # ----------------------------------------------------------------------------------------------
-
-    def get_area(self):
-        """
-        Area of the face.
-        :return: area (m)
-        """
-
-        ab = self.get_ab_vector()
-        bc = self.get_bc_vector()
-        cp = utils.cross_product(ab, bc)
-
-        return 0.5 * utils.norm(cp)
-
 # ==================================================================================================
 
 

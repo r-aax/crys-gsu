@@ -314,7 +314,10 @@ def drops(grid_file, grid_air_file, out_grid_file,
             if res[0] == 'C':
                 print('... secondary impingement '
                       'from face {0} to face {1}'.format(f.GloId, res[1].GloId))
-                res[1].Data[mimp2_ind - 3] = (stall_value / res[1].get_area())
+                tri2 = Triangle(Vect.from_iterable(res[1].Nodes[0].P),
+                                Vect.from_iterable(res[1].Nodes[1].P),
+                                Vect.from_iterable(res[1].Nodes[2].P))
+                res[1].Data[mimp2_ind - 3] = (stall_value / tri2.area())
 
     # Save grid back.
     g.convert_grid_stall_to_check_point()
