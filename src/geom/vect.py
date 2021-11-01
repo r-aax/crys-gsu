@@ -64,10 +64,21 @@ class Vect:
         """
         Multiplication vector on number.
         :param k: Value.
-        :return: Result.
+        :return: Result (vector).
         """
 
         return Vect(self.X * k, self.Y * k, self.Z * k)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def __truediv__(self, k):
+        """
+        Division on float value.
+        :param k: Value.
+        :return: Result (vector).
+        """
+
+        return self * (1.0 / k)
 
     # ----------------------------------------------------------------------------------------------
 

@@ -9,6 +9,8 @@ import numpy as np
 import utils
 import time
 import math
+from geom.vect import Vect
+from geom.triangle import Triangle
 from geom.trajectory import Trajectory
 
 # ==================================================================================================
@@ -81,7 +83,7 @@ class SpaceSeparator:
         # Warning! This works only if one partition is present.
         #
 
-        m = np.array([utils.dist2(p, pi) for (pi, _) in self.Partitions[0].Ds])
+        m = np.array([utils.dist2((p.X, p.Y, p.Z), pi) for (pi, _) in self.Partitions[0].Ds])
 
         return self.Partitions[0].Ds[m.argmin()]
 
@@ -99,7 +101,7 @@ class SpaceSeparator:
         #
 
         (min_x, min_y, min_z, max_x, max_y, max_z) = self.Partitions[0].Box
-        (px, py, pz) = p
+        px, py, pz = p.X, p.Y, p.Z
 
         return (px >= min_x) and (px <= max_x)\
                and (py >= min_y) and (py <= max_y)\
@@ -119,18 +121,18 @@ class SpaceSeparator:
         """
 
         # Calculate new point with old velocity.
-        new_p = utils.a_kb(p, dt, v)
+        new_p = p + v * dt
 
         # Calculate new velocity.
         vis = 1.4607 * 0.00001
-        re = utils.dist(v, v_air) * d / vis
+        re = (v - v_air).mod() * d / vis
         if re <= 350.0:
             cd = (24.0 / re) * (1 + 0.166 * math.pow(re, 0.33))
         else:
             cd = 0.178 * math.pow(re, 0.217)
-        k = (3.0 / 4.0) * ((cd * 1.3) / (d * 1000.0)) * utils.dist(v, v_air) * dt
-        vv = ((v_air[0] - v[0]), (v_air[1] - v[1]), (v_air[2] - v[2]))
-        new_v = utils.a_kb(v, k, vv)
+        k = (3.0 / 4.0) * ((cd * 1.3) / (d * 1000.0)) * (v - v_air).mod() * dt
+        vv = v_air - v
+        new_v = v + vv * k
 
         return new_p, new_v
 
@@ -164,10 +166,11 @@ class SpaceSeparator:
         while self.inside(cp):
 
             np = self.find_nearest(cp)
-            new_cp, v = self.fly_step(cp, v, np[1], d, dt)
+            new_cp, v = self.fly_step(cp, v,
+                                      Vect(np[1][0], np[1][1], np[1][2]), d, dt)
 
             # If point stay on one place we can exit.
-            if utils.dist2(cp, new_cp) < 1e-15:
+            if (cp - new_cp).mod2() < 1e-15:
                 return ('S', None, tr)
 
             tr.add_point(new_cp)
@@ -177,7 +180,8 @@ class SpaceSeparator:
                 if utils.is_triangle_and_segment_intersect(f.Nodes[0].P,
                                                            f.Nodes[1].P,
                                                            f.Nodes[2].P,
-                                                           cp, new_cp):
+                                                           (cp.X, cp.Y, cp.Z),
+                                                           (new_cp.X, new_cp.Y, new_cp.Z)):
                     return ('C', f, tr)
 
             cp = new_cp
@@ -295,10 +299,14 @@ def drops(grid_file, grid_air_file, out_grid_file,
         if stall_value > stall_thr:
             # print('... face {0} is wet. Start flying.'.format(f.GloId))
             stall_d = f.Data[stall_d_ind - 3]
-            stall_vel = (f.Data[stall_vx_ind - 3],
-                         f.Data[stall_vy_ind - 3],
-                         f.Data[stall_vz_ind - 3])
-            res = air.fly(f.get_point_above(d), stall_vel, stall_d, dt, g, max_fly_steps)
+            stall_vel = Vect(f.Data[stall_vx_ind - 3],
+                             f.Data[stall_vy_ind - 3],
+                             f.Data[stall_vz_ind - 3])
+            tri = Triangle(Vect(f.Nodes[0].P[0], f.Nodes[0].P[1], f.Nodes[0].P[2]),
+                           Vect(f.Nodes[1].P[0], f.Nodes[1].P[1], f.Nodes[1].P[2]),
+                           Vect(f.Nodes[2].P[0], f.Nodes[2].P[1], f.Nodes[2].P[2]))
+            start_point = tri.centroid()
+            res = air.fly(start_point, stall_vel, stall_d, dt, g, max_fly_steps)
             traj = res[2]
             print(traj)
             traj.dump(tr_f, 'Trajectory-{0}'.format(f.GloId))

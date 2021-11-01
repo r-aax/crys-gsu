@@ -4,6 +4,7 @@ Trajectory is a sequence of points.
 """
 
 import math
+from geom.vect import Vect
 
 # ==================================================================================================
 
@@ -21,6 +22,9 @@ class Trajectory:
         Init empty trajectory (with empty list of points).
         :param start: Start point.
         """
+
+        if not isinstance(start, Vect):
+            raise Exception('trajectory must be based on points (vectors)')
 
         self.Points = [start]
 
@@ -43,6 +47,9 @@ class Trajectory:
         Add point.
         :param p: Point.
         """
+
+        if not isinstance(p, Vect):
+            raise Exception('trajectory must be based on points (vectors)')
 
         self.Points.append(p)
 
@@ -85,9 +92,9 @@ class Trajectory:
         f.write('ZONETYPE=FETRIANGLE\n')
         # Paraview demands VARLOCATION line.
         f.write('VARLOCATION=([4-3]=CELLCENTERED)\n')
-        f.write(' '.join([str(p[0]) for p in self.Points]) + '\n')
-        f.write(' '.join([str(p[1]) for p in self.Points]) + '\n')
-        f.write(' '.join([str(p[2]) for p in self.Points]) + '\n')
+        f.write(' '.join([str(p.X) for p in self.Points]) + '\n')
+        f.write(' '.join([str(p.Y) for p in self.Points]) + '\n')
+        f.write(' '.join([str(p.Z) for p in self.Points]) + '\n')
         for ii in range(pc - 1):
             f.write('{0} {1} {1}\n'.format(ii + 1, ii + 2))
 
