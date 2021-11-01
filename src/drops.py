@@ -17,6 +17,20 @@ from geom.trajectory import Trajectory
 # ==================================================================================================
 
 
+def face_triangle(f):
+    """
+    Get face triangle.
+    :param f: Face.
+    :return: Triangle.
+    """
+
+    return Triangle(Vect.from_iterable(f.Nodes[0].P),
+                    Vect.from_iterable(f.Nodes[1].P),
+                    Vect.from_iterable(f.Nodes[2].P))
+
+# ==================================================================================================
+
+
 class SpacePartition:
     """
     Single space partitio.
@@ -27,7 +41,7 @@ class SpacePartition:
     def __init__(self, ds):
         """
         Constructor.
-        :param ds: data array
+        :param ds: Data array.
         """
 
         self.Ds = ds
@@ -51,7 +65,7 @@ class SpaceSeparator:
     def __init__(self, ds):
         """
         Constructor.
-        :param ds: data array
+        :param ds: Data array.
         """
 
         # By default we make one single partition.
@@ -76,8 +90,8 @@ class SpaceSeparator:
     def find_nearest(self, p):
         """
         Find nearest data.
-        :param p: point
-        :return: nearest data
+        :param p: Point.
+        :return: Nearest data.
         """
 
         #
@@ -93,7 +107,7 @@ class SpaceSeparator:
     def inside(self, p):
         """
         Check if point is inside.
-        :param p: point
+        :param p: Point.
         :return: True - if point in box, False - otherwise.
         """
 
@@ -113,12 +127,12 @@ class SpaceSeparator:
     def fly_step(self, p, v, v_air, d, dt):
         """
         Step of flying.
-        :param p: point
-        :param v: velocity
-        :param v_air: air velocity
-        :param d: diameter
-        :param dt: time step
-        :return: new point position and new velocity
+        :param p: Point.
+        :param v: Velocity.
+        :param v_air: Air velocity.
+        :param d: Diameter.
+        :param dt: Time step.
+        :return: New point position and new velocity.
         """
 
         # Calculate new point with old velocity.
@@ -142,13 +156,13 @@ class SpaceSeparator:
     def fly(self, p, vel, d, dt, g, max_steps):
         """
         Flying of a point.
-        :param p: point
-        :param vel: velocity
-        :param d: diameter
-        :param dt: time step
-        :param g: grid (surface)
-        :param max_steps: max count of fly steps
-        :return: tuple of 3 elements.
+        :param p: Point.
+        :param vel: Velocity.
+        :param d: Diameter.
+        :param dt: Time step.
+        :param g: Grid (surface).
+        :param max_steps: Max count of fly steps.
+        :return: Tuple of 3 elements.
                  first element - diagnostic
                      'S' - stop on place
                      'C' - cross surface
@@ -177,9 +191,7 @@ class SpaceSeparator:
 
             # Check intersection.
             for f in g.Faces:
-                tri = Triangle(Vect.from_iterable(f.Nodes[0].P),
-                               Vect.from_iterable(f.Nodes[1].P),
-                               Vect.from_iterable(f.Nodes[2].P))
+                tri = face_triangle(f)
                 if tri.intersection_with_segment(Segment(cp, new_cp)) != []:
                     return ('C', f, tr)
 
@@ -249,13 +261,13 @@ def drops(grid_file, grid_air_file, out_grid_file,
           d=1.0e-4, dt=1.0e-6, stall_thr=1.0e-6, max_fly_steps=200):
     """
     Calculate drops.
-    :param grid_file: file with grid
-    :param grid_air_file: file with air grid
-    :param out_grid_file: out file
-    :param d: distance from face for flying point start
-    :param dt: time step
-    :param stall_thr: threshold for Stall value, to make decision about water stall
-    :param max_fly_steps: max fly steps
+    :param grid_file: File with grid.
+    :param grid_air_file: File with air grid.
+    :param out_grid_file: Out file.
+    :param d: Distance from face for flying point start.
+    :param dt: Time step.
+    :param stall_thr: Threshold for Stall value, to make decision about water stall.
+    :param max_fly_steps: Max fly steps.
     """
 
     # Check for grid file.
@@ -302,9 +314,7 @@ def drops(grid_file, grid_air_file, out_grid_file,
             stall_vel = Vect(f.Data[stall_vx_ind - 3],
                              f.Data[stall_vy_ind - 3],
                              f.Data[stall_vz_ind - 3])
-            tri = Triangle(Vect.from_iterable(f.Nodes[0].P),
-                           Vect.from_iterable(f.Nodes[1].P),
-                           Vect.from_iterable(f.Nodes[2].P))
+            tri = face_triangle(f)
             start_point = tri.centroid() + tri.normal_orth() * d
             res = air.fly(start_point, stall_vel, stall_d, dt, g, max_fly_steps)
             traj = res[2]
@@ -314,17 +324,12 @@ def drops(grid_file, grid_air_file, out_grid_file,
             if res[0] == 'C':
                 print('... secondary impingement '
                       'from face {0} to face {1}'.format(f.GloId, res[1].GloId))
-                tri2 = Triangle(Vect.from_iterable(res[1].Nodes[0].P),
-                                Vect.from_iterable(res[1].Nodes[1].P),
-                                Vect.from_iterable(res[1].Nodes[2].P))
+                tri2 = face_triangle(res[1])
                 res[1].Data[mimp2_ind - 3] = (stall_value / tri2.area())
 
     # Save grid back.
     g.convert_grid_stall_to_check_point()
-    for f in g.Faces:
-        f.set_t(0.0)
-        f.set_hw(0.0)
-        f.set_hi(0.0)
+    g.clean_t_hw_hi()
     g.store(out_grid_file)
 
     tr_f.close()
