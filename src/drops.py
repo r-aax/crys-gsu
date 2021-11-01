@@ -9,6 +9,7 @@ import numpy as np
 import utils
 import time
 import math
+from geom.trajectory import Trajectory
 
 # ==================================================================================================
 
@@ -156,7 +157,7 @@ class SpaceSeparator:
 
         # Trajectory is initilized with start point.
         cp = p
-        tr = [cp]
+        tr = Trajectory(cp)
         v = vel
         i = 0
 
@@ -169,7 +170,7 @@ class SpaceSeparator:
             if utils.dist2(cp, new_cp) < 1e-15:
                 return ('S', None, tr)
 
-            tr.append(new_cp)
+            tr.add_point(new_cp)
 
             # Check intersection.
             for f in g.Faces:
@@ -293,6 +294,7 @@ def drops(grid_file, grid_air_file, out_grid_file,
                          f.Data[stall_vy_ind - 3],
                          f.Data[stall_vz_ind - 3])
             res = air.fly(f.get_point_above(d), stall_vel, stall_d, dt, g, max_fly_steps)
+            print(res[2])
             if res[0] == 'C':
                 print('... secondary impingement '
                       'from face {0} to face {1}'.format(f.GloId, res[1].GloId))
