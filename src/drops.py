@@ -134,7 +134,7 @@ class SpaceSeparator:
             cd = 0.178 * math.pow(re, 0.217)
         k = (3.0 / 4.0) * ((cd * 1.3) / (d * 1000.0)) * (v - v_air).mod() * dt
         vv = v_air - v
-        new_v = v + vv * k
+        new_v = v #+ vv * k
 
         return new_p, new_v
 
@@ -269,7 +269,7 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
 
     # Check for grid file.
     if not os.path.isfile(grid_air_file):
-        raise Exception('crys-gsu-drops : no such air file ({0})'.format(grid_file))
+        raise Exception('crys-gsu-drops : no such air file ({0})'.format(grid_air_file))
 
     print('crys-gsu-drops : start, grid_stall_file = {0}, grid_air_file = {1}, '
           'out_grid_file = {2}, d = {3}, dt = {4}, stall_thr = {5}, '
