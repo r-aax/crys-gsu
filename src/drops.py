@@ -22,7 +22,7 @@ def face_triangle(f):
     """
     Get face triangle.
     :param f: Face.
-    :return: Triangle.
+    :return:  Triangle.
     """
 
     return Triangle(Vect.from_iterable(f.Nodes[0].P),
@@ -34,7 +34,7 @@ def face_triangle(f):
 
 class SpacePartition:
     """
-    Single space partitio.
+    Single space partition.
     """
 
     # ----------------------------------------------------------------------------------------------
@@ -87,7 +87,7 @@ class SpaceSeparator:
         """
         Find nearest data.
         :param p: Point.
-        :return: Nearest data.
+        :return:  Nearest data.
         """
 
         #
@@ -104,7 +104,7 @@ class SpaceSeparator:
         """
         Check if point is inside.
         :param p: Point.
-        :return: True - if point in box, False - otherwise.
+        :return:  True - if point in box, False - otherwise.
         """
 
         return self.Partitions[0].Bx.is_inside(p)
@@ -114,12 +114,12 @@ class SpaceSeparator:
     def fly_step(self, p, v, v_air, d, dt):
         """
         Step of flying.
-        :param p: Point.
-        :param v: Velocity.
+        :param p:     Point.
+        :param v:     Velocity.
         :param v_air: Air velocity.
-        :param d: Diameter.
-        :param dt: Time step.
-        :return: New point position and new velocity.
+        :param d:     Diameter.
+        :param dt:    Time step.
+        :return:      New point position and new velocity.
         """
 
         # Calculate new point with old velocity.
@@ -143,20 +143,20 @@ class SpaceSeparator:
     def fly(self, p, vel, d, dt, g, max_steps):
         """
         Flying of a point.
-        :param p: Point.
-        :param vel: Velocity.
-        :param d: Diameter.
-        :param dt: Time step.
-        :param g: Grid (surface).
+        :param p:         Point.
+        :param vel:       Velocity.
+        :param d:         Diameter.
+        :param dt:        Time step.
+        :param g:         Grid (surface).
         :param max_steps: Max count of fly steps.
-        :return: Tuple of 3 elements.
-                 first element - diagnostic
-                     'N' - too long flying
-                     'O' - left the box out
-                     'S' - stop on place
-                     'C' - cross surface
-                 second element - face if intersect (None otherwise)
-                 third element - trajectory
+        :return:          Tuple of 3 elements.
+                              first element - diagnostic
+                                  'N' - too long flying
+                                  'O' - left the box out
+                                  'S' - stop on place
+                                  'C' - cross surface
+                              second element - face if intersect (None otherwise)
+                              third element - trajectory
         """
 
         tr = Trajectory(p)
@@ -202,7 +202,7 @@ class SpaceSeparator:
 def read_vel_field_from_file(grid_air_file):
     """
     Read velocity field from 3D grid.
-    :param grid_air_file: File with air grid.
+    :param   grid_air_file: File with air grid.
     :return: Space separator.
     """
 
