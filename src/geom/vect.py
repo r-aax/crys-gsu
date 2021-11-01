@@ -29,9 +29,9 @@ class Vect:
     # ----------------------------------------------------------------------------------------------
 
     @staticmethod
-    def from_tuple(t):
+    def from_iterable(t):
         """
-        Constructor from tuple.
+        Constructor from iterable object.
         :param t: Tuple.
         :return: Vector.
         """
