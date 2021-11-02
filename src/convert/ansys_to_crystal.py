@@ -8,10 +8,12 @@
 
 import sys
 import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 import re
 import pathlib
 import gsu_converter
 from functools import reduce
+import gsu
 
 # --------------------------------------------------------------------------------------------------
 
@@ -447,11 +449,17 @@ def data_from_nodes_to_faces(filename, ofilename, is_reversed_normals):
         is_reversed_normals -- признак развернутых нормалей.
     """
 
-    say('  data_from_nodes_to_faces : %s -> %s' % (filename, ofilename))
     g = gsu_converter.Grid()
     g.LoadNodesData(filename, is_reversed_normals)
     g.ConvertDataFromNodesToFaces()
     g.Export(ofilename)
+
+    # Читаем сетку с помощью gsu и сохраняем обратно -> появятся нужные поля.
+    g2 = gsu.Grid()
+    g2.load(ofilename)
+    g2.store(ofilename)
+
+    say('  data_from_nodes_to_faces : %s -> %s' % (filename, ofilename))
 
 # --------------------------------------------------------------------------------------------------
 
@@ -464,7 +472,7 @@ def print_help():
     print('Использование скрипта:')
     print('  ./ansys_to_crystal basename=<базовое имя сетки>')
     print('                     zones=<список зон для фильтрации>')
-    print('                     ta=<температура свободного потока>')
+    print('                     ta=<температура свободного потока (Кельвины)>')
     print('                     normals=origin|reversed')
 
 # --------------------------------------------------------------------------------------------------
