@@ -95,30 +95,6 @@ def split(grid_file, cry_dir, split_strategy, fixed_zones=[]):
 # --------------------------------------------------------------------------------------------------
 
 
-def print_help():
-    """
-    Print help.
-    """
-
-    print('[Overview]:')
-    print('split.py script reads *.dat file with surface grid and '
-          'splits it into several *.cry files.')
-    print('All additional parameters are contained in *.json file.')
-    print('')
-    print('[Usage]:')
-    print('split.py <grid-file> <output-dir> <json-file>')
-    print('    <grid-file> - full name of grid file')
-    print('    <json-file> - json file with parameters')
-    print('    <output-dir> - directory name for output files')
-    print('        if there is no such directory, it will be created')
-    print('')
-    print('[Examples]:')
-    print('bunny.dat -> bunny_<mpi_i>_000000000000.cry')
-    print('bunny_000000000100.dat -> bunny_<mpi_i>_000000000100.cry')
-
-# --------------------------------------------------------------------------------------------------
-
-
 def extract_strategy_from_json(filename):
     """
     Extract strategy from json file.
@@ -165,31 +141,24 @@ def extract_fixed_zones_from_json(filename):
 # --------------------------------------------------------------------------------------------------
 
 
-# split.py should be called from shell script in the following manner:
-#     split.py grids/bunny_pos.dat grids/cry h2 grids/bunny.json
 if __name__ == '__main__':
 
-    c = len(sys.argv)
+    import argparse
 
-    if c == 1:
-        print_help()
-        exit(0)
-
-    if (sys.argv[1] == '-h') or (sys.argv[1] == '--help'):
-        print_help()
-        exit(0)
-
-    if c != 4:
-        print('crys-gsu-split : script receives exactly 3 parameters')
-        print_help()
-        exit(0)
+    parser = argparse.ArgumentParser(prog='split',
+                                     description='GSU split script into separate domains.',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('grid_file', help='grid file name')
+    parser.add_argument('json_file', help='JSON file name')
+    parser.add_argument('cry_dir', help='out dir for *.cry files')
+    args = parser.parse_args()
 
     # Extract parameters.
-    strategy = extract_strategy_from_json(sys.argv[2])
-    fixed_zones = extract_fixed_zones_from_json(sys.argv[2])
+    strategy = extract_strategy_from_json(args.json_file)
+    fixed_zones = extract_fixed_zones_from_json(args.json_file)
 
-    split(grid_file=sys.argv[1],
-          cry_dir=sys.argv[3],
+    split(grid_file=args.grid_file,
+          cry_dir=args.cry_dir,
           split_strategy=strategy,
           fixed_zones=fixed_zones)
 

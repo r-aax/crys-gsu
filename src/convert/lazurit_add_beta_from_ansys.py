@@ -39,44 +39,35 @@ def say(obj):
 
 if __name__ == '__main__':
 
-    if (len(sys.argv)) < 3:
-        print('Использование скрипта:')
-        print('  ./lazurit_add_beta_from_ansys lazurit=<сетка lazurit>')
-        print('                                ansys=<сетка ansys>')
-        print('                                out=<выходная сетка>')
-        exit(0)
+    import argparse
+
+    parser = argparse.ArgumentParser(prog='lazurit_add_beta_from_ansys',
+                                     description='Add Beta field from Ansys to Lazurit data.',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('lazurit', help='Lazurit grid')
+    parser.add_argument('ansys', help='Ansys grid')
+    parser.add_argument('out', help='out file')
+    args = parser.parse_args()
 
     say('Запуск lazurit_add_beta_from_ansys.')
 
-    for arg in sys.argv[1:]:
-        [par, val] = arg.split('=')
-
-        if par == 'lazurit':
-            lazurit_grid = val
-        elif par == 'ansys':
-            ansys_grid = val
-        elif par == 'out':
-            out_grid = val
-        else:
-            raise Exception('неизвестный параметр')
-
     say('Входные данные :')
-    say('  lazurit = %s,' % lazurit_grid)
-    say('  ansys   = %s,' % ansys_grid)
-    say('  out     = %s'  % out_grid)
+    say('  lazurit = %s,' % args.lazurit)
+    say('  ansys   = %s,' % args.ansys)
+    say('  out     = %s'  % args.out)
 
     # Проверка существования файла.
-    if not os.path.exists(lazurit_grid):
-        raise Exception('файл %s не существует' % lazurit_grid)
-    elif not os.path.exists(ansys_grid):
-        raise Exception('файл %s не существует' % ansys_grid)
+    if not os.path.exists(args.lazurit):
+        raise Exception('файл %s не существует' % args.lazurit)
+    elif not os.path.exists(args.ansys):
+        raise Exception('файл %s не существует' % args.ansys)
     else:
         say('Файлы найдены.')
 
     lgrid = gsu.Grid()
-    lgrid.load(lazurit_grid)
+    lgrid.load(args.lazurit)
     agrid = gsu.Grid()
-    agrid.load(ansys_grid)
+    agrid.load(args.ansys)
 
     #
     adata = [(Vect.from_iterable(f.get_center()), f.get_beta()) for f in agrid.Faces]
@@ -86,7 +77,7 @@ if __name__ == '__main__':
         f.set_beta(adata[a.argmin()][1])
     #
 
-    lgrid.store(out_grid)
-    say('Файл %s сохранен.' % out_grid)
+    lgrid.store(args.out)
+    say('Файл %s сохранен.' % args.out)
 
 # --------------------------------------------------------------------------------------------------

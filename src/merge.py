@@ -70,50 +70,23 @@ def merge(grid_file, txt_files_dir, r_files_dir):
 # --------------------------------------------------------------------------------------------------
 
 
-def print_help():
-    """
-    Print help.
-    """
-
-    print('[Overview]:')
-    print('merge.py script merge initial *.dat grid file with *.txt data files')
-    print('         and produces *.dat files with timestamps')
-    print('')
-    print('[Usage]:')
-    print('merge.py <grid-file> <txt-files-dir> <r-files-dir>')
-    print('    <grid-file> - initial file name')
-    print('    <txt-files-dir> - name of directory with data files')
-    print('    <r-files-dir> - name of directory with output *_r_* files')
-    print('')
-    print('[Examples]:')
-    print('            [bunny_00000_000000000100.txt bunny_00001_000000000100.txt] '
-          '-> [bunny_r_000000000100.dat]')
-    print('bunny.dat + [bunny_00000_000000000200.txt bunny_00001_000000000200.txt] '
-          '-> [bunny_r_000000000200.dat]')
-    print('            [bunny_00000_000000000300.txt bunny_00001_000000000300.txt] '
-          '-> [bunny_r_000000000300.dat]')
-
-# --------------------------------------------------------------------------------------------------
-
-
 # Example of running merge.py script:
 #     merge.py grids/bunny.dat dir_to_txt_files
 # Script produces out files for crys-remesh tool.
 if __name__ == '__main__':
 
-    if len(sys.argv) == 1:
-        print_help()
-        exit(0)
+    import argparse
 
-    if (sys.argv[1] == '-h') or (sys.argv[1] == '--help'):
-        print_help()
-        exit(0)
+    parser = argparse.ArgumentParser(prog='merge',
+                                     description='Merge calc data.',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('grid_file', help='grid file name')
+    parser.add_argument('txt_files_dir', help='txt files with calc data')
+    parser.add_argument('r_files_dir', help='dir with files for remesher')
+    args = parser.parse_args()
 
-    if len(sys.argv) < 4:
-        raise Exception('crys-gsu-merge : not enough arguments')
-
-    merge(grid_file=sys.argv[1],
-          txt_files_dir=sys.argv[2],
-          r_files_dir=sys.argv[3])
+    merge(grid_file=args.grid_file,
+          txt_files_dir=args.txt_files_dir,
+          r_files_dir=args.r_files_dir)
 
 # --------------------------------------------------------------------------------------------------

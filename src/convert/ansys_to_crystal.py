@@ -464,51 +464,31 @@ def data_from_nodes_to_faces(filename, ofilename, is_reversed_normals):
 # --------------------------------------------------------------------------------------------------
 
 
-def print_help():
-    """
-    Печать help.
-    """
-
-    print('Использование скрипта:')
-    print('  ./ansys_to_crystal basename=<базовое имя сетки>')
-    print('                     zones=<список зон для фильтрации>')
-    print('                     ta=<температура свободного потока (Кельвины)>')
-    print('                     normals=origin|reversed')
-
-# --------------------------------------------------------------------------------------------------
-
-
 if __name__ == '__main__':
 
-    if len(sys.argv) < 5:
-        print_help()
-        exit(0)
+    import argparse
 
-    for arg in sys.argv[1:]:
-        [par, val] = arg.split('=')
+    parser = argparse.ArgumentParser(prog='ansys_to_crystal',
+                                     description='Convert data from Ansys to Crystal.',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('basename', help='basename for *.fensap.dat, *.drop3d.dat files')
+    parser.add_argument('zones', help='zones to extract')
+    parser.add_argument('--air_termerature', '-t', dest='air_temperature', type=float, default=273.15,
+                        help='temperature of free stream (K)')
+    parser.add_argument('--normals', '-n', dest='normals', choices=['origin', 'reversed'], default='reversed',
+                        help='normals orientation')
+    args = parser.parse_args()
 
-        if par == 'basename':
-            pp = pathlib.PurePath(val)
-            dirname, basename = pp.parent, pp.name
-        elif par == 'zones':
-            zones_to_extract = val.split(',')
-        elif par == 'ta':
-            free_stream_temperature = float(val)
-        elif par == 'normals':
-            if val == 'origin':
-                reversed_normals = False
-            elif val == 'reversed':
-                reversed_normals = True
-            else:
-                raise Exception('неизвестный параметр определения нормалей')
-        else:
-            raise Exception('неизвестный параметр')
+    pp = pathlib.PurePath(args.basename)
+    dirn, basen = pp.parent, pp.name
+    zones_to_extract = args.zones.split(',')
+    reversed_normals = (args.normals == 'reversed')
 
     say('Входные данные :')
-    say('  dir = %s, base = %s' % (dirname, basename))
+    say('  dir = %s, base = %s' % (dirn, basen))
     say('  zones = %s' % zones_to_extract)
-    say('  ta = %f' % free_stream_temperature)
-    say('  normals = %s' % 'reversed' if reversed_normals else 'origin')
+    say('  ta = %f' % args.air_temperature)
+    say('  normals = %s' % args.normals)
 
     # Функции сборки имени файла.
     def cc(d, ph, b, s):
@@ -525,7 +505,7 @@ if __name__ == '__main__':
         return cc(d, ph, b, 'fensap'), cc(d, ph, b, 'drop3d')
 
     # Начальные имена.
-    fensap_fn, drop3d_fn = cc2(dirname, '', basename)
+    fensap_fn, drop3d_fn = cc2(dirn, '', basen)
     print(fensap_fn, drop3d_fn)
 
     # Проверка существования файлов.
@@ -537,30 +517,30 @@ if __name__ == '__main__':
         say('Входные файлы найдены.')
 
     # Фильтрация зон.
-    fensap_fn_ph1, drop3d_fn_ph1 = cc2(dirname, 'phase1', basename)
+    fensap_fn_ph1, drop3d_fn_ph1 = cc2(dirn, 'phase1', basen)
     say('phase1 : Фильтрация зон : %s' % str(zones_to_extract))
     filter_zones(fensap_fn, fensap_fn_ph1)
     filter_zones(drop3d_fn, drop3d_fn_ph1)
 
     # Фильтрация переменных.
-    fensap_fn_ph2, drop3d_fn_ph2 = cc2(dirname, 'phase2', basename)
+    fensap_fn_ph2, drop3d_fn_ph2 = cc2(dirn, 'phase2', basen)
     say('phase2 : Фильтрация переменных\n  fensap %s\n  drop3d %s'
         % (str(fensap_variables_to_extract), str(drop3d_variables_to_extract)))
     filter_variables(fensap_fn_ph1, fensap_fn_ph2, fensap_variables_to_extract)
     filter_variables(drop3d_fn_ph1, drop3d_fn_ph2, drop3d_variables_to_extract)
 
     # Слияние файлов данных fensap и drop3d.
-    fn_ph3 = cc(dirname, 'phase3', basename, '')
+    fn_ph3 = cc(dirn, 'phase3', basen, '')
     say('phase3 : Слияние в единый файл')
     merge_fensap_drop3d(fensap_fn_ph2, drop3d_fn_ph2, fn_ph3)
 
     # Пересчет HTC.
-    fn_ph4 = cc(dirname, 'phase4', basename, '')
+    fn_ph4 = cc(dirn, 'phase4', basen, '')
     say('phase4 : Вычисление HTC')
-    calculate_htc(fn_ph3, fn_ph4, free_stream_temperature)
+    calculate_htc(fn_ph3, fn_ph4, args.air_temperature)
 
     # Перевод данных с узлов в ячейки.
-    fn_ph5 = cc(dirname, '', basename, '')
+    fn_ph5 = cc(dirn, '', basen, '')
     say('phase5 : Перевод данных из узлов на грани')
     data_from_nodes_to_faces(fn_ph4, fn_ph5, reversed_normals)
 

@@ -339,11 +339,6 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
 # ==================================================================================================
 
 
-# Example of running drops.py script:
-#     drops.py \
-#         grids/cyl_stall.dat \
-#         grids/cyl_air.dat \
-#         grids/out_cyl
 if __name__ == '__main__':
 
     import argparse

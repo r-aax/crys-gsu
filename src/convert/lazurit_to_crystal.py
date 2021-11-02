@@ -92,45 +92,38 @@ def double_and_neg_list(li):
 
 if __name__ == '__main__':
 
-    if (len(sys.argv)) < 3:
-        print('Использование скрипта:')
-        print('  ./lazurit_to_crystal in_dir=<имя входной директории>')
-        print('                       out_file=<имя выходного файла>')
-        exit(0)
+    import argparse
+
+    parser = argparse.ArgumentParser(prog='lazurit_to_crystal',
+                                     description='Convert data from Lazurit to Crystal.',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('in_dir', help='input dir')
+    parser.add_argument('out_file', help='output file')
+    args = parser.parse_args()
 
     say('Запуск lazurit_to_crystal.')
 
-    for arg in sys.argv[1:]:
-        [par, val] = arg.split('=')
-
-        if par == 'in_dir':
-            in_dir = val
-        elif par == 'out_file':
-            out_file = val
-        else:
-            raise Exception('неизвестный параметр')
-
     say('Входные данные :')
-    say('  in_dir = %s,' % in_dir)
-    say('  out_file = %s' % out_file)
+    say('  in_dir = %s,' % args.in_dir)
+    say('  out_file = %s' % args.out_file)
 
     # Проверка существования файла.
-    if not os.path.exists(in_dir):
-        raise Exception('директория %s не существует' % in_dir)
+    if not os.path.exists(args.in_dir):
+        raise Exception('директория %s не существует' % args.in_dir)
     else:
         say('Входная директория найдена.')
 
     # В списке всех файлов сначала должны идти все сетки, потом все решения.
     # Так как функция listdir этого не гарантирует то сортируем список вручную.
     # Ниже есть проверки корректности списка.
-    all_files = sorted([fn for fn in os.listdir(in_dir) if '.TEC' in fn])
+    all_files = sorted([fn for fn in os.listdir(args.in_dir) if '.TEC' in fn])
     n = len(all_files)
 
     # Если все верно, то количество файлов должно быть четным.
     if n % 2 == 1:
         raise Exception('количество файлов *.TEC во входной директории должно быть четным')
 
-    with open(out_file, 'w') as of:
+    with open(args.out_file, 'w') as of:
         of.write('# EXPORT_MODE=CHECK_POINT\n')
         of.write('TITLE="FE Surface Data ASCII"\n')
         of.write('VARIABLES="X", "Y", "Z", "T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ"\n')
@@ -153,8 +146,8 @@ if __name__ == '__main__':
                 raise Exception('файлы {0} и {1} не соответствуют одному блоку'.format(gfn, sfn))
 
             # Открываем пару файлов.
-            gf = open('{0}/{1}'.format(in_dir, gfn), 'r')
-            sf = open('{0}/{1}'.format(in_dir, sfn), 'r')
+            gf = open('{0}/{1}'.format(args.in_dir, gfn), 'r')
+            sf = open('{0}/{1}'.format(args.in_dir, sfn), 'r')
 
             # Читаем все, что нужно.
             for _ in range(4):
