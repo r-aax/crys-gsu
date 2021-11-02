@@ -352,6 +352,8 @@ def print_help():
     print('    grid-stall-file=<grid-stall-file> - grid file name in STALL format')
     print('    grid-air-file=<grid-air-file>     - name of file with air grid')
     print('    out-grid-file=<out-grid-file>     - out file with result grid')
+    print('                                        drops trajectories will be stored in file')
+    print('                                        <out-grid-file>.tr.dat')
     print('    d=<d>                             - distance above face surface for start')
     print('                                        point of trajectory, default value is 1.0e-4 m')
     print('    dt=<dt>                           - time step, default value is 1.0e-5 s')
