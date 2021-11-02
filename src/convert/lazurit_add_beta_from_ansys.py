@@ -10,10 +10,9 @@ import os
 import re
 from functools import reduce
 import itertools
-sys.path.append(sys.path[0] + '/../')
-print(sys.path)
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 import gsu
-import utils
+from geom.vect import Vect
 import numpy as np
 
 # --------------------------------------------------------------------------------------------------
@@ -80,10 +79,10 @@ if __name__ == '__main__':
     agrid.load(ansys_grid)
 
     #
-    adata = [(f.get_center(), f.get_beta()) for f in agrid.Faces]
+    adata = [(Vect.from_iterable(f.get_center()), f.get_beta()) for f in agrid.Faces]
     for f in lgrid.Faces:
-        c = f.get_center()
-        a = np.array([utils.dist2(c, ac) for (ac, _) in adata])
+        c = Vect.from_iterable(f.get_center())
+        a = np.array([(c - ac).mod2() for (ac, _) in adata])
         f.set_beta(adata[a.argmin()][1])
     #
 
