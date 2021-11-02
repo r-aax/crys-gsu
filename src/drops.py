@@ -345,17 +345,23 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
 #         grids/cyl_air.dat \
 #         grids/out_cyl
 if __name__ == '__main__':
+
     import argparse
 
-    parser = argparse.ArgumentParser(prog='drops', description='Script calculates drops trajectories and secondary impingement.',
+    parser = argparse.ArgumentParser(prog='drops',
+                                     description='Drops trajectories and secondary impingement calculation.',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--distance', '-d', dest='distance', type=float, default=1.0e-4, help='Distance above face surface for start point of trajectory in meters.', metavar='X')
-    parser.add_argument('--time-delta', '-t', dest='time_delta', type=float, default=1.0e-5, help='Time step in seconds.', metavar='X')
-    parser.add_argument('--stall-threshold', dest='stall_threshold', type=float, default=1.0e-6, help='Threshold for stall faces in kg / (m^2 * s).', metavar='X')
-    parser.add_argument('--max-fly-steps', dest='max_fly_steps', type=int, default=200, help='Maximum points in droplets trajectory.', metavar='X')
-    parser.add_argument('grid_stall_file', help='Grid file name in STALL format.')
-    parser.add_argument('grid_air_file', help='Name of file with air grid')
-    parser.add_argument('out_grid_file', help='Out file with result grid; drops trajectories will be stored in file <out-grid-file>.tr.dat.')
+    parser.add_argument('grid_stall_file', help='grid file name in STALL format')
+    parser.add_argument('grid_air_file', help='name of file with air grid')
+    parser.add_argument('out_grid_file', help='out file with result grid, trajectories are stored in <out_grid_file>.tr.dat')
+    parser.add_argument('--distance', '-d', dest='distance', type=float, default=1.0e-4,
+                        help='distance above face surface for start point of trajectory (m)')
+    parser.add_argument('--time_delta', '-t', dest='time_delta', type=float, default=1.0e-5,
+                        help='time step (s)')
+    parser.add_argument('--stall_threshold', '-s', dest='stall_threshold', type=float, default=1.0e-6,
+                        help='threshold for stall faces (kg / s)')
+    parser.add_argument('--max_fly_steps', '-m', dest='max_fly_steps', type=int, default=200,
+                        help='maximum points in droplets trajectory')
     args = parser.parse_args()
 
     # Run.
