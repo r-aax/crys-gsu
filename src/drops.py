@@ -336,84 +336,30 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
 
     print('crys-gsu-drops : done (time estimated = {0} s)'.format(time.time() - start_time))
 
-# --------------------------------------------------------------------------------------------------
-
-
-def print_help():
-    """
-    Print help.
-    """
-
-    print('[Overview]:')
-    print('    drops.py script calculates drops trajectories and secondary impingement')
-    print('[Usage]:')
-    print('    drops.py <options>')
-    print('[Options]:')
-    print('    grid-stall-file=<grid-stall-file> - grid file name in STALL format')
-    print('    grid-air-file=<grid-air-file>     - name of file with air grid')
-    print('    out-grid-file=<out-grid-file>     - out file with result grid')
-    print('                                        drops trajectories will be stored in file')
-    print('                                        <out-grid-file>.tr.dat')
-    print('    d=<d>                             - distance above face surface for start')
-    print('                                        point of trajectory, default value is 1.0e-4 m')
-    print('    dt=<dt>                           - time step, default value is 1.0e-5 s')
-    print('    stall-thr=<stall-thr>             - threshold for stall faces,')
-    print('                                        default value is 1.0e-6 kg / (m^2 * s)')
-    print('    max-fly-steps=<max-fly-steps>     - maximum points in droplets trajectory,')
-    print('                                        default value is 200 points')
-
 # ==================================================================================================
 
 
 # Example of running drops.py script:
 #     drops.py \
-#         grid-stall-file=grids/cyl_stall.dat \
-#         grid-air-file=grids/cyl_air.dat \
-#         out-grid-file=grids/out_cyl.dat
+#         grids/cyl_stall.dat \
+#         grids/cyl_air.dat \
+#         grids/out_cyl
 if __name__ == '__main__':
+    import argparse
 
-    # Print help if there is no parameters.
-    if len(sys.argv) == 1:
-        print_help()
-        exit(0)
-
-    # Print help if user asks for it.
-    if (sys.argv[1] == '-h') or (sys.argv[1] == '--help'):
-        print_help()
-        exit(0)
-
-    # Init default parameters.
-    grid_stall_file = None
-    grid_air_file = None
-    out_grid_file = None
-    d = 1.0e-4
-    dt = 1.0e-5
-    stall_thr = 1.0e-6
-    max_fly_steps = 200
-
-    # Parse parameters.
-    for arg in sys.argv[1:]:
-        [par, val] = arg.split('=')
-
-        if par == 'grid-stall-file':
-            grid_stall_file = val
-        elif par == 'grid-air-file':
-            grid_air_file = val
-        elif par == 'out-grid-file':
-            out_grid_file = val
-        elif par == 'd':
-            d = float(val)
-        elif par == 'dt':
-            dt = float(val)
-        elif par == 'stall-thr':
-            stall_thr = float(val)
-        elif par == 'max-fly-steps':
-            max_fly_steps = int(val)
-        else:
-            raise Exception('unknown parameter {0}'.format(par))
+    parser = argparse.ArgumentParser(prog='drops', description='Script calculates drops trajectories and secondary impingement.',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--distance', '-d', dest='distance', type=float, default=1.0e-4, help='Distance above face surface for start point of trajectory in meters.', metavar='X')
+    parser.add_argument('--time-delta', '-t', dest='time_delta', type=float, default=1.0e-5, help='Time step in seconds.', metavar='X')
+    parser.add_argument('--stall-threshold', dest='stall_threshold', type=float, default=1.0e-6, help='Threshold for stall faces in kg / (m^2 * s).', metavar='X')
+    parser.add_argument('--max-fly-steps', dest='max_fly_steps', type=int, default=200, help='Maximum points in droplets trajectory.', metavar='X')
+    parser.add_argument('grid_stall_file', help='Grid file name in STALL format.')
+    parser.add_argument('grid_air_file', help='Name of file with air grid')
+    parser.add_argument('out_grid_file', help='Out file with result grid; drops trajectories will be stored in file <out-grid-file>.tr.dat.')
+    args = parser.parse_args()
 
     # Run.
-    drops(grid_stall_file, grid_air_file, out_grid_file,
-          d, dt, stall_thr, max_fly_steps)
+    drops(args.grid_stall_file, args.grid_air_file, args.out_grid_file,
+          args.distance, args.time_delta, args.stall_threshold, args.max_fly_steps)
 
 # ==================================================================================================
