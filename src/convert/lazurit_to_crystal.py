@@ -6,10 +6,11 @@
 
 import sys
 import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 import re
-import gsu_converter
 from functools import reduce
 import itertools
+import gsu
 
 # --------------------------------------------------------------------------------------------------
 
@@ -212,5 +213,10 @@ if __name__ == '__main__':
             sf.close()
 
         of.close()
+
+    # Читаем сетку с помощью gsu и сохраняем обратно -> появятся нужные поля.
+    g2 = gsu.Grid()
+    g2.load(out_file)
+    g2.store(out_file)
 
 # --------------------------------------------------------------------------------------------------
