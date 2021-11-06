@@ -12,11 +12,14 @@ import json
 # --------------------------------------------------------------------------------------------------
 
 
-def split(grid_file, cry_dir, split_strategy, fixed_zones=[]):
+def split(grid_file,
+          cry_dir, out_dat_file,
+          split_strategy, fixed_zones=[]):
     """
     Split grid.
     :param grid_file: file with grid
     :param cry_dir: directory for *.cry files
+    :param out_dat_file: out *.dat file
     :param split_strategy: strategy for grid splitting
     :param fixed_zones: list of fixed zones
     :return: actual count of zones after splitting
@@ -85,12 +88,17 @@ def split(grid_file, cry_dir, split_strategy, fixed_zones=[]):
         raise Exception('crys-gsu-split : unknown split strategy ({0})'.format(split_strategy))
 
     # Store for MPI.
-    try:
-        os.makedirs(cry_dir)
-    except FileExistsError:
-        # If directory already exists - there is nothing to do.
-        pass
-    g.store_mpi('{0}/{1}'.format(cry_dir, nm), ts)
+    if not out_dat_file is None:
+        g.store(out_dat_file)
+    elif not cry_dir is None:
+        try:
+            os.makedirs(cry_dir)
+        except FileExistsError:
+            # If directory already exists - there is nothing to do.
+            pass
+        g.store_mpi('{0}/{1}'.format(cry_dir, nm), ts)
+    else:
+        raise Exception('crys-gsu-split : internal error')
 
     print('crys-gsu-split : done')
 
@@ -154,8 +162,12 @@ if __name__ == '__main__':
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('grid_file', help='grid file name')
     parser.add_argument('json_file', help='JSON file name')
-    parser.add_argument('cry_dir', help='out dir for *.cry files')
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-c', '--cry_dir', help='result in *.cry format (directory)')
+    group.add_argument('-o', '--out_dat_file', help='result in *.dat format (file)')
     args = parser.parse_args()
+
+    print(args.cry_dir, args.out_dat_file)
 
     # Extract parameters.
     strategy = extract_strategy_from_json(args.json_file)
@@ -163,6 +175,7 @@ if __name__ == '__main__':
 
     split(grid_file=args.grid_file,
           cry_dir=args.cry_dir,
+          out_dat_file=args.out_dat_file,
           split_strategy=strategy,
           fixed_zones=fixed_zones)
 
