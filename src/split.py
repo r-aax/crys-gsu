@@ -46,6 +46,10 @@ def split(grid_file, cry_dir, split_strategy, fixed_zones=[]):
     # Load grid.
     g = gsu.Grid()
     g.load(grid_file)
+    grid_zones_names = [z.Name for z in g.Zones]
+    for fz in fixed_zones:
+        if not fz in grid_zones_names:
+            raise Exception('crys-gsu-split : no zone with name "{0}" in the grid'.format(fz))
 
     # Decompose grid.
     if split_strategy[0] == 'h':
