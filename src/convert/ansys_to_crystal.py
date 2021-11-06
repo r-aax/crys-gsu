@@ -473,9 +473,9 @@ if __name__ == '__main__':
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('basename', help='basename for *.fensap.dat, *.drop3d.dat files')
     parser.add_argument('zones', help='zones to extract')
-    parser.add_argument('--air_termerature', '-t', dest='air_temperature', type=float, default=273.15,
+    parser.add_argument('-t', '--air_termerature', dest='air_temperature', type=float, default=273.15,
                         help='temperature of free stream (K)')
-    parser.add_argument('--normals', '-n', dest='normals', choices=['origin', 'reversed'], default='reversed',
+    parser.add_argument('-n', '--normals', dest='normals', choices=['origin', 'reversed'], default='reversed',
                         help='normals orientation')
     args = parser.parse_args()
 

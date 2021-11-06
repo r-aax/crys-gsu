@@ -349,13 +349,13 @@ if __name__ == '__main__':
     parser.add_argument('grid_stall_file', help='grid file name in STALL format')
     parser.add_argument('grid_air_file', help='name of file with air grid')
     parser.add_argument('out_grid_file', help='out file with result grid, trajectories are stored in <out_grid_file>.tr.dat')
-    parser.add_argument('--distance', '-d', dest='distance', type=float, default=1.0e-4,
+    parser.add_argument('-d', '--distance', dest='distance', type=float, default=1.0e-4,
                         help='distance above face surface for start point of trajectory (m)')
-    parser.add_argument('--time_delta', '-t', dest='time_delta', type=float, default=1.0e-5,
+    parser.add_argument('-t', '--time_delta', dest='time_delta', type=float, default=1.0e-5,
                         help='time step (s)')
-    parser.add_argument('--stall_threshold', '-s', dest='stall_threshold', type=float, default=1.0e-6,
+    parser.add_argument('-s', '--stall_threshold', dest='stall_threshold', type=float, default=1.0e-6,
                         help='threshold for stall faces (kg / s)')
-    parser.add_argument('--max_fly_steps', '-m', dest='max_fly_steps', type=int, default=200,
+    parser.add_argument('-m', '--max_fly_steps', dest='max_fly_steps', type=int, default=200,
                         help='maximum points in droplets trajectory')
     args = parser.parse_args()
 
