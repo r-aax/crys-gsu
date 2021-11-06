@@ -40,7 +40,10 @@ def split(grid_file,
 
     # Start splitting.
     print('crys-gsu-split : grid-file='
-          '{0} (bs={1}, nm={2}, ts={3}, sf={4})'.format(grid_file, bs, nm, ts, sf))
+          '{0} (bs={1}, nm={2}, ts={3}, sf={4}), cry-dir={5}, '
+          'out-grid-file={6}, split-strategy={7}, '
+          'fixed-zones={8}'.format(grid_file, bs, nm, ts, sf,
+                                   cry_dir, out_dat_file, split_strategy, fixed_zones))
 
     # Check file name.
     if sf != '.dat':
@@ -124,7 +127,7 @@ def extract_strategy_from_json(filename):
     try:
         return data['split_strategy']
     except KeyError:
-        return 'n1'
+        return 'z'
 
 
 # --------------------------------------------------------------------------------------------------
@@ -161,22 +164,31 @@ if __name__ == '__main__':
                                      description='GSU split script into separate domains.',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('grid_file', help='grid file name')
-    parser.add_argument('json_file', help='JSON file name')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-c', '--cry_dir', help='result in *.cry format (directory)')
     group.add_argument('-o', '--out_dat_file', help='result in *.dat format (file)')
+    parser.add_argument('-j', '--json_file', help='JSON file name')
+    parser.add_argument('-s', '--strategy', help='strategy of decomposition (z, n<n> or h<h>)')
     args = parser.parse_args()
 
-    print(args.cry_dir, args.out_dat_file)
+    # Extract split_strategy parameter.
+    if not args.strategy is None:
+        split_strategy = args.strategy
+    elif not args.json_file is None:
+        split_strategy = extract_strategy_from_json(args.json_file)
+    else:
+        split_strategy = 'z'
 
-    # Extract parameters.
-    strategy = extract_strategy_from_json(args.json_file)
-    fixed_zones = extract_fixed_zones_from_json(args.json_file)
+    # Extract fixed zones parameters.
+    if not args.json_file is None:
+        fixed_zones = extract_fixed_zones_from_json(args.json_file)
+    else:
+        fixed_zones = []
 
     split(grid_file=args.grid_file,
           cry_dir=args.cry_dir,
           out_dat_file=args.out_dat_file,
-          split_strategy=strategy,
+          split_strategy=split_strategy,
           fixed_zones=fixed_zones)
 
 # --------------------------------------------------------------------------------------------------
