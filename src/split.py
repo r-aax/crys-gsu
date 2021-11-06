@@ -127,7 +127,7 @@ def extract_strategy_from_json(filename):
     try:
         return data['split_strategy']
     except KeyError:
-        return 'z'
+        return 'n1'
 
 
 # --------------------------------------------------------------------------------------------------
@@ -177,7 +177,7 @@ if __name__ == '__main__':
     elif not args.json_file is None:
         split_strategy = extract_strategy_from_json(args.json_file)
     else:
-        split_strategy = 'z'
+        split_strategy = 'n1'
 
     # Extract fixed zones parameters.
     if not args.json_file is None:
