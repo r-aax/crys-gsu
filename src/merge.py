@@ -68,7 +68,7 @@ def merge(grid_file, src_dir, dst_dir):
 
     # Finally put total *.csv file to dst_dir/../ directory.
     csv_files = [fn for fn in all_files if fn[-4:] == '.csv']
-    if len(csv_files) > 1:
+    if len(csv_files) > 0:
         d = genfromtxt(src_dir + '/' + csv_files[0], delimiter=';', skip_header=True)
         t = d[:, :1]
         d = d[:, 1:]
