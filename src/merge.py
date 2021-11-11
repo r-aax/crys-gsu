@@ -66,14 +66,22 @@ def merge(grid_file, src_dir, dst_dir):
             g.load_faces_calc_data(src_dir + '/' + f)
         g.store('{0}/{1}_r_{2}.dat'.format(dst_dir, nm, tm))
 
+    # Function for reading 2D array from *.csv file.
+    # #172 : Make 2D data matrix manually if csv file contains just one row.
+    def read_csv2d(file_name):
+        data = genfromtxt(file_name, delimiter=';', skip_header=True)
+        if len(data.shape) == 1:
+            data = np.array([data])
+        return data
+
     # Finally put total *.csv file to dst_dir/../ directory.
     csv_files = [fn for fn in all_files if fn[-4:] == '.csv']
     if len(csv_files) > 0:
-        d = genfromtxt(src_dir + '/' + csv_files[0], delimiter=';', skip_header=True)
+        d = read_csv2d(src_dir + '/' + csv_files[0])
         t = d[:, :1]
         d = d[:, 1:]
         for csv_file in csv_files[1:]:
-            d = d + genfromtxt(src_dir + '/' + csv_file, delimiter=';', skip_header=True)[:, 1:]
+            d = d + read_csv2d(src_dir + '/' + csv_file)[:, 1:]
         d = np.hstack((t, d))
         np.savetxt('{0}/../{1}.csv'.format(dst_dir, nm), d, delimiter=";",
                    header='time;M_imp;M_es;M_stall;M_ini_water;M_water;M_ini_ice;M_ice;Q_conv;Q_es',
