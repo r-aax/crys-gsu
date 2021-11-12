@@ -58,7 +58,7 @@ class SpaceSeparator:
 
     # ----------------------------------------------------------------------------------------------
 
-    def __init__(self, ds):
+    def __init__(self, ds, ds_tuple):
         """
         Constructor.
         :param ds: Data array.
@@ -67,6 +67,7 @@ class SpaceSeparator:
         # By default we make one single partition.
 
         self.Partitions = [SpacePartition(ds)]
+        self.PartitionsTuple = np.array(ds_tuple)
 
     # ----------------------------------------------------------------------------------------------
 
@@ -94,9 +95,14 @@ class SpaceSeparator:
         # Warning! This works only if one partition is present.
         #
 
-        m = np.array([(p - pi).mod2() for (pi, _) in self.Partitions[0].Ds])
+        # m = np.array([(p - pi).mod2() for (pi, _) in self.Partitions[0].Ds])
+        # return self.Partitions[0].Ds[m.argmin()]
+        find_point = np.array(p.output_type_tuple())
+        res = self.PartitionsTuple - find_point
+        distances = np.linalg.norm(res, axis=1)
+        min_index = np.argmin(distances)
 
-        return self.Partitions[0].Ds[m.argmin()]
+        return self.Partitions[0].Ds[min_index]
 
     # ----------------------------------------------------------------------------------------------
 
@@ -122,26 +128,19 @@ class SpaceSeparator:
         :return:      New point position and new velocity.
         """
 
-        # Air viscosity and density for zero temperature.
-        air_dns = 1.292
-        wtr_dns = 1000.0
-        air_vis = 1.736e-5
+        # Calculate new point with old velocity.
+        new_p = p + v * dt
 
-        # Reynolds number and C_d.
-        vsm = (v - v_air).mod()
-        re = vsm * d / air_vis
+        # Calculate new velocity.
+        vis = 1.4607 * 0.00001
+        re = (v - v_air).mod() * d / vis
         if re <= 350.0:
-            cd = (24.0 / re) * (1.0 + 0.166 * math.pow(re, 0.33))
+            cd = (24.0 / re) * (1 + 0.166 * math.pow(re, 0.33))
         else:
             cd = 0.178 * math.pow(re, 0.217)
-
-        # Speedup.
-        a = (v_air - v) * 0.75 * ((cd * air_dns) / (d * wtr_dns)) * vsm
-
-        # Calculate new position through velocity,
-        # and new velocity through speedup.
-        new_p = p + v * dt
-        new_v = v + a * dt
+        k = (3.0 / 4.0) * ((cd * 1.3) / (d * 1000.0)) * (v - v_air).mod() * dt
+        vv = v_air - v
+        new_v = v + vv * k
 
         return new_p, new_v
 
@@ -214,6 +213,7 @@ def read_vel_field_from_file(grid_air_file):
     """
 
     ds = []
+    ds_tuple = []
 
     with open(grid_air_file, 'r') as f:
         l = f.readline()
@@ -234,6 +234,7 @@ def read_vel_field_from_file(grid_air_file):
                         p = Vect(float(d[0]), float(d[1]), float(d[2]))
                         v = Vect(float(d[5]), float(d[6]), float(d[7]))
                         ds.append((p, v))
+                        ds_tuple.append(p.output_type_tuple())
                     # Ignore all febricks links.
                     for i in range(es):
                         l = f.readline()
@@ -250,7 +251,7 @@ def read_vel_field_from_file(grid_air_file):
     f.close()
 
     # Now create space separator for search points.
-    sep = SpaceSeparator(ds)
+    sep = SpaceSeparator(ds, ds_tuple)
 
     return sep
 
@@ -336,31 +337,82 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
 
     print('crys-gsu-drops : done (time estimated = {0} s)'.format(time.time() - start_time))
 
+# --------------------------------------------------------------------------------------------------
+
+
+def print_help():
+    """
+    Print help.
+    """
+
+    print('[Overview]:')
+    print('    drops.py script calculates drops trajectories and secondary impingement')
+    print('[Usage]:')
+    print('    drops.py <options>')
+    print('[Options]:')
+    print('    grid-stall-file=<grid-stall-file> - grid file name in STALL format')
+    print('    grid-air-file=<grid-air-file>     - name of file with air grid')
+    print('    out-grid-file=<out-grid-file>     - out file with result grid')
+    print('    d=<d>                             - distance above face surface for start')
+    print('                                        point of trajectory, default value is 1.0e-4 m')
+    print('    dt=<dt>                           - time step, default value is 1.0e-5 s')
+    print('    stall-thr=<stall-thr>             - threshold for stall faces,')
+    print('                                        default value is 1.0e-6 kg / (m^2 * s)')
+    print('    max-fly-steps=<max-fly-steps>     - maximum points in droplets trajectory,')
+    print('                                        default value is 200 points')
+
 # ==================================================================================================
 
 
+# Example of running drops.py script:
+#     drops.py \
+#         grid-stall-file=grids/cyl_stall.dat \
+#         grid-air-file=grids/cyl_air.dat \
+#         out-grid-file=grids/out_cyl.dat
 if __name__ == '__main__':
 
-    import argparse
+    # Print help if there is no parameters.
+    if len(sys.argv) == 1:
+        print_help()
+        exit(0)
 
-    parser = argparse.ArgumentParser(prog='drops',
-                                     description='Drops trajectories and secondary impingement calculation.',
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('grid_stall_file', help='grid file name in STALL format')
-    parser.add_argument('grid_air_file', help='name of file with air grid')
-    parser.add_argument('out_grid_file', help='out file with result grid, trajectories are stored in <out_grid_file>.tr.dat')
-    parser.add_argument('-d', '--distance', dest='distance', type=float, default=1.0e-4,
-                        help='distance above face surface for start point of trajectory (m)')
-    parser.add_argument('-t', '--time_delta', dest='time_delta', type=float, default=1.0e-5,
-                        help='time step (s)')
-    parser.add_argument('-s', '--stall_threshold', dest='stall_threshold', type=float, default=1.0e-6,
-                        help='threshold for stall faces (kg / s)')
-    parser.add_argument('-m', '--max_fly_steps', dest='max_fly_steps', type=int, default=200,
-                        help='maximum points in droplets trajectory')
-    args = parser.parse_args()
+    # Print help if user asks for it.
+    if (sys.argv[1] == '-h') or (sys.argv[1] == '--help'):
+        print_help()
+        exit(0)
+
+    # Init default parameters.
+    grid_stall_file = None
+    grid_air_file = None
+    out_grid_file = None
+    d = 1.0e-4
+    dt = 1.0e-5
+    stall_thr = 1.0e-6
+    max_fly_steps = 200
+
+    # Parse parameters.
+    for arg in sys.argv[1:]:
+        [par, val] = arg.split('=')
+
+        if par == 'grid-stall-file':
+            grid_stall_file = val
+        elif par == 'grid-air-file':
+            grid_air_file = val
+        elif par == 'out-grid-file':
+            out_grid_file = val
+        elif par == 'd':
+            d = float(val)
+        elif par == 'dt':
+            dt = float(val)
+        elif par == 'stall-thr':
+            stall_thr = float(val)
+        elif par == 'max-fly-steps':
+            max_fly_steps = int(val)
+        else:
+            raise Exception('unknown parameter {0}'.format(par))
 
     # Run.
-    drops(args.grid_stall_file, args.grid_air_file, args.out_grid_file,
-          args.distance, args.time_delta, args.stall_threshold, args.max_fly_steps)
+    drops(grid_stall_file, grid_air_file, out_grid_file,
+          d, dt, stall_thr, max_fly_steps)
 
 # ==================================================================================================
