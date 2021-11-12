@@ -58,7 +58,7 @@ class SpaceSeparator:
 
     # ----------------------------------------------------------------------------------------------
 
-    def __init__(self, ds):
+    def __init__(self, ds, ds_tuple):
         """
         Constructor.
         :param ds: Data array.
@@ -67,6 +67,7 @@ class SpaceSeparator:
         # By default we make one single partition.
 
         self.Partitions = [SpacePartition(ds)]
+        self.PartitionsTuple = np.array(ds_tuple)
 
     # ----------------------------------------------------------------------------------------------
 
@@ -94,9 +95,16 @@ class SpaceSeparator:
         # Warning! This works only if one partition is present.
         #
 
-        m = np.array([(p - pi).mod2() for (pi, _) in self.Partitions[0].Ds])
+        # m = np.array([(p - pi).mod2() for (pi, _) in self.Partitions[0].Ds])
+        #
+        # return self.Partitions[0].Ds[m.argmin()]
 
-        return self.Partitions[0].Ds[m.argmin()]
+        find_point = np.array(p.output_type_tuple())
+        res = self.PartitionsTuple - find_point
+        distances = np.linalg.norm(res, axis=1)
+        min_index = np.argmin(distances)
+
+        return self.Partitions[0].Ds[min_index]
 
     # ----------------------------------------------------------------------------------------------
 
@@ -214,6 +222,7 @@ def read_vel_field_from_file(grid_air_file):
     """
 
     ds = []
+    ds_tuple = []
 
     with open(grid_air_file, 'r') as f:
         l = f.readline()
@@ -234,6 +243,7 @@ def read_vel_field_from_file(grid_air_file):
                         p = Vect(float(d[0]), float(d[1]), float(d[2]))
                         v = Vect(float(d[5]), float(d[6]), float(d[7]))
                         ds.append((p, v))
+                        ds_tuple.append(p.output_type_tuple())
                     # Ignore all febricks links.
                     for i in range(es):
                         l = f.readline()
@@ -250,7 +260,7 @@ def read_vel_field_from_file(grid_air_file):
     f.close()
 
     # Now create space separator for search points.
-    sep = SpaceSeparator(ds)
+    sep = SpaceSeparator(ds, ds_tuple)
 
     return sep
 
