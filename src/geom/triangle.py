@@ -159,7 +159,7 @@ class Triangle:
             return []
 
         im = np.linalg.inv(m)
-        r = im.dot(np.array([p.X - a.X, p.Y - a.Y, p.Z - p.Z]))
+        r = im.dot(np.array([p.X - a.X, p.Y - a.Y, p.Z - a.Z]))
         alfa, beta, phi = r[0], r[1], r[2]
 
         # Check solution.
