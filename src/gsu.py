@@ -480,9 +480,14 @@ class Face:
         :return: Triangle.
         """
 
-        return Triangle(Vect.from_iterable(self.Nodes[0].P),
-                        Vect.from_iterable(self.Nodes[1].P),
-                        Vect.from_iterable(self.Nodes[2].P))
+        t = Triangle(Vect.from_iterable(self.Nodes[0].P),
+                     Vect.from_iterable(self.Nodes[1].P),
+                     Vect.from_iterable(self.Nodes[2].P))
+
+        # Back reference for fixing parent object for triangle.
+        t.BackRef = self
+
+        return t
 
 # ==================================================================================================
 
