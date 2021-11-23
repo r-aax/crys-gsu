@@ -192,10 +192,13 @@ class SpaceSeparator:
 
             # Everything is OK.
             # Check intersection.
-            for f in g.Faces:
-                tri = f.get_triangle()
-                if tri.intersection_with_segment(Segment(lp, fp)) != []:
-                    return ('C', f, tr)
+
+            tri_list = g.get_triangles_list()
+            seg = Segment(lp, fp)
+
+            for tri in tri_list:
+                if tri.intersection_with_segment(seg) != []:
+                    return ('C', tri.BackRef, tr)
 
 # ==================================================================================================
 

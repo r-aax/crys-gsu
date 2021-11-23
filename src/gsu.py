@@ -1071,6 +1071,16 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
+    def get_triangles_list(self):
+        """
+        Get triangles list.
+        :return: Triangles list.
+        """
+
+        return [f.get_triangle() for f in self.Faces]
+
+    # ----------------------------------------------------------------------------------------------
+
     def random_face(self):
         """
         Get random face.
