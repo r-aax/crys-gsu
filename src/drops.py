@@ -18,20 +18,6 @@ from geom.box import Box
 # ==================================================================================================
 
 
-def face_triangle(f):
-    """
-    Get face triangle.
-    :param f: Face.
-    :return:  Triangle.
-    """
-
-    return Triangle(Vect.from_iterable(f.Nodes[0].P),
-                    Vect.from_iterable(f.Nodes[1].P),
-                    Vect.from_iterable(f.Nodes[2].P))
-
-# ==================================================================================================
-
-
 class SpacePartition:
     """
     Single space partition.
@@ -207,7 +193,7 @@ class SpaceSeparator:
             # Everything is OK.
             # Check intersection.
             for f in g.Faces:
-                tri = face_triangle(f)
+                tri = f.get_triangle()
                 if tri.intersection_with_segment(Segment(lp, fp)) != []:
                     return ('C', f, tr)
 
@@ -324,7 +310,7 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
             stall_vel = Vect(f.Data[stall_vx_ind - 3],
                              f.Data[stall_vy_ind - 3],
                              f.Data[stall_vz_ind - 3])
-            tri = face_triangle(f)
+            tri = f.get_triangle()
             start_point = tri.centroid() + tri.normal_orth() * d
             res = air.fly(start_point, stall_vel, stall_d, dt, g, max_fly_steps)
             traj = res[2]
@@ -334,7 +320,7 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
             if res[0] == 'C':
                 print('... secondary impingement '
                       'from face {0} to face {1}'.format(f.GloId, res[1].GloId))
-                tri2 = face_triangle(res[1])
+                tri2 = res[1].get_triangle()
                 res[1].Data[mimp2_ind - 3] = (stall_value / tri2.area())
 
     # Save grid back.

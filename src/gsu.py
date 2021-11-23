@@ -5,6 +5,11 @@ GSU main functions.
 import random
 import math
 import utils
+from geom.vect import Vect
+from geom.segment import Segment
+from geom.triangle import Triangle
+from geom.trajectory import Trajectory
+from geom.box import Box
 
 # ==================================================================================================
 
@@ -465,6 +470,19 @@ class Face:
         a, b, c, = self.Nodes[0].P, self.Nodes[1].P, self.Nodes[2].P
 
         return ((a[0] + b[0] + c[0]) / 3.0, (a[1] + b[1] + c[1]) / 3.0, (a[2] + b[2] + c[2]) / 3.0)
+
+
+    # ----------------------------------------------------------------------------------------------
+
+    def get_triangle(self):
+        """
+        Get triangle.
+        :return: Triangle.
+        """
+
+        return Triangle(Vect.from_iterable(self.Nodes[0].P),
+                        Vect.from_iterable(self.Nodes[1].P),
+                        Vect.from_iterable(self.Nodes[2].P))
 
 # ==================================================================================================
 
