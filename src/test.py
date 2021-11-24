@@ -79,7 +79,7 @@ def case_002_decompose(test='bunny_pos',
 # --------------------------------------------------------------------------------------------------
 
 
-def case_005_explode_bunny(test='bunny_pos'):
+def case_005_explode_bunny(test='bunny'):
     """
     Visual bunny explosion (illusion of different zones run away from each other).
     Test objective:
@@ -87,48 +87,32 @@ def case_005_explode_bunny(test='bunny_pos'):
     :param test: test name
     """
 
-    print('case_005_explode_bunny({0}):'.format(test))
+    print('case_005_explode_bunny({0})'.format(test))
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
     g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(),
                                                  gsu.fun_face_cy(),
                                                  gsu.fun_face_cz()],
                              levels=5,
-                             new_name=test + ' hierarchical',
-                             fixed_zones=['POS1', 'POS2'])
+                             new_name=test + ' hierarchical')
     g.store('grids/{0}_hierarchical.dat'.format(test))
     g.load('grids/{0}_hierarchical.dat'.format(test), is_merge_same_nodes=False)
     g.move_from_mean_point(0.25)
     g.store('grids/{0}_explode.dat'.format(test))
 
-# --------------------------------------------------------------------------------------------------
-
-
-def case_006_store_faces_t_hw_hi(test='bunny'):
-    """
-    Store faces T, Hw, Hi data.
-    Test objective:
-      Storing data ot T, Hw, Hi to file (emulation the result of MPI program).
-    :param test: test name
-    """
-
-    print('case_006_store_faces_t_hw_hi({0}):'.format(test))
-    g = gsu.Grid()
-    g.load('grids/{0}.dat'.format(test))
-    g.store_faces_calc_data('grids/{0}.txt'.format(test))
 
 # --------------------------------------------------------------------------------------------------
 
 
-def case_007_load_faces_t_hw_hi(test='bunny'):
+def case_007_store_load_faces_calc_data(test='bunny'):
     """
-    Load faces T, Hw, Hi from file.
+    Store and load faces calc data.
     Test objective:
-      Check how we can replace data T, Hw, Hi in grid from file.
+      Check how we can replace data T, Hw, Hi and other in grid from file.
     :param test: test name
     """
 
-    print('case_007_load_faces_t_hw_hi({0}):'.format(test))
+    print('case_007_store_load_faces_calc_data({0})'.format(test))
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
     g.store_faces_calc_data('grids/{0}.txt'.format(test))
@@ -250,8 +234,7 @@ if __name__ == '__main__':
     # case_001_load_store()
     # case_002_decompose()
     # case_005_explode_bunny()
-    # case_006_store_faces_t_hw_hi()
-    # case_007_load_faces_t_hw_hi()
+    # case_007_store_load_faces_calc_data()
     # case_009_store_mpi()
     # case_010_add_mimp2_vd2()
     # case_013_clean_grid()
