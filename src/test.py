@@ -10,20 +10,21 @@ import split
 # --------------------------------------------------------------------------------------------------
 
 
-def case_001_node_face_data(test='wing_1_mz'):
+def case_001_load_store(test='wing_1'):
     """
-    Load small grid and store it without any changes.
+    Load and store small grid.
     Test objective:
-      To make sure that node data and face data are correct.
-      Node data is just a point.
-      Face data is arbitrary array.
+      To make sure the grid can be loaded and stored
+      and loading and storing does not corrupt the data.
     :param test: test name
     """
 
-    print('case_001_node_face_data({0}):'.format(test))
+    print('case_001_load_store({0})'.format(test))
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
-    g.store('grids/{0}_original.dat'.format(test))
+    g.store('grids/{0}_store1.dat'.format(test))
+    g.load('grids/{0}_store1.dat'.format(test))
+    g.store('grids/{0}_store2.dat'.format(test))
 
 # --------------------------------------------------------------------------------------------------
 
@@ -85,23 +86,6 @@ def case_003_fixed_zones(test='bunny_pos'):
                              fixed_zones=['POS1', 'POS2'])
     g.store('grids/{0}_hierarchical.dat'.format(test))
 
-# --------------------------------------------------------------------------------------------------
-
-
-def case_004_load_store_load(test='bunny'):
-    """
-    Load grid, save it immediately, and load again.
-    Test objective:
-      To make sure that operation load-store doesn't corrupt the grid.
-    :param test: test name
-    """
-
-    print('case_004_load_store_load({0}):'.format(test))
-    g = gsu.Grid()
-    g.load('grids/{0}.dat'.format(test))
-    g.store('grids/{0}_c1.dat'.format(test))
-    g.load('grids/{0}_c1.dat'.format(test))
-    g.store('grids/{0}_c2.dat'.format(test))
 
 # --------------------------------------------------------------------------------------------------
 
@@ -291,10 +275,9 @@ def case_016_wrapping():
 
 
 if __name__ == '__main__':
-    # case_001_node_face_data()
+    # case_001_load_store()
     # case_002_decompose()
     # case_003_fixed_zones()
-    # case_004_load_store_load()
     # case_005_explode_bunny()
     # case_006_store_faces_t_hw_hi()
     # case_007_load_faces_t_hw_hi()
