@@ -40,25 +40,28 @@ def case_002_decompose(test='bunny_pos',
 
     print('case_002_decompose({0}): {1}'.format(test, methods))
     g = gsu.Grid()
-    g.load('grids/{0}.dat'.format(test))
 
     # Create new name of grid and file
     new_grid_name = lambda m: '{0} {1}'.format(test, m)
     new_file_name = lambda m: 'grids/{0}_{1}.dat'.format(test, m)
 
     if 'mono' in methods:
+        g.load('grids/{0}.dat'.format(test))
         g.decompose_mono(new_name=new_grid_name('mono'))
         g.store(new_file_name('mono'))
 
     if 'random' in methods:
+        g.load('grids/{0}.dat'.format(test))
         g.decompose_random(new_name=new_grid_name('random'))
         g.store(new_file_name('random'))
 
     if 'linear' in methods:
+        g.load('grids/{0}.dat'.format(test))
         g.decompose_linear(new_name=new_grid_name('linear'))
         g.store(new_file_name('linear'))
 
     if 'hierarchical' in methods:
+        g.load('grids/{0}.dat'.format(test))
         g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(),
                                                      gsu.fun_face_cy(),
                                                      gsu.fun_face_cz()],
@@ -67,6 +70,7 @@ def case_002_decompose(test='bunny_pos',
         g.store(new_file_name('hierarchical'))
 
     if 'farhat' in methods:
+        g.load('grids/{0}.dat'.format(test))
         g.decompose_farhat(new_name=new_grid_name('farhat'),
                            fz_names=['POS1', 'POS2'])
         g.store(new_file_name('farhat'))
