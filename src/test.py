@@ -145,7 +145,7 @@ def case_009_store_mpi(test='bunny'):
 # --------------------------------------------------------------------------------------------------
 
 
-def case_014_convert_grid_stall_to_check_point(test='cyl/cyl_1_stall'):
+def case_014_convert_grid_stall_to_check_point(test='cyl/cyl_stall'):
     """
     Load grid, convert and store.
     Test objective:
