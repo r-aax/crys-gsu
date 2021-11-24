@@ -224,7 +224,6 @@ class Edge:
 
         return (a0 == b0) or (a0 == b1) or (a1 == b0) or (a1 == b1)
 
-
 # ==================================================================================================
 
 
@@ -626,20 +625,6 @@ class Zone:
 
         return f
 
-    # ----------------------------------------------------------------------------------------------
-
-    def capture_nearest_face(self):
-        """
-        Capture face nearest to zone (breadth-first search).
-        """
-
-        for f in self.Faces:
-            for e in f.Edges:
-                if not e.is_border():
-                    f2 = f.get_neighbour(e)
-                    if f2.Zone is None:
-                        self.add_face(f2)
-                        return
 
 # ==================================================================================================
 
@@ -941,18 +926,6 @@ class Grid:
 
         return [f.get_triangle() for f in self.Faces]
 
-    # ----------------------------------------------------------------------------------------------
-
-    def random_face(self):
-        """
-        Get random face.
-        :return: random face
-        """
-
-        fc = self.faces_count()
-        ind = random.randint(0, fc - 1)
-
-        return self.Faces[ind]
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1855,15 +1828,6 @@ class Grid:
 
         self.post_decompose()
 
-    # ----------------------------------------------------------------------------------------------
-
-    def each_zone_capture_nearest_face(self):
-        """
-        Each zone capture nearest face.
-        """
-
-        for z in self.Zones:
-            z.capture_nearest_face()
 
     # ----------------------------------------------------------------------------------------------
 
