@@ -84,7 +84,7 @@ def split(grid_file,
             raise Exception('crys-gsu-split : fixed zones count is more or equal '
                             'than target zones count ({0} zones, {1} fixed zones)'.format(n, fz))
         print('crys-gsu-split : {0} zones ({1} fixed zones) : begin'.format(n, fz))
-        g.decompose_pressure(count=n - fz, fz_names=fixed_zones)
+        g.decompose_farhat(count=n - fz, fz_names=fixed_zones)
         actual_zones_count = len(g.Zones)
         print('crys-gsu-split : {0} zones : done'.format(actual_zones_count))
     else:

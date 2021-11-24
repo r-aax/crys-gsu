@@ -29,7 +29,8 @@ def case_001_load_store(test='wing_1'):
 # --------------------------------------------------------------------------------------------------
 
 
-def case_002_decompose(test='bunny'):
+def case_002_decompose(test='bunny_pos',
+                       methods=['mono', 'random', 'linear', 'hierarchical', 'farhat']):
     """
     Test all decompose algorithms.
     Test objective:
@@ -37,54 +38,38 @@ def case_002_decompose(test='bunny'):
     :param test: test name
     """
 
-    print('case_002_decompose({0}):'.format(test))
+    print('case_002_decompose({0}): {1}'.format(test, methods))
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
 
-    # mono
-    g.decompose_mono(new_name=test + ' mono')
-    g.store('grids/{0}_mono.dat'.format(test))
-    # random
-    g.decompose_random(new_name=test + ' random')
-    g.store('grids/{0}_random.dat'.format(test))
-    # linear
-    g.decompose_linear(new_name=test + ' linear')
-    g.store('grids/{0}_linear.dat'.format(test))
+    # Create new name of grid and file
+    new_grid_name = lambda m: '{0} {1}'.format(test, m)
+    new_file_name = lambda m: 'grids/{0}_{1}.dat'.format(test, m)
 
-    # hierarchical
-    g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(),
-                                                 gsu.fun_face_cy(),
-                                                 gsu.fun_face_cz()],
-                             levels=6,
-                             new_name=test + ' hierarchical')
-    g.store('grids/{0}_hierarchical.dat'.format(test))
+    if 'mono' in methods:
+        g.decompose_mono(new_name=new_grid_name('mono'))
+        g.store(new_file_name('mono'))
 
-    # pressure
-    g.decompose_pressure(new_name=test + ' pressure')
-    g.store('grids/{0}_pressure.dat'.format(test))
+    if 'random' in methods:
+        g.decompose_random(new_name=new_grid_name('random'))
+        g.store(new_file_name('random'))
 
-# --------------------------------------------------------------------------------------------------
+    if 'linear' in methods:
+        g.decompose_linear(new_name=new_grid_name('linear'))
+        g.store(new_file_name('linear'))
 
+    if 'hierarchical' in methods:
+        g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(),
+                                                     gsu.fun_face_cy(),
+                                                     gsu.fun_face_cz()],
+                                 new_name=new_grid_name('hierarchical'),
+                                 fixed_zones=['POS1', 'POS2'])
+        g.store(new_file_name('hierarchical'))
 
-def case_003_fixed_zones(test='bunny_pos'):
-    """
-    Fixed zones mechanism.
-    Test objective:
-      To make sure that zone marked with flag 'Fixed' stay unchanged.
-      This feature is implemented only for hierarchical algorithm.
-    :param test: test name
-    """
-
-    print('case_003_fixed_zones({0}):'.format(test))
-    g = gsu.Grid()
-    g.load('grids/{0}.dat'.format(test))
-    g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(),
-                                                 gsu.fun_face_cy(),
-                                                 gsu.fun_face_cz()],
-                             levels=6,
-                             new_name=test + ' hierarchical',
-                             fixed_zones=['POS1', 'POS2'])
-    g.store('grids/{0}_hierarchical.dat'.format(test))
+    if 'farhat' in methods:
+        g.decompose_farhat(new_name=new_grid_name('farhat'),
+                           fz_names=['POS1', 'POS2'])
+        g.store(new_file_name('farhat'))
 
 
 # --------------------------------------------------------------------------------------------------
@@ -146,23 +131,6 @@ def case_007_load_faces_t_hw_hi(test='bunny'):
     g.load_faces_calc_data('grids/{0}.txt'.format(test))
     g.store('grids/{0}_data.dat'.format(test))
 
-# --------------------------------------------------------------------------------------------------
-
-
-def case_008_decompose_pressure(test='bunny_pos'):
-    """
-    Load grid and decompose with pressure algorithm.
-    Test objective:
-      Check decompose pressure algorithm.
-    :param test: test name
-    """
-
-    print('case_008_decompose_pressure({0}):'.format(test))
-    g = gsu.Grid()
-    g.load('grids/{0}.dat'.format(test))
-    g.decompose_pressure(new_name=test + ' pressure', fz_names=['POS1', 'POS2'])
-    g.print_info(True, True, True)
-    g.store('grids/{0}_pressure.dat'.format(test))
 
 # --------------------------------------------------------------------------------------------------
 
@@ -277,11 +245,9 @@ def case_016_wrapping():
 if __name__ == '__main__':
     # case_001_load_store()
     # case_002_decompose()
-    # case_003_fixed_zones()
     # case_005_explode_bunny()
     # case_006_store_faces_t_hw_hi()
     # case_007_load_faces_t_hw_hi()
-    # case_008_decompose_pressure()
     # case_009_store_mpi()
     # case_010_add_mimp2_vd2()
     # case_013_clean_grid()

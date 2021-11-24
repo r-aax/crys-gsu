@@ -1878,7 +1878,7 @@ class Grid:
             c = len(self.Zones)
             for zi in range(c):
                 nm = self.Zones[0].Name
-                print('split zone {0} -> {1}, {2}.'.format(nm, nm + 'l', nm + 'r'))
+                # print('split zone {0} -> {1}, {2}.'.format(nm, nm + 'l', nm + 'r'))
                 self.split_zone(self.Zones[0], extract_signs_funs)
 
         self.post_decompose()
@@ -1895,9 +1895,9 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
-    def decompose_pressure(self, count=32, new_name=None, fz_names=[]):
+    def decompose_farhat(self, count=32, new_name=None, fz_names=[]):
         """
-        Create distribution based on pressure algorithm.
+        Create distribution based on Farhat's algorithm.
         :param count: zones count
         :param new_name: grid new name
         :param fz_names: list of fixed zones names
@@ -1915,7 +1915,7 @@ class Grid:
         fz_count = len(self.Zones)
         self.unlink_faces_from_zones()
         for i in range(count):
-            zone = Zone('pressure ' + str(i))
+            zone = Zone('farhat ' + str(i))
             self.Zones.append(zone)
 
         #
