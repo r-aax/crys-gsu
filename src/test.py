@@ -131,7 +131,7 @@ def case_009_store_mpi(test='bunny'):
     :param test: test name
     """
 
-    print('case_009_store_mpi({0}):'.format(test))
+    print('case_009_store_mpi({0})'.format(test))
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
     g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(),
@@ -139,46 +139,8 @@ def case_009_store_mpi(test='bunny'):
                                                  gsu.fun_face_cz()],
                              levels=3,
                              new_name=test + ' hierarchical')
-    g.store_mpi('grids/mpi', '2021-08-11-12-00-00')
+    g.store_mpi('grids/{0}_mpi'.format(test), '000000000100')
 
-# --------------------------------------------------------------------------------------------------
-
-
-def case_010_add_mimp2_vd2(test='bunny'):
-    """
-    Load grid without MImp2, Vd2 fields and save it with MImp2, Vd2 fields (all zeros).
-    Test objective:
-      Check that program supports work with grids of both formats.
-    :param test: test name
-    """
-
-    print('case_010_add_mimp2_vd2({0})'.format(test))
-    g = gsu.Grid()
-    g.load('grids/{0}.dat'.format(test))
-    g.store('grids/{0}_mimp2_vd2.dat'.format(test))
-
-
-# --------------------------------------------------------------------------------------------------
-
-
-def case_013_clean_grid(test='cyl'):
-    """
-    Load grid, clean and store.
-    Test objective:
-      Verification of cleaning mechanism.
-    :param test: test name
-    """
-
-    print('case_013_clean_grid({0})'.format(test))
-    g = gsu.Grid()
-    g.load('grids/{0}.dat'.format(test))
-    for f in g.Faces:
-        f.set_t(0.0)
-        f.set_hw(0.0)
-        f.set_hi(0.0)
-        f.set_mimp2(0.0)
-        f.set_vd2(0.0)
-    g.store('grids/{0}_case_013.dat'.format(test))
 
 # --------------------------------------------------------------------------------------------------
 
@@ -236,8 +198,6 @@ if __name__ == '__main__':
     # case_005_explode_bunny()
     # case_007_store_load_faces_calc_data()
     # case_009_store_mpi()
-    # case_010_add_mimp2_vd2()
-    # case_013_clean_grid()
     # case_014_convert_grid_stall_to_check_point()
     # case_015_self_intersection()
     # case_016_wrapping()
