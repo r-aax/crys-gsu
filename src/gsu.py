@@ -224,34 +224,6 @@ class Edge:
 
         return (a0 == b0) or (a0 == b1) or (a1 == b0) or (a1 == b1)
 
-    # ----------------------------------------------------------------------------------------------
-
-    def get_ids(self):
-        """
-        Get 4 ids:
-            first node id,
-            second node id,
-            min zone face id,
-            max zone face id.
-        :return:
-        """
-
-        first_node_id = self.Nodes[0].GloId
-        second_node_id = self.Nodes[1].GloId
-        ff = self.Faces[0]
-        sf = self.Faces[1]
-        fzi = ff.Zone.Id
-        szi = sf.Zone.Id
-        min_zone_id = min(fzi, szi)
-        max_zone_id = max(fzi, szi)
-        if fzi < szi:
-            min_zone_face_id = ff.GloId
-            max_zone_face_id = sf.GloId
-        else:
-            min_zone_face_id = sf.GloId
-            max_zone_face_id = ff.GloId
-
-        return (first_node_id, second_node_id, min_zone_id, max_zone_id, min_zone_face_id, max_zone_face_id)
 
 # ==================================================================================================
 
