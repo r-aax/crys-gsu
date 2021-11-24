@@ -7,7 +7,7 @@ import gsu_geom
 import split
 
 
-# --------------------------------------------------------------------------------------------------
+# ==================================================================================================
 
 
 def case_001_load_store(test='wing_1'):
@@ -159,37 +159,8 @@ def case_014_convert_grid_stall_to_check_point(test='cyl/cyl_stall'):
     g.convert_grid_stall_to_check_point()
     g.store('grids/{0}_case_014.dat'.format(test))
 
-# --------------------------------------------------------------------------------------------------
 
-
-def case_015_self_intersection():
-    """
-    Self intersection of the grid.
-    Test objective:
-      Self intersection algorithm.
-    """
-
-    m = gsu_geom.Mesh()
-    m.load('meshes/cyl_100.dat')
-    m.shred()
-    m.store('meshes/cyl_100_sh.dat')
-
-# --------------------------------------------------------------------------------------------------
-
-
-def case_016_wrapping():
-    """
-    Wrapping mechanism test.
-    Test objective:
-      Wrapping algorithm.
-    """
-
-    m = gsu_geom.Mesh()
-    m.load('meshes/cyl_100_sh.dat')
-    m.wrap()
-    m.store('meshes/cyl_100_sh_wr.dat')
-
-# --------------------------------------------------------------------------------------------------
+# ==================================================================================================
 
 
 if __name__ == '__main__':
@@ -199,9 +170,7 @@ if __name__ == '__main__':
     # case_007_store_load_faces_calc_data()
     # case_009_store_mpi()
     # case_014_convert_grid_stall_to_check_point()
-    # case_015_self_intersection()
-    # case_016_wrapping()
 
     pass
 
-# --------------------------------------------------------------------------------------------------
+# ==================================================================================================
