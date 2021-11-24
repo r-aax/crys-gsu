@@ -224,7 +224,6 @@ class Edge:
 
         return (a0 == b0) or (a0 == b1) or (a1 == b0) or (a1 == b1)
 
-
     # ----------------------------------------------------------------------------------------------
 
     def get_ids(self):
@@ -470,7 +469,6 @@ class Face:
         a, b, c, = self.Nodes[0].P, self.Nodes[1].P, self.Nodes[2].P
 
         return ((a[0] + b[0] + c[0]) / 3.0, (a[1] + b[1] + c[1]) / 3.0, (a[2] + b[2] + c[2]) / 3.0)
-
 
     # ----------------------------------------------------------------------------------------------
 
@@ -852,114 +850,6 @@ class ZonesAdjacencyMatrix:
         """
 
         return len([x for x in self.zone_cross_edges_array(zi) if x > 0])
-
-# ==================================================================================================
-
-
-class EdgesChain:
-    """
-    Chain of edges.
-    """
-
-    # ----------------------------------------------------------------------------------------------
-
-    def __init__(self, g, zi, zj):
-        """
-        Constructor.
-        :param g: grid
-        :param zi: first zone index
-        :param zj: second zone index
-        """
-
-        self.Edges = []
-        self.Subchains = []
-
-        for e in g.Edges:
-            if e.is_connect_zones(g.Zones[zi], g.Zones[zj]):
-                self.add_edge(e)
-
-        self.split_edges_into_subchains()
-
-    # ----------------------------------------------------------------------------------------------
-
-    def add_edge(self, e):
-        """
-        Add edge into chain.
-        :param e: edge
-        """
-
-        self.Edges.append(e)
-
-    # ----------------------------------------------------------------------------------------------
-
-    def edges_count(self):
-        """
-        Get edges count.
-        :return: edges count
-        """
-
-        return len(self.Edges)
-
-    # ----------------------------------------------------------------------------------------------
-
-    def is_empty(self):
-        """
-        Check if edges chain is empty.
-        :return: True - if is empty, False - otherwise.
-        """
-
-        return self.edges_count() == 0
-
-    # ----------------------------------------------------------------------------------------------
-
-    def split_edges_into_subchains(self):
-        """
-        Sort edges into right chain.
-        """
-
-        def try_to_add_subchain_to_subchains(subchains, n):
-            for subchain in subchains:
-                if n[-1].is_adjacent_with(subchain[0]):
-                    r = list(range(len(n)))
-                    r.reverse()
-                    for i in r:
-                        subchain.insert(0, n[i])
-                    return True
-                if n[0].is_adjacent_with(subchain[-1]):
-                    r = range(len(n))
-                    for i in r:
-                        subchain.append(n[i])
-                    return True
-                return False
-
-        # Empty subchains and
-        # set each edge into itw own subchain.
-        self.Subchains = [[e] for e in self.Edges]
-
-        # Try to connect subchains while it is possible.
-        while True:
-            count_before = len(self.Subchains)
-            rearranged_subchains = []
-            for s in self.Subchains:
-                if not try_to_add_subchain_to_subchains(rearranged_subchains, s):
-                    rearranged_subchains.append(s)
-            self.Subchains = rearranged_subchains
-            count_after = len(self.Subchains)
-            if count_after == count_before:
-                break
-
-        # Replace edges by ids.
-        self.Subchains = [[e.get_ids() for e in subchain] for subchain in self.Subchains]
-
-    # ----------------------------------------------------------------------------------------------
-
-    def get_edges_ids(self):
-        """
-        Get edges identifiers.
-        :return: list of identifiers
-        """
-
-        return [e.GloId for e in self.Edges]
 
 # ==================================================================================================
 
@@ -2005,97 +1895,12 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
-    def align_cross_borders(self):
-        """
-        Print cross borders.
-        """
-
-        def subchain_hi_faces_dbl(s):
-            dbl = 0
-            for i in range(1, len(s)):
-                if s[i][4] == s[i - 1][4]:
-                    dbl = dbl + 1
-            return dbl
-
-        def subchain_lo_faces_dbl(s):
-            dbl = 0
-            for i in range(1, len(s)):
-                if s[i][5] == s[i - 1][5]:
-                    dbl = dbl + 1
-            return dbl
-
-        def subchain_hi_lo_faces_dbl(s):
-            return (subchain_hi_faces_dbl(s), subchain_lo_faces_dbl(s))
-
-        def need_align(dbl):
-            return (dbl[0] > 0) and (dbl[1] > 0)
-
-        def align_hi(s, g):
-            for i in range(1, len(s)):
-                if s[i][4] == s[i - 1][4]:
-                    # Index i - 1. Delete next and pass face to lo zone.
-                    s.pop(i)
-                    ids = s[i - 1]
-                    s[i - 1] = (0, 0, 0, 0, -i, ids[4])
-                    face = g.Faces[ids[4]]
-                    # old_zone = g.Zones[ids[2]]
-                    new_zone = g.Zones[ids[3]]
-                    # old_zone.Faces.remove(face)
-                    new_zone.add_face(face)
-                    return
-
-        def align_lo(s, g):
-            for i in range(1, len(s)):
-                if s[i][5] == s[i - 1][5]:
-                    # Index i - 1. Delete next and pass face to hi zone.
-                    s.pop(i)
-                    ids = s[i - 1]
-                    s[i - 1] = (0, 0, 0, 0, -i, ids[5])
-                    face = g.Faces[ids[5]]
-                    # old_zone = g.Zones[ids[3]]
-                    new_zone = g.Zones[ids[2]]
-                    # old_zone.Faces.remove(face)
-                    new_zone.add_face(face)
-                    return
-
-        zc = self.zones_count()
-
-        for zi in range(zc):
-            for zj in range(zi + 1, zc):
-                ch = EdgesChain(self, zi, zj)
-
-                if ch.is_empty():
-                    continue
-
-                # print('Edges between zones {0} and {1}'.format(zi, zj))
-                # print('  {0}'.format(ch.get_edges_ids()))
-                for sch in ch.Subchains:
-                    # print('    sch:')
-                    # for ids in sch:
-                    #     print('      {0}'.format(ids))
-
-                    # Correct subchain.
-                    dbl = subchain_hi_lo_faces_dbl(sch)
-                    # print('DBL before {0}'.format(dbl))
-                    while need_align(dbl):
-                        align_hi(sch, self)
-                        if subchain_lo_faces_dbl(sch) > 0:
-                            align_lo(sch, self)
-                        dbl = subchain_hi_lo_faces_dbl(sch)
-                    # print('DBL after {0}'.format(dbl))
-
-        self.post_decompose()
-
-    # ----------------------------------------------------------------------------------------------
-
-    def decompose_pressure(self, count=32, new_name=None,
-                           fz_names=[], is_align=False):
+    def decompose_pressure(self, count=32, new_name=None, fz_names=[]):
         """
         Create distribution based on pressure algorithm.
         :param count: zones count
         :param new_name: grid new name
         :param fz_names: list of fixed zones names
-        :param is_align: need for cross borders align
         """
 
         # Mark fixed zones.
@@ -2132,9 +1937,6 @@ class Grid:
                 start = path[zone_size]
 
         self.post_decompose()
-
-        if is_align:
-            self.align_cross_borders()
 
     # ----------------------------------------------------------------------------------------------
 

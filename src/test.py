@@ -217,61 +217,6 @@ def case_010_add_mimp2_vd2(test='bunny'):
     g.load('grids/{0}.dat'.format(test))
     g.store('grids/{0}_mimp2_vd2.dat'.format(test))
 
-# --------------------------------------------------------------------------------------------------
-
-
-def case_011_align_borders(test='bunny', count=8):
-    """
-    Load grid, decompose it and align borders.
-    Test objective:
-      Verification of borders align algorithm.
-    :param test: test name
-    :param count: count of domains
-    """
-
-    print('case_011_align_borders({0}, {1})'.format(test, count))
-    g = gsu.Grid()
-    g.load('grids/{0}.dat'.format(test))
-    g.decompose_pressure(count=count, is_align=False)
-    g.print_info(is_print_edges_statistics=True,
-                 is_print_faces_distribution=True,
-                 is_print_zones_adjacency_matrix=True)
-    g.store('grids/{0}_pab_no.dat'.format(test))
-    g.align_cross_borders()
-    g.print_info(is_print_edges_statistics=True,
-                 is_print_faces_distribution=True,
-                 is_print_zones_adjacency_matrix=True)
-    g.store('grids/{0}_pab_yes.dat'.format(test))
-
-# --------------------------------------------------------------------------------------------------
-
-
-def case_012_align_borders(test='bunny', levels=3):
-    """
-    Load grid, decompose it with hierarchical algorithm and align borders.
-    Test objective:
-      Verification of borders align algorithm.
-    :param test: test name
-    :param levels: levels count
-    """
-
-    print('case_012_align_borders({0}, {1})'.format(test, levels))
-    g = gsu.Grid()
-    g.load('grids/{0}.dat'.format(test))
-    g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(),
-                                                 gsu.fun_face_cy(),
-                                                 gsu.fun_face_cz()],
-                             levels=levels,
-                             new_name=test + ' hierarchical')
-    g.print_info(is_print_edges_statistics=True,
-                 is_print_faces_distribution=True,
-                 is_print_zones_adjacency_matrix=True)
-    g.store('grids/{0}_pab_no.dat'.format(test))
-    g.align_cross_borders()
-    g.print_info(is_print_edges_statistics=True,
-                 is_print_faces_distribution=True,
-                 is_print_zones_adjacency_matrix=True)
-    g.store('grids/{0}_pab_yes.dat'.format(test))
 
 # --------------------------------------------------------------------------------------------------
 
@@ -356,8 +301,6 @@ if __name__ == '__main__':
     # case_008_decompose_pressure()
     # case_009_store_mpi()
     # case_010_add_mimp2_vd2()
-    # case_011_align_borders()
-    # case_012_align_borders()
     # case_013_clean_grid()
     # case_014_convert_grid_stall_to_check_point()
     # case_015_self_intersection()
