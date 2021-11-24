@@ -12,6 +12,7 @@ import math
 from geom.vect import Vect
 from geom.segment import Segment
 from geom.triangle import Triangle
+from geom.triangles_cloud import TrianglesCloud
 from geom.trajectory import Trajectory
 from geom.box import Box
 
@@ -141,23 +142,23 @@ class SpaceSeparator:
 
     # ----------------------------------------------------------------------------------------------
 
-    def fly(self, p, vel, d, dt, g, max_steps):
+    def fly(self, p, vel, d, dt, triangles_cloud, max_steps):
         """
         Flying of a point.
-        :param p:         Point.
-        :param vel:       Velocity.
-        :param d:         Diameter.
-        :param dt:        Time step.
-        :param g:         Grid (surface).
-        :param max_steps: Max count of fly steps.
-        :return:          Tuple of 3 elements.
-                              first element - diagnostic
-                                  'N' - too long flying
-                                  'O' - left the box out
-                                  'S' - stop on place
-                                  'C' - cross surface
-                              second element - face if intersect (None otherwise)
-                              third element - trajectory
+        :param p:               Point.
+        :param vel:             Velocity.
+        :param d:               Diameter.
+        :param dt:              Time step.
+        :param triangles_cloud: Triangles cloud.
+        :param max_steps:       Max count of fly steps.
+        :return:                Tuple of 3 elements.
+                                  first element - diagnostic
+                                    'N' - too long flying
+                                    'O' - left the box out
+                                    'S' - stop on place
+                                    'C' - cross surface
+                                  second element - face if intersect (None otherwise)
+                                  third element - trajectory
         """
 
         tr = Trajectory(p)
@@ -192,13 +193,9 @@ class SpaceSeparator:
 
             # Everything is OK.
             # Check intersection.
-
-            tri_list = g.get_triangles_list()
-            seg = Segment(lp, fp)
-
-            for tri in tri_list:
-                if tri.intersection_with_segment(seg) != []:
-                    return ('C', tri.BackRef, tr)
+            tri = triangles_cloud.first_intersection_with_segment(Segment(lp, fp))
+            if not tri is None:
+                return ('C', tri.BackRef, tr)
 
 # ==================================================================================================
 
@@ -286,6 +283,7 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
     # Load grid.
     g = gsu.Grid()
     g.load(grid_stall_file)
+    triangles_cloud = TrianglesCloud(g.get_triangles_list())
 
     # Indexes of Stall and MImp2 fields.
     stall_ind = g.get_variable_index('Stall')
@@ -315,7 +313,7 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
                              f.Data[stall_vz_ind - 3])
             tri = f.get_triangle()
             start_point = tri.centroid() + tri.normal_orth() * d
-            res = air.fly(start_point, stall_vel, stall_d, dt, g, max_fly_steps)
+            res = air.fly(start_point, stall_vel, stall_d, dt, triangles_cloud, max_fly_steps)
             traj = res[2]
             print(traj)
             traj.dump(tr_f, 'Trajectory-{0}'.format(f.GloId))
