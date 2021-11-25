@@ -117,6 +117,12 @@ class Triangle:
         # x = x_a + (x_b - x_a) * alfa + (x_c - x_a) * beta
         # y = y_a + (y_b - y_a) * alfa + (y_c - y_a) * beta
         # z = z_a + (z_b - z_a) * alfa + (z_c - z_a) * beta
+        #    where (x_a, y_a, z_a) - coordinates of point a,
+        #          (x_b, y_b, z_b) - coordinates of point b,
+        #          (x_c, y_c, z_c) - coordinates of point c,
+        #          alfa >= 0,
+        #          beta >= 0,
+        #          alfa + beta <= 1.
         # ...
         # x = x_a + x_ba * alfa + x_ca * beta
         # y = y_a + y_ba * alfa + y_ca * beta
@@ -126,6 +132,9 @@ class Triangle:
         # x = x_p + (x_q - x_p) * phi
         # y = y_p + (y_q - y_p) * phi
         # x = z_p + (z_q - z_p) * phi
+        #   where (x_p, y_p, z_p) - coordinates of point p,
+        #         (x_q, y_q, z_q) - coordinates of point q,
+        #         0 <= phi <= 1.
         # ...
         # x = x_p + x_qp * phi
         # y = y_p + y_qp * phi
@@ -144,10 +153,11 @@ class Triangle:
         # y_ba * alfa + y_ca * beta + y_pq * phi = y_pa
         # z_ba * alfa + z_ca * beta + z_pq * phi = z_pa
         #
-        # Matrix of this system can be written in the following view
-        # [x_ba x_ca x_pq
-        #  y_ba y_ca y_pq
-        #  z_ba z_ca z_pq]
+        # Matrix view of this system can be written in the following view
+        # [x_ba x_ca x_pq]     [alfa]     [x_pa]
+        # [y_ba y_ca y_pq]  X  [beta]  =  [y_pa]
+        # [z_ba z_ca z_pq]     [phi ]     [z_pa]
+        #
 
         m = np.array([[b.X - a.X, c.X - a.X, p.X - q.X],
                       [b.Y - a.Y, c.Y - a.Y, p.Y - q.Y],
@@ -160,8 +170,7 @@ class Triangle:
             return []
 
         im = np.linalg.inv(m)
-        r = im.dot(np.array([p.X - a.X, p.Y - a.Y, p.Z - a.Z]))
-        alfa, beta, phi = r[0], r[1], r[2]
+        [alfa, beta, phi] = im.dot(np.array([p.X - a.X, p.Y - a.Y, p.Z - a.Z]))
 
         # Check solution.
         is_inside_tri = (alfa >= 0.0) and (beta >= 0.0) and (alfa + beta <= 1.0)
