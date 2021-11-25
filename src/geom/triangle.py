@@ -159,9 +159,11 @@ class Triangle:
         # [z_ba z_ca z_pq]     [phi ]     [z_pa]
         #
 
-        m = np.array([[b.X - a.X, c.X - a.X, p.X - q.X],
-                      [b.Y - a.Y, c.Y - a.Y, p.Y - q.Y],
-                      [b.Z - a.Z, c.Z - a.Z, p.Z - q.Z]])
+        # Vectors differences.
+        ba, ca, pq, pa = b - a, c - a, p - q, p - a
+
+        m = np.array([ba.coords_list(), ca.coords_list(), pq.coords_list()])
+        m = np.transpose(m)
         d = np.linalg.det(m)
 
         if abs(d) < 1e-10:
@@ -170,14 +172,14 @@ class Triangle:
             return []
 
         im = np.linalg.inv(m)
-        [alfa, beta, phi] = im.dot(np.array([p.X - a.X, p.Y - a.Y, p.Z - a.Z]))
+        [alfa, beta, phi] = im.dot(np.array(pa.coords_list()))
 
         # Check solution.
         is_inside_tri = (alfa >= 0.0) and (beta >= 0.0) and (alfa + beta <= 1.0)
         is_inside_seg = (phi >= 0.0) and (phi <= 1.0)
 
         if is_inside_tri and is_inside_seg:
-            return [p + (q - p) * phi]
+            return [p - pq * phi]
         else:
             return []
 

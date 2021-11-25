@@ -60,6 +60,16 @@ class Vect:
 
     # ----------------------------------------------------------------------------------------------
 
+    def coords_list(self):
+        """
+        Get coordinates as a list.
+        :return: Coordinates as a list.
+        """
+
+        return [self.X, self.Y, self.Z]
+
+    # ----------------------------------------------------------------------------------------------
+
     def __add__(self, v):
         """
         Addition of two vectors.
