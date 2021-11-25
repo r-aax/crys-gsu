@@ -50,10 +50,10 @@ class Vect:
 
     # ----------------------------------------------------------------------------------------------
 
-    def output_type_tuple(self):
+    def coords_tuple(self):
         """
-
-        :return: Tuple.
+        Get coordinates as a tuple.
+        :return: Coordinates as a tuple.
         """
 
         return (self.X, self.Y, self.Z)

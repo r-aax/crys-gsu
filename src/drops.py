@@ -86,7 +86,7 @@ class SpaceSeparator:
         #
         # return self.Partitions[0].Ds[m.argmin()]
 
-        find_point = np.array(p.output_type_tuple())
+        find_point = np.array(p.coords_tuple())
         res = self.PartitionsTuple - find_point
         distances = np.linalg.norm(res, axis=1)
         min_index = np.argmin(distances)
@@ -229,7 +229,7 @@ def read_vel_field_from_file(grid_air_file):
                         p = Vect(float(d[0]), float(d[1]), float(d[2]))
                         v = Vect(float(d[5]), float(d[6]), float(d[7]))
                         ds.append((p, v))
-                        ds_tuple.append(p.output_type_tuple())
+                        ds_tuple.append(p.coords_tuple())
                     # Ignore all febricks links.
                     for i in range(es):
                         l = f.readline()
