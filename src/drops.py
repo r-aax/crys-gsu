@@ -16,31 +16,13 @@ from geom.triangles_cloud import TrianglesCloud
 from geom.trajectory import Trajectory
 from geom.box import Box
 
-# ==================================================================================================
-
-
-class SpacePartition:
-    """
-    Single space partition.
-    """
-
-    # ----------------------------------------------------------------------------------------------
-
-    def __init__(self, ds):
-        """
-        Constructor.
-        :param ds: Data array.
-        """
-
-        self.Ds = ds
-        self.Bx = Box([d[0] for d in ds])
 
 # ==================================================================================================
 
 
-class SpaceSeparator:
+class Space:
     """
-    Class for space separation into small partitions.
+    Space realization.
     """
 
     # ----------------------------------------------------------------------------------------------
@@ -48,12 +30,12 @@ class SpaceSeparator:
     def __init__(self, ds, ds_tuple):
         """
         Constructor.
-        :param ds: Data array.
+        :param ds:       Data array.
+        :param ds_tuple: Data arranged for numpy.
         """
 
-        # By default we make one single partition.
-
-        self.Partitions = [SpacePartition(ds)]
+        self.Ds = ds
+        self.Bx = Box([d[0] for d in ds])
         self.PartitionsTuple = np.array(ds_tuple)
 
     # ----------------------------------------------------------------------------------------------
@@ -63,11 +45,8 @@ class SpaceSeparator:
         Print info.
         """
 
-        print('SpaceSeparator : {0} partitions'.format(len(self.Partitions)))
-
-        for i, p in enumerate(self.Partitions):
-            print('    : part {0} : {1} points'.format(i, len(p.Ds)))
-            print('      {0}'.format(p.Bx))
+        print('Space : {0} points'.format(len(self.Ds)))
+        print('        {0}'.format(self.Bx))
 
     # ----------------------------------------------------------------------------------------------
 
@@ -78,20 +57,12 @@ class SpaceSeparator:
         :return:  Nearest data.
         """
 
-        #
-        # Warning! This works only if one partition is present.
-        #
-
-        # m = np.array([(p - pi).mod2() for (pi, _) in self.Partitions[0].Ds])
-        #
-        # return self.Partitions[0].Ds[m.argmin()]
-
         find_point = np.array(p.coords_tuple())
         res = self.PartitionsTuple - find_point
         distances = np.linalg.norm(res, axis=1)
         min_index = np.argmin(distances)
 
-        return self.Partitions[0].Ds[min_index]
+        return self.Ds[min_index]
 
     # ----------------------------------------------------------------------------------------------
 
@@ -102,7 +73,7 @@ class SpaceSeparator:
         :return:  True - if point in box, False - otherwise.
         """
 
-        return self.Partitions[0].Bx.is_inside(p)
+        return self.Bx.is_inside(p)
 
     # ----------------------------------------------------------------------------------------------
 
@@ -245,10 +216,10 @@ def read_vel_field_from_file(grid_air_file):
 
     f.close()
 
-    # Now create space separator for search points.
-    sep = SpaceSeparator(ds, ds_tuple)
+    # Now create space for search points.
+    space = Space(ds, ds_tuple)
 
-    return sep
+    return space
 
 # --------------------------------------------------------------------------------------------------
 
