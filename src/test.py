@@ -2,10 +2,9 @@
 Test module.
 """
 
-import gsu
+from gsu import gsu
 import gsu_geom
 import split
-
 
 # ==================================================================================================
 

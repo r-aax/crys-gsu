@@ -4,11 +4,11 @@ Drops realization.
 
 import sys
 import os
-import gsu
 import numpy as np
 import utils
 import time
 import math
+from gsu.gsu import Grid
 from geom.vect import Vect
 from geom.segment import Segment
 from geom.triangle import Triangle
@@ -253,7 +253,7 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
     start_time = time.time()
 
     # Load grid.
-    g = gsu.Grid()
+    g = Grid()
     g.load(grid_stall_file)
     triangles_cloud = TrianglesCloud(g.get_triangles_list())
 

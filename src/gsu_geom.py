@@ -4,7 +4,7 @@ Geometry aspects of Grid Surface Unstructured.
 """
 
 import math
-import gsu
+from gsu import gsu
 import numpy as np
 import scipy as sp
 import scipy.linalg as lalg

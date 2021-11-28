@@ -3,7 +3,7 @@ Split grid for MPI.
 """
 
 import pathlib
-import gsu
+from gsu import gsu
 import utils
 import sys
 import os
