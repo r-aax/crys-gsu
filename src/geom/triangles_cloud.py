@@ -105,9 +105,6 @@ class TrianglesCloud:
         # предподгоотовка: основа дерева
         self.Subclouds = [self.Triangles]
 
-        # предподгоотовка: данные сегмента
-        vect = [[s.a().X, s.a().Y, s.a().Z], [s.b().X, s.b().Y, s.b().Z]]
-
         # основной процесс: проверяются ветви до тех пор, пока они есть
         while self.Subclouds:
 
