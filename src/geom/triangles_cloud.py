@@ -190,26 +190,8 @@ class TrianglesCloud:
             mid_surf = sumxyz[indxyz] / 2
 
             # бинарное разбиение массива относительно центральной точки
-            arr_left = []
-            arr_right = []
-            if indxyz == 0:
-                for i in mass:
-                    if i.centroid().X < mid_surf:
-                        arr_left.append(i)
-                    elif i.centroid().X >= mid_surf:
-                        arr_right.append(i)
-            elif indxyz == 1:
-                for i in mass:
-                    if i.centroid().Y < mid_surf:
-                        arr_left.append(i)
-                    elif i.centroid().Y >= mid_surf:
-                        arr_right.append(i)
-            elif indxyz == 2:
-                for i in mass:
-                    if i.centroid().Z < mid_surf:
-                        arr_left.append(i)
-                    elif i.centroid().Z >= mid_surf:
-                        arr_right.append(i)
+            arr_left = [t for t in mass if t.centroid()[indxyz] < mid_surf]
+            arr_right = [t for t in mass if t.centroid()[indxyz] >= mid_surf]
 
             # проверка корректности разбиения
             if len(arr_left) == 0 and len(arr_right) > 2:
