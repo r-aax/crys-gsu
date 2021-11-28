@@ -83,9 +83,6 @@ class Grid:
         # Empty name.
         self.Name = ''
 
-        # Mode.
-        self.Mode = ''
-
         # Set empty sets of nodes, faces, zones.
         self.Nodes = []
         self.Edges = []
@@ -507,21 +504,13 @@ class Grid:
             line = f.readline()
             while line:
 
-                if '# EXPORT_MODE=' in line:
-
-                    # Head of grid.
-                    mode_line = line
-                    title_line = f.readline()
-                    variables_line = f.readline()
-
-                    # Parse all and check.
-                    self.Mode = mode_line.split('=')[-1][:-1]
-                    if 'TITLE=' not in title_line:
-                        raise Exception('Wrong title line ({0}).'.format(title_line))
-                    self.Name = title_line.split('=')[1][1:-2]
-                    if 'VARIABLES=' not in variables_line:
-                        raise Exception('Wrong variables line ({0}).'.format(variables_line))
-                    variables_str = variables_line.split('=')[-1][:-1]
+                if line[0] == '#':
+                    # Comment.
+                    pass
+                elif 'TITLE=' in line:
+                    self.Name = line.split('=')[1][1:-2]
+                elif 'VARIABLES=' in line:
+                    variables_str = line.split('=')[-1][:-1]
                     variables = variables_str.replace('"', '').replace(',', '').split()
                     face_variables = variables[3:]
                     face_variables_count = len(face_variables)
@@ -624,7 +613,7 @@ class Grid:
 
     def convert_grid_stall_to_check_point(self):
         """
-        Convert grid from STALL mode to CHCEK_POINT mode.
+        Remove all Stall fields.
         """
 
         # Delete fields Stall, StallD, StallVX, StallVY, StallVZ.
@@ -657,7 +646,7 @@ class Grid:
         with open(filename, 'w', newline='\n') as f:
 
             # Store head.
-            f.write('# EXPORT_MODE={0}\n'.format(self.Mode))
+            f.write('# crys-gsu\n')
             f.write('TITLE="{0}"\n'.format(self.Name))
             f.write('VARIABLES={0}\n'.format(', '.join(['"{0}"'.format(k) for k in variables])))
 
