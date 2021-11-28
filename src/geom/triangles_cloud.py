@@ -167,39 +167,34 @@ class TrianglesCloud:
         :return: список из двух списков треугольников
         """
 
-        if len(mass) == 2:
-            arr_left = [mass[0]]
-            arr_right = [mass[1]]
-            res_arr = [arr_left, arr_right]
-            return res_arr
+        assert len(mass) > 1, 'internal error'
 
-        else:
-            # краевые точки box
-            xmax, ymax, zmax = self.boxarr.MaxX, self.boxarr.MaxY, self.boxarr.MaxZ
-            xmin, ymin, zmin = self.boxarr.MinX, self.boxarr.MinY, self.boxarr.MinZ
+        # краевые точки box
+        xmax, ymax, zmax = self.boxarr.MaxX, self.boxarr.MaxY, self.boxarr.MaxZ
+        xmin, ymin, zmin = self.boxarr.MinX, self.boxarr.MinY, self.boxarr.MinZ
 
-            # проверка длинной стороны
-            lenxyz = [xmax - xmin, ymax - ymin, zmax - zmin]
-            indxyz = lenxyz.index(np.amax(lenxyz))
+        # проверка длинной стороны
+        lenxyz = [xmax - xmin, ymax - ymin, zmax - zmin]
+        indxyz = lenxyz.index(np.amax(lenxyz))
 
-            # вычисление центра длинной стороны
-            sumxyz = [xmax + xmin, ymax + ymin, zmax + zmin]
-            mid_surf = sumxyz[indxyz] / 2
+        # вычисление центра длинной стороны
+        sumxyz = [xmax + xmin, ymax + ymin, zmax + zmin]
+        mid_surf = sumxyz[indxyz] / 2
 
-            # бинарное разбиение массива относительно центральной точки
-            arr_left = [t for t in mass if t.centroid()[indxyz] < mid_surf]
-            arr_right = [t for t in mass if t.centroid()[indxyz] >= mid_surf]
+        # бинарное разбиение массива относительно центральной точки
+        arr_left = [t for t in mass if t.centroid()[indxyz] < mid_surf]
+        arr_right = [t for t in mass if t.centroid()[indxyz] >= mid_surf]
 
-            # проверка корректности разбиения
-            if len(arr_left) == 0 and len(arr_right) > 2:
-                arr_left = [arr_right[0]]
-                arr_right = arr_right[1:]
-            elif len(arr_right) == 0 and len(arr_left) > 2:
-                arr_right = [arr_left[0]]
-                arr_left = arr_left[1:]
+        # проверка корректности разбиения
+        if len(arr_left) == 0:
+            arr_left = [arr_right[0]]
+            arr_right = arr_right[1:]
+        elif len(arr_right) == 0:
+            arr_right = [arr_left[0]]
+            arr_left = arr_left[1:]
 
-            res_arr = [arr_left, arr_right]
-            return res_arr
+        res_arr = [arr_left, arr_right]
+        return res_arr
 
 # ==================================================================================================
 
