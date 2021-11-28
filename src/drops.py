@@ -257,14 +257,6 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
     g.load(grid_stall_file)
     triangles_cloud = TrianglesCloud(g.get_triangles_list())
 
-    # Indexes of Stall and MImp2 fields.
-    stall_ind = g.get_variable_index('Stall')
-    stall_d_ind = g.get_variable_index('StallD')
-    stall_vx_ind = g.get_variable_index('StallVX')
-    stall_vy_ind = g.get_variable_index('StallVY')
-    stall_vz_ind = g.get_variable_index('StallVZ')
-    mimp2_ind = g.get_variable_index('MImp2')
-
     # Read air from file.
     air = read_vel_field_from_file(grid_air_file)
     air.print_info()
@@ -276,16 +268,14 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
 
     # Check all faces.
     for f in g.Faces:
-        stall_value = f.Data[stall_ind - 3]
+        stall_value = f['Stall']
         if stall_value > stall_thr:
             # print('... face {0} is wet. Start flying.'.format(f.GloId))
-            stall_d = f.Data[stall_d_ind - 3]
-            stall_vel = Vect(f.Data[stall_vx_ind - 3],
-                             f.Data[stall_vy_ind - 3],
-                             f.Data[stall_vz_ind - 3])
             tri = f.get_triangle()
             start_point = tri.centroid() + tri.normal_orth() * d
-            res = air.fly(start_point, stall_vel, stall_d, dt, triangles_cloud, max_fly_steps)
+            res = air.fly(start_point,
+                          Vect(f['StallVX'], f['StallVY'], f['StallVZ']), f['StallD'],
+                          dt, triangles_cloud, max_fly_steps)
             traj = res[2]
             print(traj)
             traj.dump(tr_f, 'Trajectory-{0}'.format(f.GloId))
@@ -294,7 +284,7 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
                 print('... secondary impingement '
                       'from face {0} to face {1}'.format(f.GloId, res[1].GloId))
                 tri2 = res[1].get_triangle()
-                res[1].Data[mimp2_ind - 3] = (stall_value / tri2.area())
+                res[1]['MImp2'] = (stall_value / tri2.area())
 
     # Save grid back.
     g.convert_grid_stall_to_check_point()

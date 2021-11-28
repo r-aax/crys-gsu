@@ -600,17 +600,6 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
-    def get_variable_index(self, variable_name):
-        """
-        Get index of variable by its name.
-        :param variable_name: variable name
-        :return: variable index
-        """
-
-        return self.Variables.index(variable_name)
-
-    # ----------------------------------------------------------------------------------------------
-
     def convert_grid_stall_to_check_point(self):
         """
         Remove all Stall fields.
@@ -629,9 +618,9 @@ class Grid:
         """
 
         for f in self.Faces:
-            f.set_t(0.0)
-            f.set_hw(0.0)
-            f.set_hi(0.0)
+            f['T'] = 0.0
+            f['Hw'] = 0.0
+            f['Hi'] = 0.0
 
     # ----------------------------------------------------------------------------------------------
 
