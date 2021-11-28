@@ -22,9 +22,7 @@ class Vect:
         :param z: Coord Z.
         """
 
-        self.X = x
-        self.Y = y
-        self.Z = z
+        self.Coords = [x, y, z]
 
     # ----------------------------------------------------------------------------------------------
 
@@ -37,6 +35,88 @@ class Vect:
         """
 
         return Vect(t[0], t[1], t[2])
+
+    # ----------------------------------------------------------------------------------------------
+
+    @property
+    def X(self):
+        """
+        Coord X.
+        :return: Coord X.
+        """
+        return self.Coords[0]
+
+    # ----------------------------------------------------------------------------------------------
+
+    @X.setter
+    def X(self, value):
+        """
+        Set X coord.
+        :param value: Value
+        """
+        self.Coords[0] = value
+
+    # ----------------------------------------------------------------------------------------------
+
+    @property
+    def Y(self):
+        """
+        Coord Y.
+        :return: Coord Y.
+        """
+        return self.Coords[1]
+
+    # ----------------------------------------------------------------------------------------------
+
+    @Y.setter
+    def Y(self, value):
+        """
+        Set Y coord.
+        :param value: Value
+        """
+        self.Coords[1] = value
+
+    # ----------------------------------------------------------------------------------------------
+
+    @property
+    def Z(self):
+        """
+        Coord Z.
+        :return: Coord Z.
+        """
+        return self.Coords[2]
+
+    # ----------------------------------------------------------------------------------------------
+
+    @Z.setter
+    def Z(self, value):
+        """
+        Set Z coord.
+        :param value: Value
+        """
+        self.Coords[2] = value
+
+    # ----------------------------------------------------------------------------------------------
+
+    def __getitem__(self, item):
+        """
+        Get coordinate.
+        :param item: Index.
+        :return:     Coordinate.
+        """
+
+        return self.Coords[item]
+
+    # ----------------------------------------------------------------------------------------------
+
+    def __setitem__(self, key, value):
+        """
+        Set coordinate.
+        :param key:   Index.
+        :param value: Value.
+        """
+
+        self.Coords[key] = value
 
     # ----------------------------------------------------------------------------------------------
 
