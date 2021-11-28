@@ -163,12 +163,12 @@ def case_014_convert_grid_stall_to_check_point(test='cyl/cyl_stall'):
 
 
 if __name__ == '__main__':
-    case_001_load_store()
-    case_002_decompose()
-    case_005_explode_bunny()
-    case_007_store_load_faces_calc_data()
-    case_009_store_mpi()
-    case_014_convert_grid_stall_to_check_point()
+    # case_001_load_store()
+    # case_002_decompose()
+    # case_005_explode_bunny()
+    # case_007_store_load_faces_calc_data()
+    # case_009_store_mpi()
+    # case_014_convert_grid_stall_to_check_point()
 
     pass
 
