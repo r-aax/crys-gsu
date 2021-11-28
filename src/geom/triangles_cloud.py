@@ -7,6 +7,7 @@ import numpy as np
 # from geom.segment import Segment
 # from geom.triangle import Triangle
 # from geom.vect import Vect
+from geom.box import Box
 
 # ==================================================================================================
 
@@ -113,10 +114,10 @@ class TrianglesCloud:
             arr = self.Subclouds[0]
 
             # формирование куба массива
-            self.boxarr = self.box(arr)
+            self.boxarr = Box.from_triangles(arr)
 
             # проверка вхождений вектора в куб массива
-            if self.entry(self.boxarr, vect):
+            if self.boxarr.is_potential_intersect_with_segment(s):
 
                 # проверка на тип элемента дерва
                 if len(arr) > 1:
@@ -134,97 +135,6 @@ class TrianglesCloud:
 
             # уничтожение ветви
             self.Subclouds.pop(0)
-
-    # ----------------------------------------------------------------------------------------------
-
-    def box(self, arr):
-        """
-
-        :param arr: список треугольников
-        :return: [[x_min, y_min, z_min], [x_max, y_max, z_max]].
-        """
-
-        # print(arr[0]) # один треугольник (состоит из точек "а", "b", "с"
-        # print(arr[0].a().X, arr[0].a().Y, arr[0].a().Z) # координаты точки "а" одного треугольника
-
-        # список краевых координат
-        # box[0] = [x_min, y_min, z_min]
-        # box[1] = [x_max, y_max, z_max]
-        box = [[arr[0].a().X, arr[0].a().Y, arr[0].a().Z], [arr[0].a().X, arr[0].a().Y, arr[0].a().Z]]
-
-        for i in arr:
-
-            # x_min
-            if i.a().X < box[0][0]:
-                box[0][0] = i.a().X
-            if i.b().X < box[0][0]:
-                box[0][0] = i.b().X
-            if i.c().X < box[0][0]:
-                box[0][0] = i.c().X
-
-            # x_max
-            if i.a().X > box[1][0]:
-                box[1][0] = i.a().X
-            if i.b().X > box[1][0]:
-                box[1][0] = i.b().X
-            if i.c().X > box[1][0]:
-                box[1][0] = i.c().X
-
-            # y_min
-            if i.a().Y < box[0][1]:
-                box[0][1] = i.a().Y
-            if i.b().Y < box[0][1]:
-                box[0][1] = i.b().Y
-            if i.c().Y < box[0][1]:
-                box[0][1] = i.c().Y
-
-            # y_max
-            if i.a().Y > box[1][1]:
-                box[1][1] = i.a().Y
-            if i.b().Y > box[1][1]:
-                box[1][1] = i.b().Y
-            if i.c().Y > box[1][1]:
-                box[1][1] = i.c().Y
-
-            # z_min
-            if i.a().Z < box[0][2]:
-                box[0][2] = i.a().Z
-            if i.b().Z < box[0][2]:
-                box[0][2] = i.b().Z
-            if i.c().Z < box[0][2]:
-                box[0][2] = i.c().Z
-
-            # z_max
-            if i.a().Z > box[1][2]:
-                box[1][2] = i.a().Z
-            if i.b().Z > box[1][2]:
-                box[1][2] = i.b().Z
-            if i.c().Z > box[1][2]:
-                box[1][2] = i.c().Z
-
-        return box
-
-    # ----------------------------------------------------------------------------------------------
-
-    def entry(self, box, vect):
-        """
-        :param box: the area of existence of triangles
-        :param vect: the domain of the vector 's existence
-        :return: the vector enters the domain of the existence of triangles: True or False
-        """
-
-        if (vect[1][0] >= box[0][0]) and (vect[1][0] <= box[1][0]) and \
-           (vect[1][1] >= box[0][1]) and (vect[1][1] <= box[1][1]) and \
-           (vect[1][2] >= box[0][2]) and (vect[1][2] <= box[1][2]) or \
-           (vect[0][0] >= box[0][0]) and (vect[0][0] <= box[1][0]) and \
-           (vect[0][1] >= box[0][1]) and (vect[0][1] <= box[1][1]) and \
-           (vect[0][2] >= box[0][2]) and (vect[0][2] <= box[1][2]):
-
-            return True
-
-        else:
-
-            return False
 
     # ----------------------------------------------------------------------------------------------
 
@@ -268,8 +178,8 @@ class TrianglesCloud:
 
         else:
             # краевые точки box
-            xmax, ymax, zmax = self.boxarr[1]
-            xmin, ymin, zmin = self.boxarr[0]
+            xmax, ymax, zmax = self.boxarr.MaxX, self.boxarr.MaxY, self.boxarr.MaxZ
+            xmin, ymin, zmin = self.boxarr.MinX, self.boxarr.MinY, self.boxarr.MinZ
 
             # проверка длинной стороны
             lenxyz = [xmax - xmin, ymax - ymin, zmax - zmin]

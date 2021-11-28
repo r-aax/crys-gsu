@@ -73,7 +73,7 @@ class Space:
         :return:  True - if point in box, False - otherwise.
         """
 
-        return self.Bx.is_inside(p)
+        return self.Bx.is_point_inside(p)
 
     # ----------------------------------------------------------------------------------------------
 
