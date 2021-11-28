@@ -3,6 +3,8 @@ Face realization.
 """
 
 import random
+from geom.vect import Vect
+from geom.triangle import Triangle
 
 # ==================================================================================================
 
