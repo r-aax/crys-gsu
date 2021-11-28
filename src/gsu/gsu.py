@@ -14,19 +14,6 @@ from geom.box import Box
 # ==================================================================================================
 
 
-def rounded_point(p, digits=10):
-    """
-    Get rounded point for constructing bags of points.
-    :param p: point
-    :param digits: accuracy
-    :return: rounded point
-    """
-
-    return round(p[0], digits), round(p[1], digits), round(p[2], digits)
-
-# --------------------------------------------------------------------------------------------------
-
-
 def mean_nodes_point(ns):
     """
     Get mean point of nodes.
@@ -86,7 +73,7 @@ class Node:
     def __init__(self, p):
         """
         Constructor node.
-        :param p: node point (tuple of coordinates)
+        :param p: Node point (Vector).
         """
 
         # Global identifier (in grid numeration).
@@ -95,7 +82,7 @@ class Node:
         self.P = p
 
         # Rounded coordinates for registration in set.
-        self.RoundedCoords = rounded_point(p)
+        self.RoundedCoords = self.P.rounded_coords_tuple(10)
 
         # Links with edges and faces.
         self.Edges = []
@@ -1306,7 +1293,7 @@ class Grid:
                         line = f.readline()
                         c.append([float(xi) for xi in line.split()])
                     for i in range(nodes_to_read):
-                        p = [c[0][i], c[1][i], c[2][i]]
+                        p = Vect(c[0][i], c[1][i], c[2][i])
                         node = Node(p)
                         node = self.add_node(node, is_merge_same_nodes)
                         zone.add_node(node)

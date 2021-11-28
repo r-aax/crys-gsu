@@ -136,7 +136,7 @@ class Vect:
         :return: Coordinates as a tuple.
         """
 
-        return (self.X, self.Y, self.Z)
+        return self.X, self.Y, self.Z
 
     # ----------------------------------------------------------------------------------------------
 
@@ -147,6 +147,17 @@ class Vect:
         """
 
         return [self.X, self.Y, self.Z]
+
+    # ----------------------------------------------------------------------------------------------
+
+    def rounded_coords_tuple(self, digits):
+        """
+        Get tuple of rounded coordinates.
+        :param digits: Digits number.
+        :return:       Tuple of rounded coordinates.
+        """
+
+        return round(self.X, digits), round(self.Y, digits), round(self.Z, digits)
 
     # ----------------------------------------------------------------------------------------------
 
