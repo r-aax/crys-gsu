@@ -2,11 +2,7 @@
 Triangles cloud realization.
 """
 
-# import math
 import numpy as np
-# from geom.segment import Segment
-# from geom.triangle import Triangle
-# from geom.vect import Vect
 from geom.box import Box
 
 # ==================================================================================================
