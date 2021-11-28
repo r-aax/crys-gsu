@@ -16,16 +16,18 @@ class Face:
 
     # ----------------------------------------------------------------------------------------------
 
-    def __init__(self, data):
+    def __init__(self, variables, values):
         """
         Constructor face.
-        :param data: Face data.
+        :param variables: Variables list.
+        :param values:    Values list.
         """
 
         # Global identifier (in grid numeration).
         self.GloId = -1
 
-        self.Data = data
+        # Create face data as a dictionary.
+        self.Data = dict(zip(variables, values))
 
         # Links with nodes and edges.
         self.Nodes = []
@@ -36,123 +38,25 @@ class Face:
 
     # ----------------------------------------------------------------------------------------------
 
-    def get_t(self):
+    def __getitem__(self, item):
         """
-        Get temperature value.
-        :return: Temperature value.
+        Get data field.
+        :param item: Variable name.
+        :return:     Value.
         """
 
-        return self.Data[0]
+        return self.Data[item]
 
     # ----------------------------------------------------------------------------------------------
 
-    def set_t(self, t):
+    def __setitem__(self, key, value):
         """
-        Set temperature value to face data.
-        :param t: Temperature.
-        """
-
-        self.Data[0] = t
-
-    # ----------------------------------------------------------------------------------------------
-
-    def get_hw(self):
-        """
-        Get water height value.
-        :return: Water height.
+        Set data field.
+        :param key:   Key value.
+        :param value: Value.
         """
 
-        return self.Data[1]
-
-    # ----------------------------------------------------------------------------------------------
-
-    def set_hw(self, hw):
-        """
-        Set water height value to face data.
-        :param hw: Water height.
-        """
-
-        self.Data[1] = hw
-
-    # ----------------------------------------------------------------------------------------------
-
-    def get_hi(self):
-        """
-        Get ice height value.
-        :return: Ice height.
-        """
-
-        return self.Data[2]
-
-    # ----------------------------------------------------------------------------------------------
-
-    def set_hi(self, hi):
-        """
-        Set ice height value to face data.
-        :param hi: Ice height.
-        """
-
-        self.Data[2] = hi
-
-    # ----------------------------------------------------------------------------------------------
-
-    def get_beta(self):
-        """
-        Get Beta value.
-        :return: Beta value.
-        """
-
-        return self.Data[4]
-
-    # ----------------------------------------------------------------------------------------------
-
-    def set_beta(self, beta):
-        """
-        Set Beta value.
-        :param beta: Beta value.
-        """
-
-        self.Data[4] = beta
-
-    # ----------------------------------------------------------------------------------------------
-
-    def get_mimp2(self):
-        """
-        Get MImp2 value.
-        :return: MImp2 value.
-        """
-
-        return self.Data[5]
-
-    # ----------------------------------------------------------------------------------------------
-
-    def set_mimp2(self, mimp2):
-        """
-        Set MImp2 value.
-        :param mimp2: MImp2 value.
-        """
-
-        self.Data[5] = mimp2
-
-    # ----------------------------------------------------------------------------------------------
-
-    def get_vd2(self):
-        """
-        Get Vd2 value.
-        :return: Vd2 value.
-        """
-
-        return self.Data[6]
-
-    # ----------------------------------------------------------------------------------------------
-
-    def set_vd2(self, vd2):
-        """
-        Set Vd2 value.
-        :param vd2: Vd2 value.
-        """
-
-        self.Data[6] = vd2
+        self.Data[key] = value;
 
     # ----------------------------------------------------------------------------------------------
 
@@ -163,9 +67,9 @@ class Face:
         """
 
         # Random data for t, hw, hi.
-        a = [self.get_t() + random.random(),
-             self.get_hw() + random.random(),
-             self.get_hi() + random.random()]
+        a = [self['T'] + random.random(),
+             self['Hw'] + random.random(),
+             self['Hi'] + random.random()]
         i_list = [str(self.GloId)] + ['{0:.18e}'.format(ai) for ai in a]
         i_str = ' '.join(i_list)
 

@@ -86,11 +86,6 @@ class Grid:
         # Mode.
         self.Mode = ''
 
-        # Variables.
-        self.VariablesStr = ''
-        self.Variables = []
-        self.FaceVariablesCount = 0
-
         # Set empty sets of nodes, faces, zones.
         self.Nodes = []
         self.Edges = []
@@ -500,6 +495,10 @@ class Grid:
         :param is_merge_same_nodes: merge same nodes
         """
 
+        variables = []
+        face_variables = []
+        face_variables_count = 0
+
         # Clear all objects of the grid.
         self.clear()
 
@@ -522,9 +521,10 @@ class Grid:
                     self.Name = title_line.split('=')[1][1:-2]
                     if 'VARIABLES=' not in variables_line:
                         raise Exception('Wrong variables line ({0}).'.format(variables_line))
-                    self.VariablesStr = variables_line.split('=')[-1][:-1]
-                    self.Variables = self.VariablesStr.replace('"', '').replace(',', '').split()
-                    self.FaceVariablesCount = len(self.Variables) - 3
+                    variables_str = variables_line.split('=')[-1][:-1]
+                    variables = variables_str.replace('"', '').replace(',', '').split()
+                    face_variables = variables[3:]
+                    face_variables_count = len(face_variables)
 
                 elif 'ZONE T=' in line:
 
@@ -548,7 +548,7 @@ class Grid:
                     if 'ZONETYPE=FETRIANGLE' != zonetype_line[:-1]:
                         raise Exception('Wrong zonetype line ({0}).'.format(zonetype_line))
                     right_varlocation_line = 'VARLOCATION=' \
-                                             '([4-{0}]=CELLCENTERED)'.format(len(self.Variables))
+                                             '([4-{0}]=CELLCENTERED)'.format(len(variables))
                     if right_varlocation_line != varlocation_line[:-1]:
                         raise Exception('Wrong varlocation line ({0}). '
                                         'Right value is {1}'.format(varlocation_line,
@@ -570,11 +570,12 @@ class Grid:
 
                     # Read data for faces.
                     d = []
-                    for i in range(self.FaceVariablesCount):
+                    for i in range(face_variables_count):
                         line = f.readline()
                         d.append([float(xi) for xi in line.split()])
                     for i in range(faces_to_read):
-                        face = Face([d[j][i] for j in range(self.FaceVariablesCount)])
+                        face = Face(face_variables,
+                                    [d[j][i] for j in range(face_variables_count)])
                         self.add_face(face)
                         zone.add_face(face)
 
@@ -608,21 +609,6 @@ class Grid:
             # Relink.
             self.link_nodes_and_edges_to_zones()
 
-        # Correct grid if there is no MImp2, Vd2 fields present.
-        # crys#141
-        if not '"MImp2", "Vd2"' in self.VariablesStr:
-            self.VariablesStr = self.VariablesStr.replace('"Beta", ', '"Beta", "MImp2", "Vd2", ')
-            gi = self.Variables.index('Beta') + 1
-            li = gi - 3
-            # Сначала вставляем 'Vd2', а затем в ту же позицию 'MImp2'.
-            self.Variables.insert(gi, 'Vd2')
-            self.Variables.insert(gi, 'MImp2')
-            self.FaceVariablesCount = self.FaceVariablesCount + 2
-            for f in self.Faces:
-                # Ставим в нужную позицию два нуля.
-                f.Data.insert(li, 0.0)
-                f.Data.insert(li, 0.0)
-
     # ----------------------------------------------------------------------------------------------
 
     def get_variable_index(self, variable_name):
@@ -641,19 +627,10 @@ class Grid:
         Convert grid from STALL mode to CHCEK_POINT mode.
         """
 
-        if self.Mode != 'STALL':
-            raise Exception('convertion works only with STALL mode')
-
-        self.Mode = 'CHECK_POINT'
-        self.Variables = self.Variables[:-5]
-        self.VariablesStr = '"X", "Y", "Z", ' \
-                            '"T", "Hw", "Hi", "HTC", ' \
-                            '"Beta", "MImp2", "Vd2", ' \
-                            '"TauX", "TauY", "TauZ"'
-        self.FaceVariablesCount -= 5
-
+        # Delete fields Stall, StallD, StallVX, StallVY, StallVZ.
         for f in self.Faces:
-            f.Data = f.Data[:-5]
+            for d in ['Stall', 'StallD', 'StallVX', 'StallVY', 'StallVZ']:
+                f.Data.pop(d)
 
     # ----------------------------------------------------------------------------------------------
 
@@ -675,12 +652,14 @@ class Grid:
         :param filename: file name
         """
 
+        variables = ['X', 'Y', 'Z'] + list(self.Faces[0].Data.keys())
+
         with open(filename, 'w', newline='\n') as f:
 
             # Store head.
             f.write('# EXPORT_MODE={0}\n'.format(self.Mode))
             f.write('TITLE="{0}"\n'.format(self.Name))
-            f.write('VARIABLES={0}\n'.format(self.VariablesStr))
+            f.write('VARIABLES={0}\n'.format(', '.join(['"{0}"'.format(k) for k in variables])))
 
             # Additional structure for calculating local identifiers
             # of the nodes for connectivity lists storing.
@@ -695,14 +674,14 @@ class Grid:
                 f.write('ELEMENTS={0}\n'.format(len(zone.Faces)))
                 f.write('DATAPACKING=BLOCK\n')
                 f.write('ZONETYPE=FETRIANGLE\n')
-                f.write('VARLOCATION=([4-{0}]=CELLCENTERED)\n'.format(len(self.Variables)))
+                f.write('VARLOCATION=([4-{0}]=CELLCENTERED)\n'.format(len(variables)))
 
                 # Write first 3 data items (X, Y, Z coordinates).
                 for i in range(3):
                     f.write(zone.get_nodes_coord_slice_str(i) + ' \n')
 
                 # Write rest faces data items.
-                for i in range(self.FaceVariablesCount):
+                for i in range(len(variables) - 3):
                     f.write(zone.get_faces_data_slice_str(i) + ' \n')
 
                 # Write connectivity lists.
@@ -724,6 +703,8 @@ class Grid:
         :param sf: suffixes of files
         """
 
+        variables = ['GloId'] + list(self.Faces[0].Data.keys())
+
         zam = ZonesAdjacencyMatrix(self.Edges, self.Zones)
 
         # Local identifiers.
@@ -740,9 +721,7 @@ class Grid:
 
                 # Write head information.
                 file.write('TITLE="{0}"\n'.format(z.Name))
-                variables = self.Variables[:3] + ['GloId'] + self.Variables[3:]
-                variables = ['"{0}"'.format(x) for x in variables]
-                variables_str = ', '.join(variables)
+                variables_str = ', '.join(['"{0}"'.format(x) for x in variables])
                 file.write('VARIABLES={0}\n'.format(variables_str))
                 file.write('MPI={0}\n'.format(zi))
                 file.write('NODES={0}\n'.format(nc))
@@ -756,7 +735,7 @@ class Grid:
                     file.write(z.get_nodes_coord_slice_str(i) + ' \n')
                 file.write('FACES DATA:\n')
                 file.write(z.get_faces_global_ids_slice_str() + '\n')
-                for i in range(self.FaceVariablesCount):
+                for i in range(len(variables) - 1):
                     file.write(z.get_faces_data_slice_str(i) + ' \n')
 
                 # Write connectivity lists.
@@ -1183,61 +1162,24 @@ class Grid:
     def load_faces_calc_data(self, filename):
         """
         Load calc data from file and write it to grid.
-
-        Warning!
-        This function rewrite VARIABLES list of grid.
-
-        :param filename: name of file
+        :param filename: Name of file.
         """
 
-        with open(filename, 'r') as f:
+        # Read variables from the first line.
+        f = open(filename, 'r')
+        line = f.readline()
+        variables = line.split('=')[-1].replace('"', '').replace(',', '').split()[1:]
+        line = f.readline()
+
+        # Process all rest lines.
+        while line:
+            ss = line.split()
+            glo_id = int(ss[0])
+            values = [float(s) for s in ss[1:]]
+            face = self.Faces[glo_id]
+            face.Data = dict(zip(variables, values))
             line = f.readline()
 
-            while line:
-
-                if 'VARIABLES=' in line:
-
-                    # Set new variables.
-
-                    variables_xyz = '"X", "Y", "Z"'
-                    variables_oth = line.split('=')[-1][9:-1]
-
-                    # We know only basic modes.
-                    if variables_oth == '"T", "Hw", "Hi"':
-                        self.Mode = 'BASIC'
-                    elif variables_oth == '"T", "Hw", "Hi", "HTC", ' \
-                                          '"Beta", "MImp2", "Vd2", ' \
-                                          '"TauX", "TauY", "TauZ"':
-                        self.Mode = 'CHECK_POINT'
-                    elif variables_oth == '"T", "Hw", "Hi", "HTC", ' \
-                                          '"Beta", "MImp2", "Vd2", ' \
-                                          '"TauX", "TauY", "TauZ", ' \
-                                          '"Stall", "StallD", "StallVX", "StallVY", "StallVZ"':
-                        self.Mode = 'STALL'
-                    elif variables_oth == '"MassImpinged", "WaterFilmHeight", ' \
-                                          '"CurrentIceGrowth", ' \
-                                          '"TotalIceGrowth", "CurrentMassEvaporation", ' \
-                                          '"SurfaceTemperature", ' \
-                                          '"FilmVx", "FilmVy", "FilmVz", "FilmV", ' \
-                                          '"IcesolConvectiveFlux", ' \
-                                          '"EvapHeatFlux", "IceThickness", "HTC"':
-                        self.Mode = 'CIAM'
-                    else:
-                        raise Exception('unknown export mode')
-
-                    self.VariablesStr = variables_xyz + ', ' + variables_oth
-                    self.Variables = self.VariablesStr.replace('"', '').replace(',', '').split()
-                    self.FaceVariablesCount = len(self.Variables) - 3
-
-                else:
-                    ss = line.split()
-                    glo_id = int(ss[0])
-                    ss = ss[1:]
-                    face = self.Faces[glo_id]
-                    face.Data = [float(x) for x in ss]
-
-                line = f.readline()
-
-            f.close()
+        f.close()
 
 # ==================================================================================================

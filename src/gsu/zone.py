@@ -103,7 +103,7 @@ class Zone:
         :return:  Composed string.
         """
 
-        i_list = ['{0:.18e}'.format(face.Data[i]) for face in self.Faces]
+        i_list = ['{0:.18e}'.format(list(face.Data.values())[i]) for face in self.Faces]
         i_str = ' '.join(i_list)
 
         return i_str
