@@ -53,6 +53,63 @@ class TrianglesCloud:
         # List of children clouds.
         self.Subclouds = []
 
+        # Branch box.
+        self.Boxarr = None
+
+        # Get tree.
+        self.insert(self.Triangles)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def insert(self, data):
+        """
+
+        :param data: List of triangles.
+        :return: the left and right branches of the triangle list.
+        """
+
+        # Get box.
+        self.Boxarr = Box.from_triangles(data)
+
+        if len(data) >= 2:
+            # Get new branches.
+            branches = self.tree(data)
+            self.Subclouds.append(TrianglesCloud(branches[0]))
+            self.Subclouds.append(TrianglesCloud(branches[1]))
+        else:
+            return data
+
+    # ----------------------------------------------------------------------------------------------
+
+    def intersection_with_first_segment(self, root, s):
+        """
+        Find intersections with segment.
+        :param s: Segment.
+        :return: Triangle (if there is intersection) or None.
+        """
+        res = []
+        if root:
+
+            # Intersection with box.
+            if root.Boxarr.is_potential_intersect_with_segment(s):
+
+                # Is it branch?
+                if len(root.Triangles) > 1:
+
+                    # Branch.
+                    # Get branches.
+                    res = res + self.intersection_with_first_segment(root.Subclouds[0], s)
+                    res = res + self.intersection_with_first_segment(root.Subclouds[1], s)
+
+                else:
+
+                    # Tree leaf.
+                    # Intersection with segment.
+                    if root.Triangles[0].intersection_with_segment(s) != []:
+                        res.append(root.Triangles[0])
+
+        return res
+
     # ----------------------------------------------------------------------------------------------
 
     def is_list(self):
@@ -91,97 +148,32 @@ class TrianglesCloud:
 
     # ----------------------------------------------------------------------------------------------
 
-    def intersection_with_segment(self, s):
-        """
-        Find first intersection with segment.
-        :param s: Segment.
-        :return: Triangle (if there is intersection) or None.
+    def tree(self, mash):
         """
 
-        # предподгоотовка: основа дерева
-        self.Subclouds = [self.Triangles]
-
-        # основной процесс: проверяются ветви до тех пор, пока они есть
-        while self.Subclouds:
-
-            arr = self.Subclouds[0]
-
-            # формирование куба массива
-            self.boxarr = Box.from_triangles(arr)
-
-            # проверка вхождений вектора в куб массива
-            if self.boxarr.is_potential_intersect_with_segment(s):
-
-                # проверка на тип элемента дерва
-                if len(arr) > 1:
-
-                    # ветка
-                    # отращиваем новые ветви
-                    self.get_branches(arr)
-
-                else:
-
-                    # лист
-                    # проверка на пересечение вектора и листа
-                    if arr[0].intersection_with_segment(s) != []:
-                        return arr[0]
-
-            # уничтожение ветви
-            self.Subclouds.pop(0)
-
-    # ----------------------------------------------------------------------------------------------
-
-    def get_branches(self, arr):
-        """
-        Make new branches
-
-        :param arr: cloud coordinates of triangles
-        :return: append self.Subclouds
+        :param mash: List of triangles.
+        :return: A list of two lists of triangles.
         """
 
-        # получаем новые ветви
-        branches = self.tree(arr)
+        assert len(mash) > 1, 'internal error'
 
-        # формируем левую ветвь
-        if len(branches[0]) != 0:
-            self.Subclouds.append(branches[0])
-        else:
-            pass
+        # Edge points box.
+        xmax, ymax, zmax = self.Boxarr.MaxX, self.Boxarr.MaxY, self.Boxarr.MaxZ
+        xmin, ymin, zmin = self.Boxarr.MinX, self.Boxarr.MinY, self.Boxarr.MinZ
 
-        # формируем правую ветвь
-        if len(branches[1]) != 0:
-            self.Subclouds.append(branches[1])
-        else:
-            pass
-
-    # ----------------------------------------------------------------------------------------------
-
-    def tree(self, mass):
-        """
-
-        :param mass: список треугольников
-        :return: список из двух списков треугольников
-        """
-
-        assert len(mass) > 1, 'internal error'
-
-        # краевые точки box
-        xmax, ymax, zmax = self.boxarr.MaxX, self.boxarr.MaxY, self.boxarr.MaxZ
-        xmin, ymin, zmin = self.boxarr.MinX, self.boxarr.MinY, self.boxarr.MinZ
-
-        # проверка длинной стороны
+        # Checking the long side.
         lenxyz = [xmax - xmin, ymax - ymin, zmax - zmin]
         indxyz = lenxyz.index(np.amax(lenxyz))
 
-        # вычисление центра длинной стороны
+        # Calculating the center of the long side.
         sumxyz = [xmax + xmin, ymax + ymin, zmax + zmin]
         mid_surf = sumxyz[indxyz] / 2
 
-        # бинарное разбиение массива относительно центральной точки
-        arr_left = [t for t in mass if t.centroid()[indxyz] < mid_surf]
-        arr_right = [t for t in mass if t.centroid()[indxyz] >= mid_surf]
+        # Binary partitioning of an array relative to the center point.
+        arr_left = [t for t in mash if t.centroid()[indxyz] < mid_surf]
+        arr_right = [t for t in mash if t.centroid()[indxyz] >= mid_surf]
 
-        # проверка корректности разбиения
+        # Checking the correctness of the split.
         if len(arr_left) == 0:
             arr_left = [arr_right[0]]
             arr_right = arr_right[1:]
