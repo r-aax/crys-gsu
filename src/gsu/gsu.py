@@ -636,7 +636,8 @@ class Grid:
 
             # Store head.
             f.write('# crys-gsu\n')
-            f.write('TITLE="{0}"\n'.format(self.Name))
+            if self.Name != '':
+                f.write('TITLE="{0}"\n'.format(self.Name))
             f.write('VARIABLES={0}\n'.format(', '.join(['"{0}"'.format(k) for k in variables])))
 
             # Additional structure for calculating local identifiers

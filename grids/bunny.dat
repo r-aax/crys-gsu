@@ -1,5 +1,3 @@
-# EXPORT_MODE=CHECK_POINT
-TITLE="GRID"
 VARIABLES="X", "Y", "Z", "T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ"
 ZONE T="ZONE 1"
 NODES=2503
