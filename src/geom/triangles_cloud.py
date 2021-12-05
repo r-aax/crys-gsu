@@ -56,16 +56,15 @@ class TrianglesCloud:
         # Box.
         self.Box = Box.from_triangles(self.Triangles)
 
-        # Get tree.
-        self.insert(self.Triangles)
+        # Build subclouds tree.
+        self.build_subclouds_tree(self.Triangles)
 
     # ----------------------------------------------------------------------------------------------
 
-    def insert(self, data):
+    def build_subclouds_tree(self, data):
         """
-
+        Build subclouds tree.
         :param data: List of triangles.
-        :return: the left and right branches of the triangle list.
         """
 
         if len(data) >= 2:
