@@ -41,6 +41,11 @@ class TrianglesCloud:
 
     # ----------------------------------------------------------------------------------------------
 
+    # Maximum count of triangles in list.
+    MaxListTrianglesCount = 1
+
+    # ----------------------------------------------------------------------------------------------
+
     def __init__(self, triangles_list):
         """
         Constructor.
@@ -66,7 +71,7 @@ class TrianglesCloud:
         Build subclouds tree.
         """
 
-        if len(self.Triangles) >= 2:
+        if len(self.Triangles) > TrianglesCloud.MaxListTrianglesCount:
 
             # Separate triangles list and buld new subtrees.
             # self.Triangles must be cleaned up.
