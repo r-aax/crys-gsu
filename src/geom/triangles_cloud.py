@@ -57,23 +57,28 @@ class TrianglesCloud:
         self.Box = Box.from_triangles(self.Triangles)
 
         # Build subclouds tree.
-        self.build_subclouds_tree(self.Triangles)
+        self.build_subclouds_tree()
 
     # ----------------------------------------------------------------------------------------------
 
-    def build_subclouds_tree(self, data):
+    def build_subclouds_tree(self):
         """
         Build subclouds tree.
-        :param data: List of triangles.
         """
 
-        if len(data) >= 2:
-            # Get new branches.
-            branches = self.separate_triangles_list(data)
-            self.Subclouds.append(TrianglesCloud(branches[0]))
-            self.Subclouds.append(TrianglesCloud(branches[1]))
+        if len(self.Triangles) >= 2:
+
+            # Separate triangles list and buld new subtrees.
+            # self.Triangles must be cleaned up.
+            new_tri_lists = self.separate_triangles_list(self.Triangles)
+            self.Triangles = []
+            self.Subclouds = [TrianglesCloud(li) for li in new_tri_lists]
+
         else:
-            return data
+
+            # Do nothings.
+            # Triangles stay triangels.
+            pass
 
     # ----------------------------------------------------------------------------------------------
 
@@ -131,34 +136,29 @@ class TrianglesCloud:
 
     # ----------------------------------------------------------------------------------------------
 
-    def first_intersection_with_segment(self, root, s):
+    def first_intersection_with_segment(self, s):
         """
         Find intersections with segment.
         :param s: Segment.
-        :return: Triangle (if there is intersection) or None.
+        :return:  Triangle (if there is intersection) or None.
         """
-        res = []
-        if root:
 
-            # Intersection with box.
-            if root.Box.is_potential_intersect_with_segment(s):
+        # Cold check.
+        if not self.Box.is_potential_intersect_with_segment(s):
+            return None
 
-                # Is it branch?
-                if len(root.Triangles) > 1:
+        if self.is_list():
+            for t in self.Triangles:
+                if t.intersection_with_segment(s) != []:
+                    return t
+        else:
+            for sc in self.Subclouds:
+                res = sc.first_intersection_with_segment(s)
+                if res != None:
+                    return res
 
-                    # Branch.
-                    # Get branches.
-                    res = res + self.first_intersection_with_segment(root.Subclouds[0], s)
-                    res = res + self.first_intersection_with_segment(root.Subclouds[1], s)
-
-                else:
-
-                    # Tree leaf.
-                    # Intersection with segment.
-                    if root.Triangles[0].intersection_with_segment(s) != []:
-                        res.append(root.Triangles[0])
-
-        return res
+        # No intersection is found.
+        return None
 
 # ==================================================================================================
 
