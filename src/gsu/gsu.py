@@ -682,7 +682,9 @@ class Grid:
         :param sf: suffixes of files
         """
 
-        variables = ['GloId'] + list(self.Faces[0].Data.keys())
+        # variables = ['GloId'] + list(self.Faces[0].Data.keys())
+        variables = ['X', 'Y', 'Z',
+                     'T', 'Hw', 'Hi', 'HTC', 'Beta', 'MImp2', 'Vd2', 'TauX', 'TauY', 'TauZ']
 
         zam = ZonesAdjacencyMatrix(self.Edges, self.Zones)
 
