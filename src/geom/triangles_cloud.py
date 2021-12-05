@@ -53,8 +53,8 @@ class TrianglesCloud:
         # List of children clouds.
         self.Subclouds = []
 
-        # Branch box.
-        self.Boxarr = None
+        # Box.
+        self.Box = Box.from_triangles(self.Triangles)
 
         # Get tree.
         self.insert(self.Triangles)
@@ -67,9 +67,6 @@ class TrianglesCloud:
         :param data: List of triangles.
         :return: the left and right branches of the triangle list.
         """
-
-        # Get box.
-        self.Boxarr = Box.from_triangles(data)
 
         if len(data) >= 2:
             # Get new branches.
@@ -91,7 +88,7 @@ class TrianglesCloud:
         if root:
 
             # Intersection with box.
-            if root.Boxarr.is_potential_intersect_with_segment(s):
+            if root.Box.is_potential_intersect_with_segment(s):
 
                 # Is it branch?
                 if len(root.Triangles) > 1:
@@ -158,8 +155,8 @@ class TrianglesCloud:
         assert len(mash) > 1, 'internal error'
 
         # Edge points box.
-        xmax, ymax, zmax = self.Boxarr.MaxX, self.Boxarr.MaxY, self.Boxarr.MaxZ
-        xmin, ymin, zmin = self.Boxarr.MinX, self.Boxarr.MinY, self.Boxarr.MinZ
+        xmax, ymax, zmax = self.Box.MaxX, self.Box.MaxY, self.Box.MaxZ
+        xmin, ymin, zmin = self.Box.MinX, self.Box.MinY, self.Box.MinZ
 
         # Checking the long side.
         lenxyz = [xmax - xmin, ymax - ymin, zmax - zmin]

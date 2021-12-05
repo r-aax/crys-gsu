@@ -16,7 +16,6 @@ from geom.triangles_cloud import TrianglesCloud
 from geom.trajectory import Trajectory
 from geom.box import Box
 
-
 # ==================================================================================================
 
 
