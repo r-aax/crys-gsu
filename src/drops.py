@@ -163,7 +163,7 @@ class Space:
 
             # Everything is OK.
             # Check intersection.
-            tri = triangles_cloud.intersection_with_first_segment(triangles_cloud, Segment(lp, fp))
+            tri = triangles_cloud.first_intersection_with_segment(triangles_cloud, Segment(lp, fp))
             if not tri is None and tri != []:
                 return ('C', tri[0].BackRef, tr)
 
