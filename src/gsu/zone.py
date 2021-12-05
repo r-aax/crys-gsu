@@ -96,14 +96,14 @@ class Zone:
 
     # ----------------------------------------------------------------------------------------------
 
-    def get_faces_data_slice_str(self, i):
+    def get_faces_data_slice_str(self, e):
         """
         Get string composed from i-th elements of data of all faces.
-        :param i: Index of nodes data.
+        :param e: Data element.
         :return:  Composed string.
         """
 
-        i_list = ['{0:.18e}'.format(list(face.Data.values())[i]) for face in self.Faces]
+        i_list = ['{0:.18e}'.format(face[e]) for face in self.Faces]
         i_str = ' '.join(i_list)
 
         return i_str

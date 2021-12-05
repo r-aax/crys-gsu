@@ -45,7 +45,7 @@ class Face:
         :return:     Value.
         """
 
-        return self.Data[item]
+        return self.Data.get(item, 0.0)
 
     # ----------------------------------------------------------------------------------------------
 
@@ -56,7 +56,7 @@ class Face:
         :param value: Value.
         """
 
-        self.Data[key] = value;
+        self.Data[key] = value
 
     # ----------------------------------------------------------------------------------------------
 

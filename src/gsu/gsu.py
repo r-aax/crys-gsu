@@ -660,8 +660,8 @@ class Grid:
                     f.write(zone.get_nodes_coord_slice_str(i) + ' \n')
 
                 # Write rest faces data items.
-                for i in range(len(variables) - 3):
-                    f.write(zone.get_faces_data_slice_str(i) + ' \n')
+                for e in variables[3:]:
+                    f.write(zone.get_faces_data_slice_str(e) + ' \n')
 
                 # Write connectivity lists.
                 for i, node in enumerate(zone.Nodes):
@@ -677,13 +677,13 @@ class Grid:
         """
         Store grid for mpi program.
         As many processes count as zones count.
-        :param filename_base: base of filename
-        "param ts: timestamp string
-        :param sf: suffixes of files
+        :param filename_base: Base of filename.
+        :param ts:            Timestamp string.
+        :param sf:            Suffixes of files.
         """
 
-        # variables = ['GloId'] + list(self.Faces[0].Data.keys())
-        variables = ['X', 'Y', 'Z',
+        # Fixed set of variables for swim.
+        variables = ['X', 'Y', 'Z', 'GloId',
                      'T', 'Hw', 'Hi', 'HTC', 'Beta', 'MImp2', 'Vd2', 'TauX', 'TauY', 'TauZ']
 
         zam = ZonesAdjacencyMatrix(self.Edges, self.Zones)
@@ -716,8 +716,8 @@ class Grid:
                     file.write(z.get_nodes_coord_slice_str(i) + ' \n')
                 file.write('FACES DATA:\n')
                 file.write(z.get_faces_global_ids_slice_str() + '\n')
-                for i in range(len(variables) - 1):
-                    file.write(z.get_faces_data_slice_str(i) + ' \n')
+                for e in variables[4:]:
+                    file.write(z.get_faces_data_slice_str(e) + ' \n')
 
                 # Write connectivity lists.
                 for i, node in enumerate(z.Nodes):
