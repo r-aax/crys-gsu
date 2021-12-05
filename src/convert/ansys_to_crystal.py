@@ -13,7 +13,7 @@ import re
 import pathlib
 import gsu_converter
 from functools import reduce
-import gsu
+from gsu.gsu import Grid
 
 # --------------------------------------------------------------------------------------------------
 
@@ -455,7 +455,7 @@ def data_from_nodes_to_faces(filename, ofilename, is_reversed_normals):
     g.Export(ofilename)
 
     # Читаем сетку с помощью gsu и сохраняем обратно -> появятся нужные поля.
-    g2 = gsu.Grid()
+    g2 = Grid()
     g2.load(ofilename)
     g2.store(ofilename)
 

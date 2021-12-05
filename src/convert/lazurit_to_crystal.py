@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 import re
 from functools import reduce
 import itertools
-import gsu
+from gsu.gsu import Grid
 
 # --------------------------------------------------------------------------------------------------
 
@@ -208,7 +208,7 @@ if __name__ == '__main__':
         of.close()
 
     # Читаем сетку с помощью gsu и сохраняем обратно -> появятся нужные поля.
-    g2 = gsu.Grid()
+    g2 = Grid()
     g2.load(args.out_file)
     g2.store(args.out_file)
 

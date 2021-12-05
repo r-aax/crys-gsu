@@ -11,7 +11,7 @@ import re
 from functools import reduce
 import itertools
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-import gsu
+from gsu.gsu import Grid
 from geom.vect import Vect
 import numpy as np
 
@@ -64,17 +64,17 @@ if __name__ == '__main__':
     else:
         say('Файлы найдены.')
 
-    lgrid = gsu.Grid()
+    lgrid = Grid()
     lgrid.load(args.lazurit)
-    agrid = gsu.Grid()
+    agrid = Grid()
     agrid.load(args.ansys)
 
     #
-    adata = [(Vect.from_iterable(f.get_center()), f.get_beta()) for f in agrid.Faces]
+    adata = [(Vect.from_iterable(f.get_center()), f['Beta']) for f in agrid.Faces]
     for f in lgrid.Faces:
         c = Vect.from_iterable(f.get_center())
         a = np.array([(c - ac).mod2() for (ac, _) in adata])
-        f.set_beta(adata[a.argmin()][1])
+        f['Beta'] = adata[a.argmin()][1]
     #
 
     lgrid.store(args.out)
