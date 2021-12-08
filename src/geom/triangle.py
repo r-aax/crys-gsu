@@ -5,6 +5,7 @@ Triangle realization.
 import math
 import numpy as np
 from geom.vect import Vect
+from geom.segment import Segment
 
 # ==================================================================================================
 
@@ -182,6 +183,37 @@ class Triangle:
             return [p - pq * phi]
         else:
             return []
+
+    # ----------------------------------------------------------------------------------------------
+
+    def intersection_with_triangle(self, tri):
+        """
+        Triangles intersect if one triangle line intersects another triangle.
+        :param tri: Triangle.
+        :return: Triangle intersection.
+        """
+
+        # Get all points.
+        a, b, c = self.a(), self.b(), self.c()
+        ta, tb, tc = tri.a(), tri.b(), tri.c()
+
+        int11 = self.intersection_with_segment(Segment(ta, tb))
+        int12 = self.intersection_with_segment(Segment(tb, tc))
+        int13 = self.intersection_with_segment(Segment(tc, ta))
+
+        if int11 or int12 or int13:
+            return True
+
+        else:
+
+            int21 = tri.intersection_with_segment(Segment(a, b))
+            int22 = tri.intersection_with_segment(Segment(b, c))
+            int23 = tri.intersection_with_segment(Segment(c, a))
+
+            if int21 or int22 or int23:
+                return True
+            else:
+                return False
 
 # ==================================================================================================
 

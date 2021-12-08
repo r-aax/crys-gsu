@@ -3,6 +3,7 @@ Triangles cloud realization.
 """
 
 import numpy as np
+import itertools
 from geom.box import Box
 
 # ==================================================================================================
@@ -164,6 +165,32 @@ class TrianglesCloud:
 
         # No intersection is found.
         return None
+
+    # ----------------------------------------------------------------------------------------------
+
+    def intersection_with_triangles_cloud(self, tc):
+        """
+        Find intersections with another triangle cloud.
+        :param tc: triangle cloud
+        :return: [] or list of triangle pairs - [t1, t2]
+        """
+
+        # Cold check.
+        if not self.Box.is_potential_intersect_with_box(tc.Box):
+            return []
+
+        if self.Subclouds != []:
+            return list(itertools.chain(*[a.intersection_with_triangles_cloud(tc) for a in self.Subclouds]))
+
+        elif tc.Subclouds != []:
+            return list(itertools.chain(*[self.intersection_with_triangles_cloud(b) for b in tc.Subclouds]))
+
+        else:
+            return [[t1, t2]
+                   for t1 in self.Triangles
+                   for t2 in tc.Triangles
+                   if t1.intersection_with_triangle(t2) != []]
+
 
 # ==================================================================================================
 

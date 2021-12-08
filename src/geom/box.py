@@ -113,6 +113,28 @@ class Box:
             # Maybe there is some sense to check intersection in all rest cases.
             return True
 
+    # ----------------------------------------------------------------------------------------------
+
+    def is_potential_intersect_with_box(self, other_box):
+        """
+        Intersection of two boxes.
+        :param other_box: The second box.
+        :return: Intersection of boxes.
+        """
+
+        # Check no intersection along coordinates.
+        is_no_x = (other_box.MinX > self.MaxX) or (other_box.MaxX < self.MinX)
+        is_no_y = (other_box.MinY > self.MaxY) or (other_box.MaxY < self.MinY)
+        is_no_z = (other_box.MinZ > self.MaxZ) or (other_box.MaxZ < self.MinZ)
+
+        if is_no_x or is_no_y or is_no_z:
+            # There is definitely no intersection.
+            return False
+        else:
+            # Maybe there is intersection, but maybe not.
+            # Maybe there is some sense to check intersection in all rest cases.
+            return True
+
 # ==================================================================================================
 
 
