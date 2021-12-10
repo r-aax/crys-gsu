@@ -186,23 +186,37 @@ class Triangle:
         else:
             return []
 
+    # ----------------------------------------------------------------------------------------------
+
+    def point_in_triangle(self, point):
+        """
+        Point in triangle or not.
+        :param point: Vect object
+        :return: [Vect object]
+        """
+
+        # Get all points.
+        a, b, c = self.a(), self.b(), self.c()
+
+        # А point in a triangle if the sum of the formed areas is equal to the area of the original triangle.
+        full_area = round(self.area(), 10)
+        ar = round(Triangle(a, b, point).area() + Triangle(a, point, c).area() + Triangle(point, b, c).area(), 10)
+        if full_area == ar:
+            return [point]
+        return []
 
     # ----------------------------------------------------------------------------------------------
 
-    def intersection_with_triangle(self, tri):
+    def in_one_plane(self, tri):
         """
-        Triangles intersect if one triangle line intersects another triangle.
-        :param tri: Triangle.
-        :return: Triangle intersection.
+        If all points of triangle 2 with triangle 1 are in the same plane, then the triangles lie in the same plane.
+        :param tri: triangle 2
+        :return: True or False
         """
 
         # Get all points.
         a, b, c = self.a(), self.b(), self.c()
         ta, tb, tc = tri.a(), tri.b(), tri.c()
-
-        # если это один и тот же объект
-        if self == tri:
-            return []
 
         # если треугольники в одной плоскости
         A = np.array([[ta.X - a.X, ta.Y - a.Y, ta.Z - a.Z],
@@ -214,46 +228,48 @@ class Triangle:
         C = np.array([[tc.X - a.X, tc.Y - a.Y, tc.Z - a.Z],
                       [b.X - a.X, b.Y - a.Y, b.Z - a.Z],
                       [c.X - a.X, c.Y - a.Y, c.Z - a.Z]])
+
         A = np.linalg.det(A)
         B = np.linalg.det(B)
         C = np.linalg.det(C)
-        if A + B + C == 0:
+
+        return A + B + C == 0
+
+    # ----------------------------------------------------------------------------------------------
+
+    def intersection_with_triangle(self, tri):
+        """
+        Triangles intersect if one triangle line intersects another triangle.
+        :param tri: Triangle.
+        :return: Triangle intersection.
+        """
+
+        # если это один и тот же объект
+        if self == tri:
+            return []
+
+        # Get all points.
+        a, b, c = self.a(), self.b(), self.c()
+        ta, tb, tc = tri.a(), tri.b(), tri.c()
+
+        # если треугольники в одной плоскости
+        if self.in_one_plane(tri):
+
+            pit = self.point_in_triangle
+            pit2 = tri.point_in_triangle
+
             # треугольники совпадают
             if (a == ta) and (b == tb) and (c == tc):
                 return [a, b, c]
-            # треугольники вложенные
-            full_area1 = round(self.area(), 10)
-            ar11 = round(Triangle(a, b, ta).area() + Triangle(a, ta, c).area() + Triangle(ta, b, c).area(), 10)
-            ar12 = round(Triangle(a, b, tb).area() + Triangle(a, tb, c).area() + Triangle(tb, b, c).area(), 10)
-            ar13 = round(Triangle(a, b, tc).area() + Triangle(a, tc, c).area() + Triangle(tc, b, c).area(), 10)
-            if full_area1 == ar11 and full_area1 == ar12 and full_area1 == ar13:
-                return [ta, tb, tc]
-            full_area2 = round(tri.area(), 10)
-            ar21 = round(Triangle(ta, tb, a).area() + Triangle(ta, a, tc).area() + Triangle(a, tb, tc).area(), 10)
-            ar22 = round(Triangle(ta, tb, b).area() + Triangle(ta, b, tc).area() + Triangle(b, tb, tc).area(), 10)
-            ar23 = round(Triangle(ta, tb, c).area() + Triangle(ta, c, tc).area() + Triangle(c, tb, tc).area(), 10)
-            if full_area2 == ar21 and full_area2 == ar22 and full_area2 == ar23:
-                return [a, b, c]
+
             # прочие случаи
-            if full_area1 == ar11 or full_area1 == ar12 or full_area1 == ar13:
-                res1 = []
-                if full_area1 == ar11:
-                    res1.append(ta)
-                if full_area1 == ar12:
-                    res1.append(tb)
-                if full_area1 == ar13:
-                    res1.append(tc)
-                return res1
-            if full_area2 == ar21 or full_area2 == ar22 or full_area2 == ar23:
-                res2 = []
-                if full_area2 == ar21:
-                    res2.append(a)
-                if full_area2 == ar22:
-                    res2.append(b)
-                if full_area2 == ar23:
-                    res2.append(c)
-                return res2
-            return []
+            res = pit(ta) + pit(tb) + pit(tc) + pit2(a) + pit2(b) + pit2(c)
+            if len(res) == 2:
+                if res[0] == res[1]:
+                    return [res[0]]
+            elif len(res) == 4:
+                return res[:2]
+            return res
 
         # если треугольники в разных плоскостях (могут быть параллельными)
         int11 = self.intersection_with_segment(Segment(ta, tb))
@@ -282,16 +298,6 @@ class Triangle:
 
 
 if __name__ == '__main__':
-
-    # tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0)) # треугольник 1
-    # tri2 = Triangle(Vect(3, 3, -1), Vect(7, 3, -1), Vect(5, 12, 1)) # треугольник 2 пересекает по середине треугольник 1
-    # tri3 = Triangle(Vect(5, 5, 0), Vect(0, 5, 1), Vect(10, 5, 1)) # треугольник 3 пересекает треугольник 1 вершиной
-    # tri4 = Triangle(Vect(0, 2, 0), Vect(10, 2, 0), Vect(5, 1, 1)) # треугольник 4 пересекает треугольник 1 ребром
-    # tri5 = Triangle(Vect(1, 1, 0), Vect(9, 1, 0), Vect(5, 11, 0)) # в одной плоскости с №1
-    #
-    # res = tri1.intersection_with_triangle(tri5)
-    # if res:
-    #     print(res)
 
     # тест 1 - треугольники в одной плоскости, разные объекты
     print()
@@ -424,7 +430,7 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, -10, 0))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        print(res[0], res[1])
 
     # тест 16 - треугольники в разных плоскостях, одна общая вершина
     print()
@@ -458,6 +464,24 @@ if __name__ == '__main__':
     print('тест 19 - треугольники в разных плоскостях, параллельны')
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(0, 0, 1), Vect(10, 0, 1), Vect(5, 10, 1))
+    res = tri1.intersection_with_triangle(tri2)
+    if res:
+        print(res)
+
+    # тест 20 - треугольники в одной плоскости, одина вержина у обоих
+    print()
+    print('тест 20 - треугольники в одной плоскости, одина вержина у обоих')
+    tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
+    tri2 = Triangle(Vect(5, 1, 0), Vect(0, 11, 0), Vect(10, 11, 0))
+    res = tri1.intersection_with_triangle(tri2)
+    if res:
+        print(res[0], res[1])
+
+    # тест 21 - треугольники в одной плоскости, звезда Давида
+    print()
+    print('тест 21 - треугольники в одной плоскости, звезда Давида')
+    tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
+    tri2 = Triangle(Vect(0, 7, 0), Vect(10, 7, 0), Vect(5, -3, 0))
     res = tri1.intersection_with_triangle(tri2)
     if res:
         print(res)
