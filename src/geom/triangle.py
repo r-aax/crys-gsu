@@ -272,27 +272,21 @@ class Triangle:
             return res
 
         # если треугольники в разных плоскостях (могут быть параллельными)
-        int11 = self.intersection_with_segment(Segment(ta, tb))
-        int12 = self.intersection_with_segment(Segment(tb, tc))
-        int13 = self.intersection_with_segment(Segment(tc, ta))
-        if int11 or int12 or int13:
-            res = int11 + int12 + int13
-            if len(res) == 2:
-                if res[0] == res[1]:
-                    return [res[0]]
-            return res
         else:
+
+            int11 = self.intersection_with_segment(Segment(ta, tb))
+            int12 = self.intersection_with_segment(Segment(tb, tc))
+            int13 = self.intersection_with_segment(Segment(tc, ta))
             int21 = tri.intersection_with_segment(Segment(a, b))
             int22 = tri.intersection_with_segment(Segment(b, c))
             int23 = tri.intersection_with_segment(Segment(c, a))
-            if int21 or int22 or int23:
-                res = int21 + int22 + int23
-                if len(res) == 2:
-                    if res[0] == res[1]:
-                        return [res[0]]
-                return res
-            else:
-                return []
+            res = int11 + int12 + int13 + int21 + int22 + int23
+            if len(res) == 2:
+                if res[0] == res[1]:
+                    return [res[0]]
+            elif len(res) == 4:
+                return res[:2]
+            return res
 
 # ==================================================================================================
 
@@ -349,14 +343,6 @@ if __name__ == '__main__':
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(15, 0, 0), Vect(20, 0, 0), Vect(15, 10, 0))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        print(res)
-
-    # тест 7 - треугольники в разных плоскостях, один объект
-    print()
-    print('тест 7 - треугольники в разных плоскостях, один объект')
-    tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
-    res = tri1.intersection_with_triangle(tri1)
     if res:
         print(res)
 
@@ -465,12 +451,12 @@ if __name__ == '__main__':
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(0, 0, 1), Vect(10, 0, 1), Vect(5, 10, 1))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        print(res)
+    # if res:
+    print(res)
 
-    # тест 20 - треугольники в одной плоскости, одина вержина у обоих
+    # тест 20 - треугольники в одной плоскости, одина вершина у обоих
     print()
-    print('тест 20 - треугольники в одной плоскости, одина вержина у обоих')
+    print('тест 20 - треугольники в одной плоскости, одина вершина у обоих')
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(5, 1, 0), Vect(0, 11, 0), Vect(10, 11, 0))
     res = tri1.intersection_with_triangle(tri2)
