@@ -205,6 +205,17 @@ class Vect:
 
     # ----------------------------------------------------------------------------------------------
 
+    def __eq__(self, other):
+        """
+        Compares coordinate values.
+        :param other: Vector.
+        :return: Result (True or False)
+        """
+
+        return self.is_near(other, 1.0e-10)
+
+    # ----------------------------------------------------------------------------------------------
+
     @staticmethod
     def dot_product(a, b):
         """
