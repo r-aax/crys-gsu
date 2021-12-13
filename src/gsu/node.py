@@ -17,6 +17,7 @@ class Node:
     def __init__(self, p: Vect):
         """
         Constructor node.
+
         :param p: Node point (Vector).
         """
 
@@ -37,6 +38,7 @@ class Node:
     def is_near(self, n):
         """
         Check if one node is near to another.
+
         :param n: Another node
         :return:  True - if nodes are near to each other,
                   False - otherwise.

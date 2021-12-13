@@ -14,6 +14,7 @@ import numpy as np
 def flatten(ar):
     """
     Flatten array.
+
     :param ar: array
     :return: flat array
     """
@@ -34,6 +35,7 @@ def flatten(ar):
 def has_filename_timestamp(s):
     """
     Check if filename has timestamp.
+
     :param s: name of file without extension
     :return: True - if filename has timestamp, False - otherwise
     """
@@ -46,6 +48,7 @@ def has_filename_timestamp(s):
 def get_filename_and_timestamp_pair(s):
     """
     Get tuple of base filename and timestamp.
+
     :param s: filename string
     :return: tuple
     """
@@ -63,10 +66,12 @@ def get_filename_and_timestamp_pair(s):
 def dummy_split_filename(s):
     """
     Dummy function of splitting filename into 4 pieces:
+
         - stem
         - mpi id (if it is digit) or None
         - timestamp (if it is digit) or None
         - extension
+
     :param s: filename
     :return: tuple if four elements (str, int|None, int|None, str)
     """
@@ -91,6 +96,7 @@ def dummy_split_filename(s):
 def is_filename_correct_crys_cry_file(fn, stem):
     """
     Check filename for correct crys cry.
+
     :param fn: filename
     :param stem: stem for check
     :return: True - if file is correct crys cry filename, False - otherwise
@@ -106,6 +112,7 @@ def is_filename_correct_crys_cry_file(fn, stem):
 def is_filename_correct_crys_txt_file(fn, stem):
     """
     Check filename for correct crys txt.
+
     :param fn: filename
     :param stem: stem for check
     :return: True - if file is correct crys txt filename, False - otherwise
@@ -121,6 +128,7 @@ def is_filename_correct_crys_txt_file(fn, stem):
 def group_txt_files_by_timestamps(fs):
     """
     Group list of files [f1, f2, ..., fn] into set { timestamp : list of files }.
+
     :param fs: files
     :return: set of timestamp : list of files.
     """

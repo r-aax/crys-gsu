@@ -1,5 +1,5 @@
 """
-Merge *.txt files with original grid.
+Merge \*.txt files with original grid.
 """
 
 import sys
@@ -18,6 +18,7 @@ def merge(grid_file, src_dir, dst_dir):
     """
     Merge txt files with original grid.
     Merge files separately for each timestamp and produce out _r_ file for crys-remesh tool.
+
     :param grid_file: file with original grid
     :param src_dir: directory with sources
     :param dst_dir: destination directory

@@ -28,6 +28,7 @@ class Triangle:
     def __init__(self, a, b, c):
         """
         Constructor.
+
         :param a: A point.
         :param b: B point.
         :param c: C point.
@@ -40,6 +41,7 @@ class Triangle:
     def __repr__(self):
         """
         String representation.
+
         :return: String.
         """
 
@@ -50,6 +52,7 @@ class Triangle:
     def a(self):
         """
         A point.
+
         :return: A point.
         """
 
@@ -60,6 +63,7 @@ class Triangle:
     def b(self):
         """
         B point.
+
         :return: B point.
         """
 
@@ -70,6 +74,7 @@ class Triangle:
     def c(self):
         """
         C point.
+
         :return: C point.
         """
 
@@ -80,6 +85,7 @@ class Triangle:
     def center(self):
         """
         Center point.
+
         :return: Center.
         """
 
@@ -90,6 +96,7 @@ class Triangle:
     def ab(self):
         """
         AB segment.
+
         :return: AB segment.
         """
 
@@ -100,6 +107,7 @@ class Triangle:
     def bc(self):
         """
         BC segment.
+
         :return: BC segment.
         """
 
@@ -110,6 +118,7 @@ class Triangle:
     def ac(self):
         """
         AC segment.
+
         :return: AC segment.
         """
 
@@ -120,9 +129,11 @@ class Triangle:
     def is_my_vertex(self, p):
         """
         Check if point is vertex.
+
         :param p: Point.
-        :return: True - if point is my vertex,
-                 False - otherwise.
+        :return:
+            True - if point is my vertex,
+            False - otherwise.
         """
 
         return self.a().is_near(p, eps) or self.b().is_near(p, eps) or self.c().is_near(p, eps)
@@ -132,9 +143,11 @@ class Triangle:
     def is_my_segment(self, s):
         """
         Check if segment is edge of this triangle.
+
         :param s: Segment.
-        :return: True - if segment is an edge of triangle,
-                 False - otherwise.
+        :return:
+            True - if segment is an edge of triangle,
+            False - otherwise.
         """
 
         return s.is_eq(self.ab()) or s.is_eq(self.bc()) or s.is_eq(self.ac())
@@ -144,9 +157,11 @@ class Triangle:
     def is_eq(self, t):
         """
         Check if eq to another triangle.
+
         :param t: Triangle.
-        :return: True - if near to another triangle,
-                 False - otherwise.
+        :return:
+            True - if near to another triangle,
+            False - otherwise.
         """
 
         a, b, c, ab, bc, ac = self.a(), self.b(), self.c(), self.ab(), self.bc(), self.ac()
@@ -161,6 +176,7 @@ class Triangle:
     def normal(self):
         """
         Normal.
+
         :return: Normal.
         """
 
@@ -173,9 +189,11 @@ class Triangle:
     def is_parallel_to_triangle(self, t):
         """
         Check if parallel to triangle.
+
         :param t: Triangle.
-        :return: True - if parallel to triangle,
-                 False - otherwise.
+        :return:
+            True - if parallel to triangle,
+            False - otherwise.
         """
 
         n1 = self.normal()
@@ -188,6 +206,7 @@ class Triangle:
     def box_corner_ldb(self):
         """
         Box corner Left-Down-Back.
+
         :return: Box corner.
         """
 
@@ -200,6 +219,7 @@ class Triangle:
     def box_corner_ruf(self):
         """
         Box corner Right-Up-Front.
+
         :return: Box corner.
         """
 
@@ -212,6 +232,7 @@ class Triangle:
     def box_corners(self):
         """
         Box corners points.
+
         :return: Corner points.
         """
 
@@ -222,6 +243,7 @@ class Triangle:
     def move(self, v):
         """
         Move with vector.
+
         :param v: Vector.
         """
 
@@ -233,9 +255,11 @@ class Triangle:
     def is_no_intersection_with_triangle_by_boxes(self, t):
         """
         Check if there is no intersection with another triangle if we use boxes.
+
         :param t: Triangle.
-        :return: True - if self and t boxes does not intersect,
-                 False - if self and t boxes intersect.
+        :return:
+            True - if self and t boxes does not intersect,
+            False - if self and t boxes intersect.
         """
 
         (left1, right1) = self.box_corners()
@@ -250,9 +274,11 @@ class Triangle:
     def has_common_edge_with_triangle(self, t):
         """
         Check if has common edge with another trianngle.
+
         :param t: Triangle.
-        :return: True - if has common edge with another triangle,
-                 False - otherwise.
+        :return:
+            True - if has common edge with another triangle,
+            False - otherwise.
         """
 
         ab, bc, ac = self.ab(), self.bc(), self.ac()
@@ -267,6 +293,7 @@ class Triangle:
     def area(self):
         """
         Area.
+
         :return: Area.
         """
 
@@ -280,9 +307,11 @@ class Triangle:
     def is_point_inside(self, p):
         """
         Triangle has point inside it.
+
         :param p: Point.
-        :return: True - if point is inside triangle,
-                 False - otherwise.
+        :return:
+            True - if point is inside triangle,
+            False - otherwise.
         """
 
         a, b, c = self.a(), self.b(), self.c()
@@ -299,6 +328,7 @@ class Triangle:
     def intersect_with_segment(self, s):
         """
         Intersection with segment.
+
         :param s: Segment.
         """
 
@@ -358,6 +388,7 @@ class Face:
     def __init__(self, t):
         """
         Constructor.
+
         :param t: Triangle.
         """
 
@@ -371,6 +402,7 @@ class Face:
     def add_point_to_sp(self, p):
         """
         Add point to SP.
+
         :param p: Point.
         """
 
@@ -428,6 +460,7 @@ class Face:
     def edge_neighbours(self, s):
         """
         Neighbours over the segment.
+
         :param s: Segment.
         :return: List of neighbours.
         """
@@ -456,6 +489,7 @@ class Mesh:
     def faces_count(self):
         """
         Get faces count.
+
         :return: Faces count.
         """
 
@@ -466,6 +500,7 @@ class Mesh:
     def nodes_count(self):
         """
         Get nodes count.
+
         :return: Nodes count.
         """
 
@@ -476,6 +511,7 @@ class Mesh:
     def box_corner_ldb(self):
         """
         Box corner Left-Down-Back.
+
         :return: Box corner.
         """
 
@@ -490,6 +526,7 @@ class Mesh:
     def box_corner_ruf(self):
         """
         Box corner Right-Up-Front.
+
         :return: Box corner.
         """
 
@@ -504,6 +541,7 @@ class Mesh:
     def box_corners(self):
         """
         Box corners points.
+
         :return: Corner points.
         """
 
@@ -514,6 +552,7 @@ class Mesh:
     def add_from_gsu_grid(self, g):
         """
         Import from GSU grid.
+
         :param g: Grid.
         """
 
@@ -528,6 +567,7 @@ class Mesh:
     def add_vertical_square(self, x1, y1, x2, y2):
         """
         Add vertical square, divided by two triangles.
+
         :param x1: First X.
         :param y1: First Y.
         :param x2: Second X.
@@ -546,6 +586,7 @@ class Mesh:
     def move(self, v):
         """
         Move with vector.
+
         :param v: Vector.
         """
 
@@ -557,6 +598,7 @@ class Mesh:
     def filter(self, fun):
         """
         Filter faces.
+
         :param fun: Function.
         """
 
@@ -567,6 +609,7 @@ class Mesh:
     def load(self, filename):
         """
         Load mesh.
+
         :param filename: Name of file.
         """
 
@@ -604,6 +647,7 @@ class Mesh:
     def store(self, filename):
         """
         Store mesh.
+
         :param filename: Name of file.
         """
 
@@ -732,6 +776,7 @@ class Mesh:
     def select_neighbour(self, f, l):
         """
         Select from list.
+
         :param f: Face.
         :param l: List.
         """

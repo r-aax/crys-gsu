@@ -14,17 +14,19 @@ class TrianglesCloud:
     Triangles cloud realization.
     Triangles cloud is container for triangles objects.
     It can contain triangles in self.Triangles field or subclouds in self.Subclouds list
-      (BUT NOT IN BOTH).
+    (BUT NOT IN BOTH).
     Each subcloud in self.Subclouds list is an instance of class TrianglesCloud.
 
-    Example 1:
+    Example 1::
+
       One solid cloud of 4 triangles and no subclouds.
 
       TrianglesCloud:
         Triangles = [t1, t2, t3, t4]
         Subclouds = []
 
-    Example 2:
+    Example 2::
+
       Cloud is separated into binary tree of subclouds.
 
                                           TrianglesCloud([])
@@ -50,6 +52,7 @@ class TrianglesCloud:
     def __init__(self, triangles_list):
         """
         Constructor.
+
         :param triangles_list: List of triangles.
         """
 
@@ -91,6 +94,7 @@ class TrianglesCloud:
     def separate_triangles_list(self, mash):
         """
         Separete triangles list into pair of lists.
+
         :param mash: List of triangles.
         :return: A list of two lists of triangles.
         """
@@ -129,6 +133,7 @@ class TrianglesCloud:
     def is_list(self):
         """
         Check cloud is list.
+
         :return: True - if cloud is list, False - otherwise.
         """
 
@@ -145,6 +150,7 @@ class TrianglesCloud:
     def first_intersection_with_segment(self, s):
         """
         Find intersections with segment.
+
         :param s: Segment.
         :return:  Triangle (if there is intersection) or None.
         """
@@ -171,6 +177,7 @@ class TrianglesCloud:
     def intersection_with_triangles_cloud(self, tc):
         """
         Find intersections with another triangle cloud.
+
         :param tc: triangle cloud
         :return: [] or list of triangle pairs - [t1, t2]
         """

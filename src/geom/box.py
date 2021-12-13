@@ -19,6 +19,7 @@ class Box:
     def __init__(self, ps):
         """
         Constructor from points.
+
         :param ps: Points.
         """
 
@@ -40,6 +41,7 @@ class Box:
     def from_points(ps):
         """
         Constructor from points list.
+
         :param ps: Points list.
         :return:   Box.
         """
@@ -52,6 +54,7 @@ class Box:
     def from_triangles(ts):
         """
         Constructor from triangles list.
+
         :param ts: Triangles list.
         :return:   Box.
         """
@@ -67,6 +70,7 @@ class Box:
     def __str__(self):
         """
         String representation.
+
         :return: String.
         """
 
@@ -79,6 +83,7 @@ class Box:
     def is_point_inside(self, p):
         """
         Check if point inside box.
+
         :param p: Point.
         :return:  True - if point is inside box, False - otherwise.
         """
@@ -92,9 +97,11 @@ class Box:
     def is_potential_intersect_with_segment(self, s):
         """
         Check if there is intersection with segment.
+
         :param s: Segment.
-        :return:  True - if there is potential intersection with segment,
-                  False - there is not intersection for sure.
+        :return:
+            True - if there is potential intersection with segment,
+            False - there is not intersection for sure.
         """
 
         # Get segment box.
@@ -118,6 +125,7 @@ class Box:
     def is_potential_intersect_with_box(self, other_box):
         """
         Intersection of two boxes.
+
         :param other_box: The second box.
         :return: Intersection of boxes.
         """

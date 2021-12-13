@@ -15,6 +15,7 @@ class Zone:
     def __init__(self, name):
         """
         Constructor.
+
         :param name: Name of zone.
         """
 
@@ -35,6 +36,7 @@ class Zone:
     def nodes_count(self):
         """
         Get count of nodes.
+
         :return: Nodes count.
         """
 
@@ -45,6 +47,7 @@ class Zone:
     def edges_count(self):
         """
         Get count of edges.
+
         :return: Edges count.
         """
 
@@ -55,6 +58,7 @@ class Zone:
     def outer_edges_count(self):
         """
         Get count of outer edges.
+
         :return: Outer edges count.
         """
 
@@ -65,6 +69,7 @@ class Zone:
     def faces_count(self):
         """
         Get count of faces.
+
         :return: Faces count.
         """
 
@@ -75,6 +80,7 @@ class Zone:
     def zone_quality_factor(self):
         """
         Zone quality factor.
+
         :return: Zone quality factor.
         """
 
@@ -85,6 +91,7 @@ class Zone:
     def get_nodes_coord_slice_str(self, i):
         """
         Get string composed from i-th coord of all nodes.
+
         :param i: Index of nodes coord.
         :return:  Composed string.
         """
@@ -99,6 +106,7 @@ class Zone:
     def get_faces_data_slice_str(self, e):
         """
         Get string composed from i-th elements of data of all faces.
+
         :param e: Data element.
         :return:  Composed string.
         """
@@ -113,6 +121,7 @@ class Zone:
     def get_faces_global_ids_slice_str(self):
         """
         Get string composed from global identifiers of all faces.
+
         :return: Composed string.
         """
 
@@ -126,6 +135,7 @@ class Zone:
     def add_node(self, n):
         """
         Add node to zone.
+
         :param n: Node.
         :return:  Added node.
         """
@@ -140,6 +150,7 @@ class Zone:
     def add_edge(self, e):
         """
         Add edge to zone.
+
         :param e: Edge.
         :return:  Added edge.
         """
@@ -154,6 +165,7 @@ class Zone:
     def add_face(self, f):
         """
         Add face to zone (with link).
+
         :param f: Face.
         :return:  Added face.
         """

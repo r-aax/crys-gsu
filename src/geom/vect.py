@@ -17,6 +17,7 @@ class Vect:
     def __init__(self, x=0.0, y=0.0, z=0.0):
         """
         Constructor.
+
         :param x: Coord X.
         :param y: Coord Y.
         :param z: Coord Z.
@@ -30,6 +31,7 @@ class Vect:
     def from_iterable(t):
         """
         Constructor from iterable object.
+
         :param t: Tuple.
         :return:  Vector.
         """
@@ -42,6 +44,7 @@ class Vect:
     def X(self):
         """
         Coord X.
+
         :return: Coord X.
         """
         return self.Coords[0]
@@ -52,6 +55,7 @@ class Vect:
     def X(self, value):
         """
         Set X coord.
+
         :param value: Value
         """
         self.Coords[0] = value
@@ -62,6 +66,7 @@ class Vect:
     def Y(self):
         """
         Coord Y.
+
         :return: Coord Y.
         """
         return self.Coords[1]
@@ -72,6 +77,7 @@ class Vect:
     def Y(self, value):
         """
         Set Y coord.
+
         :param value: Value
         """
         self.Coords[1] = value
@@ -82,6 +88,7 @@ class Vect:
     def Z(self):
         """
         Coord Z.
+
         :return: Coord Z.
         """
         return self.Coords[2]
@@ -92,6 +99,7 @@ class Vect:
     def Z(self, value):
         """
         Set Z coord.
+
         :param value: Value
         """
         self.Coords[2] = value
@@ -101,6 +109,7 @@ class Vect:
     def __getitem__(self, item):
         """
         Get coordinate.
+
         :param item: Index.
         :return:     Coordinate.
         """
@@ -112,6 +121,7 @@ class Vect:
     def __setitem__(self, key, value):
         """
         Set coordinate.
+
         :param key:   Index.
         :param value: Value.
         """
@@ -123,6 +133,7 @@ class Vect:
     def __str__(self):
         """
         String representation.
+
         :return: String.
         """
 
@@ -133,6 +144,7 @@ class Vect:
     def coords_tuple(self):
         """
         Get coordinates as a tuple.
+
         :return: Coordinates as a tuple.
         """
 
@@ -143,6 +155,7 @@ class Vect:
     def coords_list(self):
         """
         Get coordinates as a list.
+
         :return: Coordinates as a list.
         """
 
@@ -153,6 +166,7 @@ class Vect:
     def rounded_coords_tuple(self, digits):
         """
         Get tuple of rounded coordinates.
+
         :param digits: Digits number.
         :return:       Tuple of rounded coordinates.
         """
@@ -164,6 +178,7 @@ class Vect:
     def __add__(self, v):
         """
         Addition of two vectors.
+
         :param v: Vector.
         :return:  Result.
         """
@@ -175,6 +190,7 @@ class Vect:
     def __sub__(self, v):
         """
         Subtraction of two vectors.
+
         :param v: Vector.
         :return:  Result.
         """
@@ -186,6 +202,7 @@ class Vect:
     def __mul__(self, k):
         """
         Multiplication vector on number.
+
         :param k: Value.
         :return:  Result (vector).
         """
@@ -197,6 +214,7 @@ class Vect:
     def __truediv__(self, k):
         """
         Division on float value.
+
         :param k: Value.
         :return:  Result (vector).
         """
@@ -208,6 +226,7 @@ class Vect:
     def __eq__(self, other):
         """
         Compares coordinate values.
+
         :param other: Vector.
         :return: Result (True or False)
         """
@@ -220,6 +239,7 @@ class Vect:
     def dot_product(a, b):
         """
         Dot product of two vectors.
+
         :param a: First vector.
         :param b: Second vector.
         :return:  Dot product.
@@ -232,6 +252,7 @@ class Vect:
     def mod2(self):
         """
         Square of mod.
+
         :return: Square of mod.
         """
 
@@ -242,6 +263,7 @@ class Vect:
     def mod(self):
         """
         Mod.
+
         :return: Mod.
         """
 
@@ -252,6 +274,7 @@ class Vect:
     def dist_to(self, v):
         """
         Distance to another vector.
+
         :param v: Vector.
         :return:  Distance.
         """
@@ -263,6 +286,7 @@ class Vect:
     def is_near(self, v, eps):
         """
         Check if vector near another vector.
+
         :param v:   Vector.
         :param eps: Epsilon.
         :return:    True - if near, False - otherwise.
@@ -275,6 +299,7 @@ class Vect:
     def orth(self):
         """
         Get orth of the vector.
+
         :return: Orth.
         """
 
@@ -286,6 +311,7 @@ class Vect:
     def angle_cos(a, b):
         """
         Cosine of angle between vectors.
+
         :param a: First vector.
         :param b: Second vector.
         :return:  Angle cosine.
@@ -299,6 +325,7 @@ class Vect:
     def cross_product(a, b):
         """
         Cross product of two vectors.
+
         :param a: First vector.
         :param b: Second vector.
         :return:  Cross product.

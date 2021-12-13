@@ -13,8 +13,10 @@ def case_001_load_store(test='wing_1'):
     """
     Load and store small grid.
     Test objective:
+
       To make sure the grid can be loaded and stored
       and loading and storing does not corrupt the data.
+
     :param test: test name
     """
 
@@ -33,7 +35,9 @@ def case_002_decompose(test='bunny_pos',
     """
     Test all decompose algorithms.
     Test objective:
+
       To make sure that all grid decomposition algorithms work.
+
     :param test: test name
     """
 
@@ -82,7 +86,9 @@ def case_005_explode_bunny(test='bunny'):
     """
     Visual bunny explosion (illusion of different zones run away from each other).
     Test objective:
+
       To check how we can move zones in different directions.
+
     :param test: test name
     """
 
@@ -107,7 +113,9 @@ def case_007_store_load_faces_calc_data(test='bunny'):
     """
     Store and load faces calc data.
     Test objective:
+
       Check how we can replace data T, Hw, Hi and other in grid from file.
+
     :param test: test name
     """
 
@@ -126,7 +134,9 @@ def case_009_store_mpi(test='bunny'):
     """
     Load grid, decompose it and store in MPI.
     Test objective:
+
       Check we can store data for multiprocessing mode calculations.
+
     :param test: test name
     """
 
@@ -148,7 +158,9 @@ def case_014_convert_grid_stall_to_check_point(test='cyl/cyl_stall'):
     """
     Load grid, convert and store.
     Test objective:
+
       Verification grids conversion.
+
     :param test: test name
     """
 

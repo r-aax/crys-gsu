@@ -20,6 +20,7 @@ class Triangle:
     def __init__(self, a, b, c):
         """
         Constructor.
+
         :param a: First point.
         :param b: Second point.
         :param c: Third point.
@@ -33,6 +34,7 @@ class Triangle:
     def __str__(self):
         """
         String representation.
+
         :return: String.
         """
 
@@ -43,6 +45,7 @@ class Triangle:
     def a(self):
         """
         Get first point.
+
         :return: First point.
         """
 
@@ -53,6 +56,7 @@ class Triangle:
     def b(self):
         """
         Get second point.
+
         :return: Second point.
         """
 
@@ -63,6 +67,7 @@ class Triangle:
     def c(self):
         """
         Get third point.
+
         :return: Third point.
         """
 
@@ -73,6 +78,7 @@ class Triangle:
     def area(self):
         """
         Area.
+
         :return: Area.
         """
 
@@ -83,6 +89,7 @@ class Triangle:
     def normal_orth(self):
         """
         Get normal with length 1.0.
+
         :return: Normal orth.
         """
 
@@ -95,6 +102,7 @@ class Triangle:
     def centroid(self):
         """
         Get centroid.
+
         :return: Centroid.
         """
 
@@ -105,6 +113,7 @@ class Triangle:
     def intersection_with_segment(self, s):
         """
         Calculate intersection with segment.
+
         :param s: Segment.
         :return:  Intersection points.
         """
@@ -189,6 +198,7 @@ class Triangle:
     def point_in_triangle(self, point):
         """
         Point in triangle or not.
+
         :param point: Vect object
         :return: [Vect object]
         """
@@ -208,6 +218,7 @@ class Triangle:
     def in_one_plane(self, tri):
         """
         If all points of triangle 2 with triangle 1 are in the same plane, then the triangles lie in the same plane.
+
         :param tri: triangle 2
         :return: True or False
         """
@@ -238,6 +249,7 @@ class Triangle:
     def intersection_with_triangle(self, tri):
         """
         Triangles intersect if one triangle line intersects another triangle.
+
         :param tri: Triangle.
         :return: Triangle intersection.
         """

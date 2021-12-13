@@ -22,6 +22,7 @@ from gsu.zones_adjacency_matrix import ZonesAdjacencyMatrix
 def mean_nodes_point(ns):
     """
     Get mean point of nodes.
+
     :param ns: nodes
     :return: mean point
     """
@@ -38,6 +39,7 @@ def mean_nodes_point(ns):
 def fun_face_cx():
     """
     Function that returns X coordinate of the face center.
+
     :return: function
     """
 
@@ -49,6 +51,7 @@ def fun_face_cx():
 def fun_face_cy():
     """
     Function that returns Y coordinate of the face center.
+
     :return: function
     """
 
@@ -60,6 +63,7 @@ def fun_face_cy():
 def fun_face_cz():
     """
     Function that returns Z coordinate of the face center.
+
     :return: function
     """
 
@@ -110,6 +114,7 @@ class Grid:
     def zones_count(self):
         """
         Get zones count.
+
         :return: zones count
         """
 
@@ -120,6 +125,7 @@ class Grid:
     def nodes_count(self):
         """
         Get count of nodes.
+
         :return: nodes count
         """
 
@@ -130,6 +136,7 @@ class Grid:
     def edges_count(self):
         """
         Get count of edges.
+
         :return: edges count
         """
 
@@ -140,6 +147,7 @@ class Grid:
     def faces_count(self):
         """
         Get count of faces.
+
         :return: faces count.
         """
 
@@ -150,6 +158,7 @@ class Grid:
     def faces_count_in_zones(self):
         """
         Count of faces that are placed in zones.
+
         :return: total faces count in zones
         """
 
@@ -160,6 +169,7 @@ class Grid:
     def faces_count_in_fixed_zones(self):
         """
         Count of faces in fixed zones.
+
         :return: faces count in fixed zones
         """
 
@@ -170,6 +180,7 @@ class Grid:
     def get_triangles_list(self):
         """
         Get triangles list.
+
         :return: Triangles list.
         """
 
@@ -184,6 +195,7 @@ class Grid:
                    is_print_zones_adjacency_matrix=False):
         """
         Print information about grid.
+
         :param is_print_edges_statistics: flag for print edges statistics
         :param is_print_faces_distribution: flag for print faces distribution between zones
         :param is_print_zones_adjacency_matrix: flag for print zones adjacency matrix
@@ -236,6 +248,7 @@ class Grid:
     def find_near_node(self, n):
         """
         Find in grid nodes collection node that is near to a given node.
+
         :param n: node to check
         :return: near node from grid nodes collection
         """
@@ -255,6 +268,7 @@ class Grid:
     def add_node(self, n, is_merge_same_nodes):
         """
         Add node.
+
         :param n: node
         :param is_merge_same_nodes: flag merge same nodes
         :return: node registered in self.Nodes
@@ -279,6 +293,7 @@ class Grid:
     def add_edge(self, e):
         """
         Add edge to grid.
+
         :param e: edge
         :return: added edge
         """
@@ -294,6 +309,7 @@ class Grid:
     def add_face(self, f):
         """
         Add face.
+
         :param f: face
         :return: added face
         """
@@ -329,6 +345,7 @@ class Grid:
     def link_node_edge(node, edge):
         """
         Link node with edge.
+
         :param node: node
         :param edge: edge
         """
@@ -341,6 +358,7 @@ class Grid:
     def link_node_face(node, face):
         """
         Link face with node.
+
         :param node: node
         :param face: face
         """
@@ -353,6 +371,7 @@ class Grid:
     def link_edge_face(edge, face):
         """
         Link edge with face.
+
         :param edge: edge
         :param face: face
         """
@@ -372,6 +391,7 @@ class Grid:
     def find_edge(node_a, node_b):
         """
         Find edge with given nodes.
+
         :param node_a: the first node
         :param node_b: the second node
         :return: edge - if it is found, None - otherwise
@@ -388,6 +408,7 @@ class Grid:
     def complex_link_face_node_node_edge(self, face, node_a, node_b):
         """
         Complex link nodes with edge, and edge with face.
+
         :param face: face
         :param node_a: the first node
         :param node_b: th second node
@@ -413,6 +434,7 @@ class Grid:
     def bfs_path_connectivity_component(self, start, pred):
         """
         Connectivity component of BFS path from given face.
+
         :param start: start face
         :param pred: predicate for faces
         :return: path for one connectivity component (list of faces)
@@ -447,6 +469,7 @@ class Grid:
     def get_no_bfs_mark_face(self, pred):
         """
         Get first no bfs mark face.
+
         :param pred: predicate for face
         :return: first face with false bfs mark
         """
@@ -462,6 +485,7 @@ class Grid:
     def bfs_path(self, start, pred):
         """
         Get BFS path.
+
         :param start: start face
         :param pred: predicate for faces
         :return: path for whole grid (list of faces)
@@ -488,6 +512,7 @@ class Grid:
              is_merge_same_nodes=True):
         """
         Load grid from file.
+
         :param filename: file name
         :param is_merge_same_nodes: merge same nodes
         """
@@ -627,6 +652,7 @@ class Grid:
     def store(self, filename):
         """
         Store grid to file.
+
         :param filename: file name
         """
 
@@ -677,6 +703,7 @@ class Grid:
         """
         Store grid for mpi program.
         As many processes count as zones count.
+
         :param filename_base: Base of filename.
         :param ts:            Timestamp string.
         :param sf:            Suffixes of files.
@@ -816,6 +843,7 @@ class Grid:
     def decompose_mono(self, new_name=None):
         """
         Create mono distribution (with 1 zone).
+
         :param new_name: grid new name
         """
 
@@ -837,6 +865,7 @@ class Grid:
     def decompose_random(self, count=32, new_name=None):
         """
         Create random distribution.
+
         :param count: zones count
         :param new_name: grid new name
         """
@@ -861,6 +890,7 @@ class Grid:
     def decompose_linear(self, count=32, new_name=None):
         """
         Linear distribution.
+
         :param count: zones count
         :param new_name: grid new name
         """
@@ -899,6 +929,7 @@ class Grid:
     def split_zone_metric(self, zone, zl, zr, fun):
         """
         Split zone, calculate metric and roll-back.
+
         :param zone: zone
         :param zl: left child zone
         :param zr: right child zone
@@ -947,6 +978,7 @@ class Grid:
     def split_zone(self, zone, extract_signs_funs):
         """
         Split zone.
+
         :param zone: zone
         :param extract_signs_funs: list of functions for extraction.
         """
@@ -1009,6 +1041,7 @@ class Grid:
     def decompose_hierarchical(self, extract_signs_funs, levels=6, new_name=None, fixed_zones=[]):
         """
         Hierarchical distribution with given numbers of levels.
+
         :param extract_signs_funs: list of functions for signs extraction
         :param levels: levels count
         :param new_name: grid new name
@@ -1051,6 +1084,7 @@ class Grid:
     def decompose_farhat(self, count=32, new_name=None, fz_names=[]):
         """
         Create distribution based on Farhat's algorithm.
+
         :param count: zones count
         :param new_name: grid new name
         :param fz_names: list of fixed zones names
@@ -1097,6 +1131,7 @@ class Grid:
         """
         Get box around grid (tuple with 6 values - XYZ of the left down back point
         and XYZ of the right up front point).
+
         :return: tuple
         """
 
@@ -1111,6 +1146,7 @@ class Grid:
     def move_from_mean_point(self, k=0.1):
         """
         Move zones from mean point.
+
         :param k: factor while zones moving
         """
 
@@ -1128,6 +1164,7 @@ class Grid:
     def store_faces_calc_data(self, filename):
         """
         Store calc values to file.
+
         :param filename: name of file
         """
 
@@ -1143,6 +1180,7 @@ class Grid:
     def load_faces_calc_data(self, filename):
         """
         Load calc data from file and write it to grid.
+
         :param filename: Name of file.
         """
 

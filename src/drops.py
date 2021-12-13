@@ -29,6 +29,7 @@ class Space:
     def __init__(self, ds, ds_tuple):
         """
         Constructor.
+
         :param ds:       Data array.
         :param ds_tuple: Data arranged for numpy.
         """
@@ -52,6 +53,7 @@ class Space:
     def find_nearest(self, p):
         """
         Find nearest data.
+
         :param p: Point.
         :return:  Nearest data.
         """
@@ -68,6 +70,7 @@ class Space:
     def inside(self, p):
         """
         Check if point is inside.
+
         :param p: Point.
         :return:  True - if point in box, False - otherwise.
         """
@@ -79,6 +82,7 @@ class Space:
     def fly_step(self, p, v, v_air, d, dt):
         """
         Step of flying.
+
         :param p:     Point.
         :param v:     Velocity.
         :param v_air: Air velocity.
@@ -115,20 +119,25 @@ class Space:
     def fly(self, p, vel, d, dt, triangles_cloud, max_steps):
         """
         Flying of a point.
+
         :param p:               Point.
         :param vel:             Velocity.
         :param d:               Diameter.
         :param dt:              Time step.
         :param triangles_cloud: Triangles cloud.
         :param max_steps:       Max count of fly steps.
-        :return:                Tuple of 3 elements.
-                                  first element - diagnostic
-                                    'N' - too long flying
-                                    'O' - left the box out
-                                    'S' - stop on place
-                                    'C' - cross surface
-                                  second element - face if intersect (None otherwise)
-                                  third element - trajectory
+        :returns:
+            Tuple of 3 elements:
+
+            * first element - diagnostic
+
+                * 'N' - too long flying
+                * 'O' - left the box out
+                * 'S' - stop on place
+                * 'C' - cross surface
+
+            * second element - face if intersect (None otherwise)
+            * third element - trajectory
         """
 
         tr = Trajectory(p)
@@ -173,6 +182,7 @@ class Space:
 def read_vel_field_from_file(grid_air_file):
     """
     Read velocity field from 3D grid.
+
     :param   grid_air_file: File with air grid.
     :return: Space separator.
     """
@@ -227,6 +237,7 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
           d, dt, stall_thr, max_fly_steps):
     """
     Calculate drops.
+
     :param grid_stall_file: File with grid.
     :param grid_air_file:   File with air grid.
     :param out_grid_file:   Out file.
