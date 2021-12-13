@@ -4,10 +4,8 @@ Triangle realization.
 
 import math
 import numpy as np
-from vect import Vect
-from segment import Segment
-# from geom.vect import Vect
-# from geom.segment import Segment
+from geom.vect import Vect
+from geom.segment import Segment
 
 # ==================================================================================================
 
@@ -292,6 +290,9 @@ class Triangle:
 
 
 if __name__ == '__main__':
+
+    # from vect import Vect
+    # from segment import Segment
 
     # тест 1 - треугольники в одной плоскости, разные объекты
     print()
