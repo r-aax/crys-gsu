@@ -38,3 +38,13 @@ merge.py <grid-file> <txt-files-dir> <r-files-dir>
 bunny.dat + [bunny_00000_000000000200.txt bunny_00001_000000000200.txt] -> [bunny_r_000000000200.dat]
             [bunny_00000_000000000300.txt bunny_00001_000000000300.txt] -> [bunny_r_000000000300.dat]
 ```
+
+## Building documentation
+
+Documentation is foramted as [Sphinx reStructuredText](https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html).
+
+To build documentation in HTML you should run:
+```
+cd docs
+make html
+```
