@@ -1,11 +1,12 @@
 """
 Triangle realization.
 """
-
+from sympy import *
 import math
 import numpy as np
-from geom.vect import Vect
-from geom.segment import Segment
+from sympy import Float
+# from geom.vect import Vect
+# from geom.segment import Segment
 
 # ==================================================================================================
 
@@ -161,15 +162,122 @@ class Triangle:
         #
 
         # Vectors differences.
-        ba, ca, pq, pa = b - a, c - a, p - q, p - a
+        ba, ca, pq, pa, qp = b - a, c - a, p - q, p - a, q - p
 
         m = np.array([ba.coords_list(), ca.coords_list(), pq.coords_list()])
         m = np.transpose(m)
         d = np.linalg.det(m)
 
+        def determinant(i, j):
+            det = np.array([[ba.Coords[i], ca.Coords[i]],
+                            [ba.Coords[j], ca.Coords[j]]])
+            return round(np.linalg.det(det), 10)
+
+        def solve_the_linear_equation(a, b):
+            """
+
+            :param a:
+            :param b:
+            :return: solution of the equation 0 >= a*x + b
+            """
+
+            if a != 0:
+                p = -1 * (b / a)
+
+                if a > 0:
+                    return [p, float('Inf')]
+
+                else:
+                    return [float('-Inf'), p]
+            else:
+                if b > 0:
+                    return [float('-Inf'), float('Inf')]
+                else:
+                    return []
+
         if abs(d) < 1e-10:
-            # TODO:
-            # To analyze case of many intersection points.
+
+            # one plane
+            p1 = self.point_in_one_plane(p)
+            p2 = self.point_in_one_plane(q)
+            if p1 and p2:
+
+                """
+                a - alf*ba + bet*ca = p + fi*qp; alf >= 0, bet >= 0, alf + bet <= 1, 0 <= fi <= 1
+    
+                alf*ba + bet*ca + fi*pq = pa
+                alf*ba + bet*ca = fi*qp + pa
+    
+                alf*ba.x + bet*ca.x = fi*qp.x + pa.x
+                alf*ba.y + bet*ca.y = fi*qp.y + pa.y
+    
+                det = [[ba.x, ca.x],
+                       [ba.y, ca.y]]
+    
+                det_alf = [[fi*qp.x + pa.x, ca.x],
+                           [fi*qp.y + pa.y, ca.y]]
+                det_bet = [[ba.x, fi*qp.x + pa.x],
+                           [ba.y, fi*qp.y + pa.y]]
+    
+                alf = det_alf / det
+                bet = det_bet / det
+    
+                alf >= 0; bet >= 0; alf + bet <= 1; 0 <= fi <= 1
+                """
+
+                for i in range(2):
+                    for j in range(1, 3):
+                        if i != j:
+
+                            det = determinant(i, j)
+                            if det == 0:
+                                continue
+                            res = []
+
+                            a_alf = (qp.Coords[i] * ca.Coords[j] - qp.Coords[j] * ca.Coords[i]) / det
+                            b_alf = (pa.Coords[i] * ca.Coords[j] - pa.Coords[j] * ca.Coords[i]) / det
+                            res_a = solve_the_linear_equation(a_alf, b_alf)
+                            if res_a:
+                                res = res + [res_a]
+
+                            # bet
+                            a_bet = (qp.Coords[j] * ba.Coords[i] - qp.Coords[i] * ba.Coords[j]) / det
+                            b_bet = (ba.Coords[i] * pa.Coords[j] - ba.Coords[j] * pa.Coords[i]) / det
+                            res_b = solve_the_linear_equation(a_bet, b_bet)
+                            if res_b:
+                                res = res + [res_b]
+
+                            # alf + bet
+                            a_alf_bet = -qp.Coords[i] * ca.Coords[j] + qp.Coords[j] * ca.Coords[i] \
+                                        - qp.Coords[j] * ba.Coords[i] + qp.Coords[i] * ba.Coords[j]
+                            b_alf_bet = -pa.Coords[i] * ca.Coords[j] + pa.Coords[j] * ca.Coords[i] \
+                                        - ba.Coords[i] * pa.Coords[j] + ba.Coords[j] * pa.Coords[i] + det
+                            res_ab = solve_the_linear_equation(a_alf_bet, b_alf_bet)
+                            if res_ab:
+                                res = res + [res_ab]
+
+                            if res:
+                                fi = [0, 1]
+
+                                fi0 = np.max(res, axis=0)[0]
+                                if fi0 >= fi[0] and fi0 <= fi[1]:
+                                    fi[0] = round(fi0, 10)
+
+                                fi1 = np.min(res, axis=0)[1]
+                                if fi1 <= fi[1] and fi1 >= fi[0]:
+                                    fi[1] = round(fi1, 10)
+
+                                if res[0][1] < 0 or res[1][1] < 0 or fi0 > fi1 or (res_a == [] and res_b == []):
+                                    return []
+                                else:
+                                    point1 = p + qp * fi[0]
+                                    point2 = p + qp * fi[1]
+                                    if fi[0] == fi[1]:
+                                        return [point1]
+                                    else:
+                                        return [point1, point2]
+                            else:
+                                return []
             return []
 
         im = np.linalg.inv(m)
@@ -205,6 +313,34 @@ class Triangle:
 
     # ----------------------------------------------------------------------------------------------
 
+    def point_in_one_plane(self, p):
+        """
+        a point in one plane if:
+
+                [p.X - a.X, p.Y - a.Y, p.Z - a.Z]
+        det =   [b.X - a.X, b.Y - a.Y, b.Z - a.Z] = 0
+                [c.X - a.X, c.Y - a.Y, c.Z - a.Z]
+
+        :param p: Vect
+        :return: True or False
+        """
+
+        # Get all points.
+        a, b, c = self.a(), self.b(), self.c()
+
+        det = np.array([[p.X - a.X, p.Y - a.Y, p.Z - a.Z],
+                        [b.X - a.X, b.Y - a.Y, b.Z - a.Z],
+                        [c.X - a.X, c.Y - a.Y, c.Z - a.Z]])
+
+        det = np.linalg.det(det)
+
+        if det == 0:
+            return True
+        else:
+            return False
+
+    # ----------------------------------------------------------------------------------------------
+
     def in_one_plane(self, tri):
         """
         If all points of triangle 2 with triangle 1 are in the same plane, then the triangles lie in the same plane.
@@ -213,25 +349,12 @@ class Triangle:
         """
 
         # Get all points.
-        a, b, c = self.a(), self.b(), self.c()
         ta, tb, tc = tri.a(), tri.b(), tri.c()
 
-        # если треугольники в одной плоскости
-        A = np.array([[ta.X - a.X, ta.Y - a.Y, ta.Z - a.Z],
-                      [b.X - a.X, b.Y - a.Y, b.Z - a.Z],
-                      [c.X - a.X, c.Y - a.Y, c.Z - a.Z]])
-        B = np.array([[tb.X - a.X, tb.Y - a.Y, tb.Z - a.Z],
-                      [b.X - a.X, b.Y - a.Y, b.Z - a.Z],
-                      [c.X - a.X, c.Y - a.Y, c.Z - a.Z]])
-        C = np.array([[tc.X - a.X, tc.Y - a.Y, tc.Z - a.Z],
-                      [b.X - a.X, b.Y - a.Y, b.Z - a.Z],
-                      [c.X - a.X, c.Y - a.Y, c.Z - a.Z]])
-
-        A = np.linalg.det(A)
-        B = np.linalg.det(B)
-        C = np.linalg.det(C)
-
-        return A + B + C == 0
+        ta = self.point_in_one_plane(ta)
+        tb = self.point_in_one_plane(tb)
+        tc = self.point_in_one_plane(tc)
+        return ta and tb and tc
 
     # ----------------------------------------------------------------------------------------------
 
@@ -242,7 +365,7 @@ class Triangle:
         :return: Triangle intersection.
         """
 
-        # если это один и тот же объект
+        # if it is the same object
         if self == tri:
             return []
 
@@ -250,17 +373,17 @@ class Triangle:
         a, b, c = self.a(), self.b(), self.c()
         ta, tb, tc = tri.a(), tri.b(), tri.c()
 
-        # если треугольники в одной плоскости
+        # if the triangles are in the same plane
         if self.in_one_plane(tri):
 
             pit = self.point_in_triangle
             pit2 = tri.point_in_triangle
 
-            # треугольники совпадают
+            # the triangles match
             if (a == ta) and (b == tb) and (c == tc):
                 return [a, b, c]
 
-            # прочие случаи
+            # other cases
             res = pit(ta) + pit(tb) + pit(tc) + pit2(a) + pit2(b) + pit2(c)
             if len(res) == 2:
                 if res[0] == res[1]:
@@ -269,7 +392,7 @@ class Triangle:
                 return res[:2]
             return res
 
-        # если треугольники в разных плоскостях (могут быть параллельными)
+        # if the triangles are in different planes
         else:
 
             int11 = self.intersection_with_segment(Segment(ta, tb))
@@ -283,7 +406,9 @@ class Triangle:
                 if res[0] == res[1]:
                     return [res[0]]
             elif len(res) == 4:
-                return res[:2]
+                res = res[:2]
+                if res[0] == res[1]:
+                    return [res[0]]
             return res
 
 # ==================================================================================================
@@ -291,8 +416,8 @@ class Triangle:
 
 if __name__ == '__main__':
 
-    # from vect import Vect
-    # from segment import Segment
+    from vect import Vect
+    from segment import Segment
 
     # тест 1 - треугольники в одной плоскости, разные объекты
     print()
@@ -426,7 +551,10 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(0, 0, 1), Vect(10, 0, 1), Vect(5, 10, 0))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        if len(res) == 1:
+            print(res)
+        elif len(res) == 2:
+            print(res[0], res[1])
 
     # тест 17 - треугольники в одной плоскости, одна общая вершина
     print()
@@ -470,6 +598,15 @@ if __name__ == '__main__':
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(0, 7, 0), Vect(10, 7, 0), Vect(5, -3, 0))
     res = tri1.intersection_with_triangle(tri2)
+    if res:
+        print(res)
+
+    # тест 22 - пересечение с сегментом
+    print()
+    print('тест 22 - пересечение с сегментом')
+    tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
+    seg1 = Segment(Vect(5, 5, 0), Vect(10, 15, 0))
+    res = tri1.intersection_with_segment(seg1)
     if res:
         print(res)
 
