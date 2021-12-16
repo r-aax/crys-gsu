@@ -5,8 +5,8 @@ from sympy import *
 import math
 import numpy as np
 from sympy import Float
-# from geom.vect import Vect
-# from geom.segment import Segment
+from geom.vect import Vect
+from geom.segment import Segment
 
 # ==================================================================================================
 
