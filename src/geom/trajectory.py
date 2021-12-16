@@ -20,6 +20,7 @@ class Trajectory:
         """
         Constructor.
         Init empty trajectory (with empty list of points).
+
         :param start: Start point.
         """
 
@@ -33,6 +34,7 @@ class Trajectory:
     def __str__(self):
         """
         String representation.
+
         :return: String.
         """
 
@@ -45,6 +47,7 @@ class Trajectory:
     def add_point(self, p):
         """
         Add point.
+
         :param p: Point.
         """
 
@@ -58,6 +61,7 @@ class Trajectory:
     def points_count(self):
         """
         Get points count.
+
         :return: Points count.
         """
 
@@ -68,6 +72,7 @@ class Trajectory:
     def segments_count(self):
         """
         Get segments count.
+
         :return: Segments count.
         """
 
@@ -78,6 +83,7 @@ class Trajectory:
     def last_point(self):
         """
         Last point.
+
         :return: Last point.
         """
 
@@ -88,6 +94,7 @@ class Trajectory:
     def dump(self, f, zone_name):
         """
         Dump trajectory as separate zone to file.
+
         :param f:         File.
         :param zone_name: Name of zone.
         """

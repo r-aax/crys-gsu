@@ -19,6 +19,7 @@ class Face:
     def __init__(self, variables, values):
         """
         Constructor face.
+
         :param variables: Variables list.
         :param values:    Values list.
         """
@@ -41,6 +42,7 @@ class Face:
     def __getitem__(self, item):
         """
         Get data field.
+
         :param item: Variable name.
         :return:     Value.
         """
@@ -52,6 +54,7 @@ class Face:
     def __setitem__(self, key, value):
         """
         Set data field.
+
         :param key:   Key value.
         :param value: Value.
         """
@@ -63,6 +66,7 @@ class Face:
     def get_glo_id_t_hw_hi_str(self):
         """
         Get string with global identifier, temperature, and water and ice heights.
+
         :return: String.
         """
 
@@ -80,6 +84,7 @@ class Face:
     def get_neighbour(self, edge):
         """
         Get neighbour through edge.
+
         :param edge: Edge.
         :return:     Neighbour.
         """
@@ -120,6 +125,7 @@ class Face:
     def get_center(self):
         """
         Get center point.
+
         :return: Center point.
         """
 
@@ -132,6 +138,7 @@ class Face:
     def get_triangle(self):
         """
         Get triangle.
+
         :return: Triangle.
         """
 

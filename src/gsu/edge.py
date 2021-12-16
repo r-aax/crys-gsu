@@ -29,8 +29,10 @@ class Edge:
     def is_border(self):
         """
         Check if edge is border edge.
-        :return: True - if edge is border edge,
-                 False - otherwise.
+
+        :return:
+            True - if edge is border edge,
+            False - otherwise.
         """
 
         # Border edge has only one neighbour face.
@@ -41,8 +43,10 @@ class Edge:
     def is_cross(self):
         """
         Check if edge is cross-zones.
-        :return: True - if edge is cross-zones,
-                 False - otherwise.
+
+        :return:
+            True - if edge is cross-zones,
+            False - otherwise.
         """
 
         # Cross-zone edge has two neighbour faces from different zones.
@@ -61,8 +65,10 @@ class Edge:
     def is_inner(self):
         """
         Check if edge is inner.
-        :return: True - if edge is inner,
-                 False - otherwise.
+
+        :return:
+            True - if edge is inner,
+            False - otherwise.
         """
 
         # Inner edge has two faces from one zone.
@@ -81,8 +87,10 @@ class Edge:
     def is_outer(self):
         """
         Check if edge is outer for its zone.
-        :return: True - if edge is outer,
-                 False - otherwise.
+
+        :return:
+            True - if edge is outer,
+            False - otherwise.
         """
 
         return not self.is_inner()
@@ -92,10 +100,12 @@ class Edge:
     def is_connect_zones(self, z0, z1):
         """
         Check if edge connect two given zones.
+
         :param z0: First zone.
         :param z1: Second zone.
-        :return:   True - if edge connects two given zones,
-                   False - otherwise.
+        :return:
+            True - if edge connects two given zones,
+            False - otherwise.
         """
 
         if len(self.Faces) != 2:
@@ -110,9 +120,11 @@ class Edge:
     def is_adjacent_with(self, e):
         """
         Check if edge adjacent with another edge.
+
         :param e: Another edge.
-        :return:  True - if edges are adjacent,
-                  False - otherwise.
+        :return:
+            True - if edges are adjacent,
+            False - otherwise.
         """
 
         a0, a1 = self.Nodes[0], self.Nodes[1]

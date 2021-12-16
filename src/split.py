@@ -17,9 +17,10 @@ def split(grid_file,
           split_strategy, fixed_zones=[]):
     """
     Split grid.
+
     :param grid_file: file with grid
-    :param cry_dir: directory for *.cry files
-    :param out_dat_file: out *.dat file
+    :param cry_dir: directory for \*.cry files
+    :param out_dat_file: out \*.dat file
     :param split_strategy: strategy for grid splitting
     :param fixed_zones: list of fixed zones
     :return: actual count of zones after splitting
@@ -136,6 +137,7 @@ def extract_strategy_from_json(filename):
 def extract_fixed_zones_from_json(filename):
     """
     Extract fixed zones from json.
+
     :param filename: file name
     :return: list of zones' names
     """

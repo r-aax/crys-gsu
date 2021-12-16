@@ -17,6 +17,7 @@ class Segment:
     def __init__(self, a, b):
         """
         Constructor.
+
         :param a: First point.
         :param b: Second point.
         """
@@ -28,6 +29,7 @@ class Segment:
     def __str__(self):
         """
         String representation.
+
         :return: String.
         """
 
@@ -38,6 +40,7 @@ class Segment:
     def a(self):
         """
         A point.
+
         :return: A point.
         """
 
@@ -48,6 +51,7 @@ class Segment:
     def b(self):
         """
         B point.
+
         :return: B point.
         """
 
