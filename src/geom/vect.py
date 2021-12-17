@@ -223,6 +223,25 @@ class Vect:
 
     # ----------------------------------------------------------------------------------------------
 
+    def __lt__(self, other):
+        """
+        Compares coordinate values.
+
+        :param other: Vector.
+        :return: Result (True or False)
+        """
+
+        if self.X < other.X:
+            return True
+        elif self.X == other.X and self.Y < other.Y:
+            return True
+        elif self.X == other.X and self.Y == other.Y and self.Z < other.Z:
+            return True
+        else:
+            return False
+
+    # ----------------------------------------------------------------------------------------------
+
     def __eq__(self, other):
         """
         Compares coordinate values.
