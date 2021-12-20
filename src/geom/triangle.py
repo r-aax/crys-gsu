@@ -325,11 +325,11 @@ class Triangle:
 
     def point_in_one_plane(self, p):
         """
-        a point in one plane if:
+        a point in one plane if::
 
-                [p.X - a.X, p.Y - a.Y, p.Z - a.Z]
-        det =   [b.X - a.X, b.Y - a.Y, b.Z - a.Z] = 0
-                [c.X - a.X, c.Y - a.Y, c.Z - a.Z]
+                  [p.X - a.X, p.Y - a.Y, p.Z - a.Z]
+          det =   [b.X - a.X, b.Y - a.Y, b.Z - a.Z] = 0
+                  [c.X - a.X, c.Y - a.Y, c.Z - a.Z]
 
         :param p: Vect
         :return: True or False
