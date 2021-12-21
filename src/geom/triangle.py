@@ -1,7 +1,7 @@
 """
 Triangle realization.
 """
-from sympy import *
+
 import math
 import numpy as np
 from sympy import Float
@@ -178,31 +178,78 @@ class Triangle:
         d = np.linalg.det(m)
 
         def determinant(i, j):
+            """
+
+            :param i: Axis i.
+            :param j: Axis j.
+            :return: Determinant.
+            """
+
             det = np.array([[ba.Coords[i], ca.Coords[i]],
                             [ba.Coords[j], ca.Coords[j]]])
             return round(np.linalg.det(det), 10)
 
         def solve_the_linear_equation(a, b):
             """
+            Solution of the equation 0 >= a*x + b.
 
-            :param a:
-            :param b:
-            :return: solution of the equation 0 >= a*x + b
+            :param a: Param a.
+            :param b: Param b.
+            :return: Range of solutions for x.
             """
 
-            if a != 0:
-                p = -1 * (b / a)
-
-                if a > 0:
-                    return [p, float('Inf')]
-
-                else:
-                    return [float('-Inf'), p]
+            if a > 0:
+                return [-b / a, float('Inf')]
+            elif a < 0:
+                return [float('-Inf'), -b / a]
             else:
                 if b > 0:
                     return [float('-Inf'), float('Inf')]
                 else:
                     return []
+
+        def group_intervals(data):
+            """
+
+            :param data: List of intervals.
+            :return: A list of one interval.
+            """
+            intervals = data
+            if len(intervals) <= 1:
+                return data
+            intervals.sort()
+            res = []
+            for i, interval in enumerate(intervals[:-1]):
+                if interval[1] > intervals[i + 1][0]:
+                    if intervals[i + 1][0] > 1 or interval[1] < 0:
+                        pass
+                    elif intervals[i + 1][0] < 0 and interval[0] < 0 and intervals[i + 1][1] > 1 and interval[1] > 1:
+                        res.append([0, 1])
+                    elif intervals[i + 1][0] < 0:
+                        res.append([0, interval[1]])
+                    elif interval[1] > 1:
+                        res.append([intervals[i + 1][0], 1])
+                    else:
+                        res.append([intervals[i + 1][0], interval[1]])
+            return group_intervals(res)
+
+        def generate_fi(data):
+            """
+
+            :param data: List of intervals.
+            :return: A list of one intersection interval.
+            """
+            res = group_intervals(data)
+            if res:
+                res = res[0]
+            if len(data) < 3 or res == []:
+                return []
+            try1 = data[0][0] <= res[0] and data[0][1] >= res[1]
+            try2 = data[1][0] <= res[0] and data[1][1] >= res[1]
+            try3 = data[2][0] <= res[0] and data[2][1] >= res[1]
+            if try1 and try2 and try3:
+                return res
+            return []
 
         if abs(d) < 1e-10:
 
@@ -241,52 +288,50 @@ class Triangle:
                             det = determinant(i, j)
                             if det == 0:
                                 continue
+
                             res = []
 
-                            a_alf = (qp.Coords[i] * ca.Coords[j] - qp.Coords[j] * ca.Coords[i]) / det
-                            b_alf = (pa.Coords[i] * ca.Coords[j] - pa.Coords[j] * ca.Coords[i]) / det
+                            # alf
+                            a_alf = np.array([[qp[i], ca[i]],
+                                              [qp[j], ca[j]]])
+                            a_alf = round(np.linalg.det(a_alf) / det, 11)
+                            b_alf = np.array([[pa[i], ca[i]],
+                                              [pa[j], ca[j]]])
+                            b_alf = round(np.linalg.det(b_alf) / det, 11)
                             res_a = solve_the_linear_equation(a_alf, b_alf)
                             if res_a:
                                 res = res + [res_a]
 
                             # bet
-                            a_bet = (qp.Coords[j] * ba.Coords[i] - qp.Coords[i] * ba.Coords[j]) / det
-                            b_bet = (ba.Coords[i] * pa.Coords[j] - ba.Coords[j] * pa.Coords[i]) / det
+                            a_bet = np.array([[ba[i], qp[i]],
+                                              [ba[j], qp[j]]])
+                            a_bet = round(np.linalg.det(a_bet) / det, 11)
+                            b_bet = np.array([[ba[i], pa[i]],
+                                              [ba[j], pa[j]]])
+                            b_bet = round(np.linalg.det(b_bet) / det, 11)
                             res_b = solve_the_linear_equation(a_bet, b_bet)
                             if res_b:
                                 res = res + [res_b]
 
                             # alf + bet
-                            a_alf_bet = -qp.Coords[i] * ca.Coords[j] + qp.Coords[j] * ca.Coords[i] \
-                                        - qp.Coords[j] * ba.Coords[i] + qp.Coords[i] * ba.Coords[j]
-                            b_alf_bet = -pa.Coords[i] * ca.Coords[j] + pa.Coords[j] * ca.Coords[i] \
-                                        - ba.Coords[i] * pa.Coords[j] + ba.Coords[j] * pa.Coords[i] + det
+                            a_alf_bet = -a_alf - a_bet
+                            b_alf_bet = -b_alf - b_bet + 1
                             res_ab = solve_the_linear_equation(a_alf_bet, b_alf_bet)
                             if res_ab:
                                 res = res + [res_ab]
 
-                            if res:
-                                fi = [0, 1]
-
-                                fi0 = np.max(res, axis=0)[0]
-                                if fi0 >= fi[0] and fi0 <= fi[1]:
-                                    fi[0] = round(fi0, 10)
-
-                                fi1 = np.min(res, axis=0)[1]
-                                if fi1 <= fi[1] and fi1 >= fi[0]:
-                                    fi[1] = round(fi1, 10)
-
-                                if res[0][1] < 0 or res[1][1] < 0 or fi0 > fi1 or (res_a == [] and res_b == []):
-                                    return []
-                                else:
-                                    point1 = p + qp * fi[0]
-                                    point2 = p + qp * fi[1]
-                                    if fi[0] == fi[1]:
-                                        return [point1]
-                                    else:
-                                        return [point1, point2]
-                            else:
+                            fi = generate_fi(res)
+                            if not fi:
                                 return []
+                            else:
+                                point1 = p + qp * fi[0]
+                                point2 = p + qp * fi[1]
+                                point1 = point1.round_vect(10)
+                                point2 = point2.round_vect(10)
+                                if fi[0] == fi[1]:
+                                    return [point1]
+                                else:
+                                    return [point1, point2]
             return []
 
         im = np.linalg.inv(m)
@@ -385,51 +430,33 @@ class Triangle:
         a, b, c = self.a(), self.b(), self.c()
         ta, tb, tc = tri.a(), tri.b(), tri.c()
 
-        # if the triangles are in the same plane
-        if self.in_one_plane(tri):
-
-            pit = self.point_in_triangle
-            pit2 = tri.point_in_triangle
-
-            # the triangles match
-            if (a == ta) and (b == tb) and (c == tc):
-                return [a, b, c]
-
-            # other cases
-            res = pit(ta) + pit(tb) + pit(tc) + pit2(a) + pit2(b) + pit2(c)
-            if len(res) == 2:
-                if res[0] == res[1]:
-                    return [res[0]]
-            elif len(res) == 4:
-                return res[:2]
-            return res
-
-        # if the triangles are in different planes
-        else:
-
-            int11 = self.intersection_with_segment(Segment(ta, tb))
-            int12 = self.intersection_with_segment(Segment(tb, tc))
-            int13 = self.intersection_with_segment(Segment(tc, ta))
-            int21 = tri.intersection_with_segment(Segment(a, b))
-            int22 = tri.intersection_with_segment(Segment(b, c))
-            int23 = tri.intersection_with_segment(Segment(c, a))
-            res = int11 + int12 + int13 + int21 + int22 + int23
-            if len(res) == 2:
-                if res[0] == res[1]:
-                    return [res[0]]
-            elif len(res) == 4:
-                res = res[:2]
-                if res[0] == res[1]:
-                    return [res[0]]
-            return res
+        int11 = self.intersection_with_segment(Segment(ta, tb))
+        int12 = self.intersection_with_segment(Segment(tb, tc))
+        int13 = self.intersection_with_segment(Segment(tc, ta))
+        int21 = tri.intersection_with_segment(Segment(a, b))
+        int22 = tri.intersection_with_segment(Segment(b, c))
+        int23 = tri.intersection_with_segment(Segment(c, a))
+        res = int11 + int12 + int13 + int21 + int22 + int23
+        if len(res) > 1:
+            res.sort()
+            n = len(res) - 1
+            for i in range(n):
+                if i >= n:
+                    break
+                while res[i] == res[i+1]:
+                    res.pop(i)
+                    n -= 1
+                    if i >= n:
+                        break
+        return res
 
 # ==================================================================================================
 
 
 if __name__ == '__main__':
 
-    from vect import Vect
-    from segment import Segment
+    # from vect import Vect
+    # from segment import Segment
 
     # тест 1 - треугольники в одной плоскости, разные объекты
     print()
@@ -438,7 +465,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 2 - треугольники в одной плоскости, один объект
     print()
@@ -455,7 +483,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(1, 0.1, 0), Vect(9, 0.1, 0), Vect(5, 9, 0))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 4 - треугольники в одной плоскости, одина вержина
     print()
@@ -464,7 +493,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(0, 5, 0), Vect(10, 5, 0), Vect(5, 15, 0))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 5 - треугольники в одной плоскости, две вержины
     print()
@@ -473,7 +503,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(1, 0.1, 0), Vect(9, 0.1, 0), Vect(5, -10, 0))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 6 - треугольники в одной плоскости, не пересекаются
     print()
@@ -482,7 +513,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(15, 0, 0), Vect(20, 0, 0), Vect(15, 10, 0))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 8 - треугольники в разных плоскостях, одной вершиной
     print()
@@ -491,7 +523,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(5, 5, 0), Vect(10, 0, 1), Vect(5, 10, 1))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 9 - треугольники в разных плоскостях, двумя вершинами - одним ребром
     print()
@@ -500,7 +533,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(1, 0.1, 0), Vect(9, 0.1, 0), Vect(5, 10, 1))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 10 - треугольники в разных плоскостях, одним ребром - одна точка пересечения
     print()
@@ -509,7 +543,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(5, 0.1, -1), Vect(15, 0.1, -1), Vect(5, 10, 1))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 11 - треугольники в разных плоскостях, двумя ребрами - две точки пересечения
     print()
@@ -518,7 +553,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(1, 0.1, -1), Vect(9, 0.1, -1), Vect(5, 10, 1))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 12 - треугольники в разных плоскостях, одно общее ребро
     print()
@@ -527,7 +563,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(1, 0, 0), Vect(9, 0, 0), Vect(5, 10, 1))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 13 - треугольники в одной плоскости, одно общее ребро
     print()
@@ -536,7 +573,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(1, 0, 0), Vect(9, 0, 0), Vect(5, -10, 0))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 14 - треугольники в разных плоскостях, одно общее ребро, одной длины
     print()
@@ -545,7 +583,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 1))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 15 - треугольники в одной плоскости, одно общее ребро, одной длины
     print()
@@ -554,7 +593,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, -10, 0))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res[0], res[1])
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 16 - треугольники в разных плоскостях, одна общая вершина
     print()
@@ -563,10 +603,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(0, 0, 1), Vect(10, 0, 1), Vect(5, 10, 0))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        if len(res) == 1:
-            print(res)
-        elif len(res) == 2:
-            print(res[0], res[1])
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 17 - треугольники в одной плоскости, одна общая вершина
     print()
@@ -575,7 +613,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(0, 20, 0), Vect(10, 20, 0), Vect(5, 10, 0))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 18 - треугольники в разных плоскостях, пересечение ребер
     print()
@@ -584,7 +623,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(0, 0, 1), Vect(10, 0, 1), Vect(5, 0, -1))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 19 - треугольники в разных плоскостях, параллельны
     print()
@@ -602,7 +642,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(5, 1, 0), Vect(0, 11, 0), Vect(10, 11, 0))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res[0], res[1])
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 21 - треугольники в одной плоскости, звезда Давида
     print()
@@ -611,7 +652,8 @@ if __name__ == '__main__':
     tri2 = Triangle(Vect(0, 7, 0), Vect(10, 7, 0), Vect(5, -3, 0))
     res = tri1.intersection_with_triangle(tri2)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
     # тест 22 - пересечение с сегментом
     print()
@@ -620,6 +662,7 @@ if __name__ == '__main__':
     seg1 = Segment(Vect(5, 5, 0), Vect(10, 15, 0))
     res = tri1.intersection_with_segment(seg1)
     if res:
-        print(res)
+        for i in range(len(res)):
+            print(res[i])
 
 # ==================================================================================================

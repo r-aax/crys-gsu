@@ -175,6 +175,22 @@ class Vect:
 
     # ----------------------------------------------------------------------------------------------
 
+    def round_vect(self, digits):
+        """
+        Get Vect of rounded Points.
+
+        :param digits: Digits number.
+        :return: Vect with rounded coordinates.
+        """
+
+        self.X = round(self.X, digits)
+        self.Y = round(self.Y, digits)
+        self.Z = round(self.Z, digits)
+
+        return self
+
+    # ----------------------------------------------------------------------------------------------
+
     def __add__(self, v):
         """
         Addition of two vectors.
