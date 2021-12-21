@@ -203,10 +203,10 @@ class Triangle:
             elif a < 0:
                 return [float('-Inf'), -b / a]
             else:
-                if b > 0:
+                if b >= 0:
                     return [float('-Inf'), float('Inf')]
                 else:
-                    return [float('-Inf'), float('Inf')]
+                    return []
 
         def group_intervals(data):
             """
