@@ -191,7 +191,7 @@ class Triangle:
 
         def solve_the_linear_equation(a, b):
             """
-            Solution of the equation 0 >= a*x + b.
+            Solution of the equation 0 <= a*x + b.
 
             :param a: Param a.
             :param b: Param b.
@@ -206,7 +206,7 @@ class Triangle:
                 if b > 0:
                     return [float('-Inf'), float('Inf')]
                 else:
-                    return []
+                    return [float('-Inf'), float('Inf')]
 
         def group_intervals(data):
             """
