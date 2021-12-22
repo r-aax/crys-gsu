@@ -187,8 +187,6 @@ class Vect:
         self.Y = round(self.Y, digits)
         self.Z = round(self.Z, digits)
 
-        return self
-
     # ----------------------------------------------------------------------------------------------
 
     def __add__(self, v):

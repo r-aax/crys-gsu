@@ -311,7 +311,7 @@ class Triangle:
                             if not fi:
                                 return []
                             else:
-                                return [(p + qp * i).round_vect(10) for i in fi]
+                                return [p + qp * i for i in fi]
             return []
 
         im = np.linalg.inv(m)
@@ -417,17 +417,9 @@ class Triangle:
         int22 = tri.intersection_with_segment(Segment(b, c))
         int23 = tri.intersection_with_segment(Segment(c, a))
         res = int11 + int12 + int13 + int21 + int22 + int23
-        if len(res) > 1:
+        if res:
             res.sort()
-            n = len(res) - 1
-            for i in range(n):
-                if i >= n:
-                    break
-                while res[i] == res[i+1]:
-                    res.pop(i)
-                    n -= 1
-                    if i >= n:
-                        break
+            return [res[0]] + [res[i] for i in range(1, len(res)) if res[i] != res[i - 1]]
         return res
 
 # ==================================================================================================
