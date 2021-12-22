@@ -208,9 +208,10 @@ class Triangle:
                 else:
                     return []
 
-        def intersection_of_intervals(data):
+        def intersection_of_intervals(data, aps):
             """
 
+            :param aps: Rounding accuracy.
             :param data: List of intervals.
             :return: A list of one interval.
             """
@@ -218,22 +219,23 @@ class Triangle:
             res = []
             if len(data) == 3:
                 res = [np.max(data, axis=0)[0], np.min(data, axis=0)[1]]
-                if res[0] > res[1] or (res[0] > 1 and res[1] > 1) or (res[1] < 0 and res[0] < 0):
+                if res[0] + aps > res[1] or res[0] > res[1] + aps or \
+                        (res[0] - aps > 1 and res[1] > 1) or (res[1] + aps < 0 and res[0] < 0):
                     return []
-                elif res[0] == 1 and res[1] > 1:
+                elif math.isclose(res[0], 1) and res[1] > 1:
                     return [res[0]]
-                elif res[1] == 0 and res[0] < 0:
+                elif math.isclose(res[1], 0) and res[0] < 0:
                     return [res[1]]
-                elif res[0] <= 0 and res[1] >= 1:
+                elif res[0] - aps <= 0 and res[1] + aps >= 1:
                     res = [0, 1]
-                elif res[0] <= 0 and res[1] < 1:
+                elif res[0] - aps <= 0 and res[1] < 1:
                     res = [0, res[1]]
-                elif res[0] > 0 and res[1] >= 1:
+                elif res[0] > 0 and res[1] + aps >= 1:
                     res = [res[0], 1]
 
-                try1 = data[0][0] <= res[0] and data[0][1] >= res[1]
-                try2 = data[1][0] <= res[0] and data[1][1] >= res[1]
-                try3 = data[2][0] <= res[0] and data[2][1] >= res[1]
+                try1 = data[0][0] - aps <= res[0] and data[0][1] + aps >= res[1]
+                try2 = data[1][0] - aps <= res[0] and data[1][1] + aps >= res[1]
+                try3 = data[2][0] - aps <= res[0] and data[2][1] + aps >= res[1]
                 if not (try1 and try2 and try3):
                     res = []
             return res
@@ -241,9 +243,7 @@ class Triangle:
         if abs(d) < 1e-10:
 
             # one plane
-            p1 = self.point_in_one_plane(p)
-            p2 = self.point_in_one_plane(q)
-            if p1 and p2:
+            if self.point_in_one_plane(p) and self.point_in_one_plane(q):
 
                 """
                 a - alf*ba + bet*ca = p + fi*qp; alf >= 0, bet >= 0, alf + bet <= 1, 0 <= fi <= 1
@@ -281,10 +281,10 @@ class Triangle:
                             # alf
                             a_alf = np.array([[qp[i], ca[i]],
                                               [qp[j], ca[j]]])
-                            a_alf = round(np.linalg.det(a_alf) / det, 11)
+                            a_alf = np.linalg.det(a_alf) / det
                             b_alf = np.array([[pa[i], ca[i]],
                                               [pa[j], ca[j]]])
-                            b_alf = round(np.linalg.det(b_alf) / det, 11)
+                            b_alf = np.linalg.det(b_alf) / det
                             res_a = solve_the_linear_equation(a_alf, b_alf)
                             if res_a:
                                 res = res + [res_a]
@@ -292,10 +292,10 @@ class Triangle:
                             # bet
                             a_bet = np.array([[ba[i], qp[i]],
                                               [ba[j], qp[j]]])
-                            a_bet = round(np.linalg.det(a_bet) / det, 11)
+                            a_bet = np.linalg.det(a_bet) / det
                             b_bet = np.array([[ba[i], pa[i]],
                                               [ba[j], pa[j]]])
-                            b_bet = round(np.linalg.det(b_bet) / det, 11)
+                            b_bet = np.linalg.det(b_bet) / det
                             res_b = solve_the_linear_equation(a_bet, b_bet)
                             if res_b:
                                 res = res + [res_b]
@@ -307,7 +307,7 @@ class Triangle:
                             if res_ab:
                                 res = res + [res_ab]
 
-                            fi = intersection_of_intervals(res)
+                            fi = intersection_of_intervals(res, 1.0e-10) # TODO it is magic constant
                             if not fi:
                                 return []
                             else:
