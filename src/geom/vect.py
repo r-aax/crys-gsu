@@ -245,11 +245,11 @@ class Vect:
         :return: Result (True or False)
         """
 
-        if self.X < other.X:
+        if abs(self.X - other.X) < 1.0e-10 and abs(self.Y - other.Y) < 1.0e-10 and self.Z < other.Z:
             return True
-        elif self.X == other.X and self.Y < other.Y:
+        elif abs(self.X - other.X) < 1.0e-10 and self.Y < other.Y:
             return True
-        elif self.X == other.X and self.Y == other.Y and self.Z < other.Z:
+        elif self.X < other.X:
             return True
         else:
             return False
