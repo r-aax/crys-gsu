@@ -208,48 +208,35 @@ class Triangle:
                 else:
                     return []
 
-        def group_intervals(data):
+        def intersection_of_intervals(data):
             """
 
             :param data: List of intervals.
             :return: A list of one interval.
             """
-            intervals = data
-            if len(intervals) <= 1:
-                return data
-            intervals.sort()
+
             res = []
-            for i, interval in enumerate(intervals[:-1]):
-                if interval[1] > intervals[i + 1][0]:
-                    if intervals[i + 1][0] > 1 or interval[1] < 0:
-                        pass
-                    elif intervals[i + 1][0] < 0 and interval[0] < 0 and intervals[i + 1][1] > 1 and interval[1] > 1:
-                        res.append([0, 1])
-                    elif intervals[i + 1][0] < 0:
-                        res.append([0, interval[1]])
-                    elif interval[1] > 1:
-                        res.append([intervals[i + 1][0], 1])
-                    else:
-                        res.append([intervals[i + 1][0], interval[1]])
-            return group_intervals(res)
+            if len(data) == 3:
+                res = [np.max(data, axis=0)[0], np.min(data, axis=0)[1]]
+                if res[0] > res[1] or (res[0] > 1 and res[1] > 1) or (res[1] < 0 and res[0] < 0):
+                    return []
+                elif res[0] == 1 and res[1] > 1:
+                    return [res[0]]
+                elif res[1] == 0 and res[0] < 0:
+                    return [res[1]]
+                elif res[0] <= 0 and res[1] >= 1:
+                    res = [0, 1]
+                elif res[0] <= 0 and res[1] < 1:
+                    res = [0, res[1]]
+                elif res[0] > 0 and res[1] >= 1:
+                    res = [res[0], 1]
 
-        def generate_fi(data):
-            """
-
-            :param data: List of intervals.
-            :return: A list of one intersection interval.
-            """
-            res = group_intervals(data)
-            if res:
-                res = res[0]
-            if len(data) < 3 or res == []:
-                return []
-            try1 = data[0][0] <= res[0] and data[0][1] >= res[1]
-            try2 = data[1][0] <= res[0] and data[1][1] >= res[1]
-            try3 = data[2][0] <= res[0] and data[2][1] >= res[1]
-            if try1 and try2 and try3:
-                return res
-            return []
+                try1 = data[0][0] <= res[0] and data[0][1] >= res[1]
+                try2 = data[1][0] <= res[0] and data[1][1] >= res[1]
+                try3 = data[2][0] <= res[0] and data[2][1] >= res[1]
+                if not (try1 and try2 and try3):
+                    res = []
+            return res
 
         if abs(d) < 1e-10:
 
@@ -320,18 +307,11 @@ class Triangle:
                             if res_ab:
                                 res = res + [res_ab]
 
-                            fi = generate_fi(res)
+                            fi = intersection_of_intervals(res)
                             if not fi:
                                 return []
                             else:
-                                point1 = p + qp * fi[0]
-                                point2 = p + qp * fi[1]
-                                point1 = point1.round_vect(10)
-                                point2 = point2.round_vect(10)
-                                if fi[0] == fi[1]:
-                                    return [point1]
-                                else:
-                                    return [point1, point2]
+                                return [(p + qp * i).round_vect(10) for i in fi]
             return []
 
         im = np.linalg.inv(m)
