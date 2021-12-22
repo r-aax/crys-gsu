@@ -5,8 +5,8 @@ Triangle realization.
 import math
 import numpy as np
 from sympy import Float
-from geom.vect import Vect
-from geom.segment import Segment
+# from geom.vect import Vect
+# from geom.segment import Segment
 
 # ==================================================================================================
 
@@ -427,214 +427,127 @@ class Triangle:
 
 if __name__ == '__main__':
 
-    # from vect import Vect
-    # from segment import Segment
+    from vect import Vect
+    from segment import Segment
 
-    # тест 1 - треугольники в одной плоскости, разные объекты
-    print()
-    print('тест 1 - треугольники в одной плоскости, разные объекты')
+    # intersection_with_triangle
+    # тест 1 - одинаковые треугольники в одной плоскости, разные объекты, пересечения по 3 вершинам
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 3)
 
-    # тест 2 - треугольники в одной плоскости, один объект
-    print()
-    print('тест 2 - треугольники в одной плоскости, один объект')
+    # тест 2 - одинаковые треугольники в одной плоскости, один объект, нет пересечений
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     res = tri1.intersection_with_triangle(tri1)
-    if res:
-        print(res)
+    assert(len(res) == 0)
 
-    # тест 3 - треугольники в одной плоскости, один вложен в другой
-    print()
-    print('тест 3 - треугольники в одной плоскости, один вложен в другой')
+    # тест 3 - треугольники в одной плоскости, один вложен в другой, пересечения по 3 вершинам
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(1, 0.1, 0), Vect(9, 0.1, 0), Vect(5, 9, 0))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 3)
 
-    # тест 4 - треугольники в одной плоскости, одина вержина
-    print()
-    print('тест 4 - треугольники в одной плоскости, одина вержина')
+    # тест 4 - треугольники в одной плоскости, одина вержина, пересечения по 1 вершине и 2 точки на ребре
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(0, 5, 0), Vect(10, 5, 0), Vect(5, 15, 0))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 3)
 
-    # тест 5 - треугольники в одной плоскости, две вержины
-    print()
-    print('тест 5 - треугольники в одной плоскости, две вержины')
+    # тест 5 - треугольники в одной плоскости, две вержины, пересечения по 2 вершинам и 2 точки на ребре
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(1, 0.1, 0), Vect(9, 0.1, 0), Vect(5, -10, 0))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 4)
 
-    # тест 6 - треугольники в одной плоскости, не пересекаются
-    print()
-    print('тест 6 - треугольники в одной плоскости, не пересекаются')
+    # тест 6 - треугольники в одной плоскости, не пересекаются, нет пересечений
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(15, 0, 0), Vect(20, 0, 0), Vect(15, 10, 0))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 0)
 
-    # тест 8 - треугольники в разных плоскостях, одной вершиной
-    print()
-    print('тест 8 - треугольники в разных плоскостях, одной вершиной')
+    # тест 7 - треугольники в разных плоскостях, одной вершиной
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(5, 5, 0), Vect(10, 0, 1), Vect(5, 10, 1))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 1)
 
-    # тест 9 - треугольники в разных плоскостях, двумя вершинами - одним ребром
-    print()
-    print('тест 9 - треугольники в разных плоскостях, двумя вершинами - одним ребром')
+    # тест 8 - треугольники в разных плоскостях, двумя вершинами - одним ребром, пересечения по 2 вершинам
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(1, 0.1, 0), Vect(9, 0.1, 0), Vect(5, 10, 1))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 2)
 
-    # тест 10 - треугольники в разных плоскостях, одним ребром - одна точка пересечения
-    print()
-    print('тест 10 - треугольники в разных плоскостях, одним ребром - одна точка пересечения')
+    # тест 9 - треугольники в разных плоскостях, пересекаются, у каждого по одной точке пересечения
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(5, 0.1, -1), Vect(15, 0.1, -1), Vect(5, 10, 1))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 2)
 
-    # тест 11 - треугольники в разных плоскостях, двумя ребрами - две точки пересечения
-    print()
-    print('тест 11 - треугольники в разных плоскостях, двумя ребрами - две точки пересечения')
+    # тест 10 - треугольники в разных плоскостях, один протыкает вершиной второго, две точки пересечения
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(1, 0.1, -1), Vect(9, 0.1, -1), Vect(5, 10, 1))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 2)
 
-    # тест 12 - треугольники в разных плоскостях, одно общее ребро
-    print()
-    print('тест 12 - треугольники в разных плоскостях, одно общее ребро')
+    # тест 11 - треугольники в разных плоскостях, одно общее ребро, две точки пересечения
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(1, 0, 0), Vect(9, 0, 0), Vect(5, 10, 1))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 2)
 
-    # тест 13 - треугольники в одной плоскости, одно общее ребро
-    print()
-    print('тест 13 - треугольники в одной плоскости, одно общее ребро')
+    # тест 12 - треугольники в одной плоскости, одно общее ребро, две точки пересечения
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(1, 0, 0), Vect(9, 0, 0), Vect(5, -10, 0))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 2)
 
-    # тест 14 - треугольники в разных плоскостях, одно общее ребро, одной длины
-    print()
-    print('тест 14 - треугольники в разных плоскостях, одно общее ребро, одной длины')
+    # тест 13 - треугольники в разных плоскостях, одно общее ребро, одной длины, две точки пересечения
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 1))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 2)
 
-    # тест 15 - треугольники в одной плоскости, одно общее ребро, одной длины
-    print()
-    print('тест 15 - треугольники в одной плоскости, одно общее ребро, одной длины')
+    # тест 14 - треугольники в одной плоскости, одно общее ребро, одной длины, две точки пересечения
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, -10, 0))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 2)
 
-    # тест 16 - треугольники в разных плоскостях, одна общая вершина
-    print()
-    print('тест 16 - треугольники в разных плоскостях, одна общая вершина')
+    # тест 15 - треугольники в разных плоскостях, одна общая вершина, 1 точка пересечения
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(0, 0, 1), Vect(10, 0, 1), Vect(5, 10, 0))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 1)
 
-    # тест 17 - треугольники в одной плоскости, одна общая вершина
-    print()
-    print('тест 17 - треугольники в одной плоскости, одна общая вершина')
+    # тест 16 - треугольники в одной плоскости, одна общая вершина, 1 точка пересечения
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(0, 20, 0), Vect(10, 20, 0), Vect(5, 10, 0))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 1)
 
-    # тест 18 - треугольники в разных плоскостях, пересечение ребер
-    print()
-    print('тест 18 - треугольники в разных плоскостях, пересечение ребер')
+    # тест 17 - треугольники в разных плоскостях, пересечение ребер, две точки пересечения
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(0, 0, 1), Vect(10, 0, 1), Vect(5, 0, -1))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 2)
 
-    # тест 19 - треугольники в разных плоскостях, параллельны
-    print()
-    print('тест 19 - треугольники в разных плоскостях, параллельны')
+    # тест 18 - треугольники в разных плоскостях, параллельны, нет пересечений
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(0, 0, 1), Vect(10, 0, 1), Vect(5, 10, 1))
     res = tri1.intersection_with_triangle(tri2)
-    # if res:
-    print(res)
+    assert(len(res) == 0)
 
-    # тест 20 - треугольники в одной плоскости, одина вершина у обоих
-    print()
-    print('тест 20 - треугольники в одной плоскости, одина вершина у обоих')
+    # тест 19 - треугольники в одной плоскости, одина вершина у обоих внутри другого, 4 точки пересечения
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(5, 1, 0), Vect(0, 11, 0), Vect(10, 11, 0))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 4)
 
-    # тест 21 - треугольники в одной плоскости, звезда Давида
-    print()
-    print('тест 21 - треугольники в одной плоскости, звезда Давида')
+    # тест 20 - треугольники в одной плоскости, звезда Давида, 6 точек пересечения
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
     tri2 = Triangle(Vect(0, 7, 0), Vect(10, 7, 0), Vect(5, -3, 0))
     res = tri1.intersection_with_triangle(tri2)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
-
-    # тест 22 - пересечение с сегментом
-    print()
-    print('тест 22 - пересечение с сегментом')
-    tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
-    seg1 = Segment(Vect(5, 5, 0), Vect(10, 15, 0))
-    res = tri1.intersection_with_segment(seg1)
-    if res:
-        for i in range(len(res)):
-            print(res[i])
+    assert(len(res) == 6)
 
 # ==================================================================================================
