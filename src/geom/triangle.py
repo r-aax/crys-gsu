@@ -5,8 +5,8 @@ Triangle realization.
 import math
 import numpy as np
 from sympy import Float
-# from geom.vect import Vect
-# from geom.segment import Segment
+from geom.vect import Vect
+from geom.segment import Segment
 
 # ==================================================================================================
 
@@ -427,8 +427,8 @@ class Triangle:
 
 if __name__ == '__main__':
 
-    from vect import Vect
-    from segment import Segment
+    # from vect import Vect
+    # from segment import Segment
 
     # intersection_with_triangle
     # тест 1 - одинаковые треугольники в одной плоскости, разные объекты, пересечения по 3 вершинам
