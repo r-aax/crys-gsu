@@ -330,10 +330,19 @@ class Triangle:
 
     def point_in_triangle(self, point):
         """
-        Point in triangle or not.
+        The method answers the question in which part of the triangle is this point.
 
-        :param point: Vect object
-        :return: [Vect object]
+        Parameters
+        ----------
+        point - Vect object
+
+        Returns
+        -------
+        0 (Int) - the point does not belong to the triangle
+        1 (Int) - the point belongs to the vertex of the triangle
+        2 (Int) - the point belongs to the edge of the triangle
+        3 (Int) - the point belongs to the inner space of the triangle
+
         """
 
         # Get all points.
@@ -341,10 +350,12 @@ class Triangle:
 
         # А point in a triangle if the sum of the formed areas is equal to the area of the original triangle.
         full_area = round(self.area(), 10)
-        ar = round(Triangle(a, b, point).area() + Triangle(a, point, c).area() + Triangle(point, b, c).area(), 10)
-        if full_area == ar:
-            return [point]
-        return []
+        ar1 = Triangle(a, b, point).area()
+        ar2 = Triangle(a, point, c).area()
+        ar3 = Triangle(point, b, c).area()
+        if math.isclose(full_area, ar1 + ar2 + ar3):
+            return bool(ar1) + bool(ar2) + bool(ar3)
+        return 0
 
     # ----------------------------------------------------------------------------------------------
 
@@ -456,6 +467,23 @@ if __name__ == '__main__':
 
     # from vect import Vect
     # from segment import Segment
+
+    # point_in_triangle
+    tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
+    p = Vect(-5, 0, 0)
+    assert(tri1.point_in_triangle(p) == 0)
+
+    tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
+    p = Vect(0, 0, 0)
+    assert(tri1.point_in_triangle(p) == 1)
+
+    tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
+    p = Vect(5, 0, 0)
+    assert(tri1.point_in_triangle(p) == 2)
+
+    tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
+    p = Vect(5, 1, 0)
+    assert(tri1.point_in_triangle(p) == 3)
 
     # is_good_triangle
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
