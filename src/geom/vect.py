@@ -3,6 +3,7 @@ Vect realization.
 """
 
 import math
+import numpy as np
 
 # ==================================================================================================
 
@@ -351,6 +352,44 @@ class Vect:
         """
 
         return Vect.dot_product(a, b) / (a.mod() * b.mod())
+
+    # ----------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def get_angle_in_rad(v1, v2):
+        """
+
+        Parameters
+        ----------
+        v1 - vector 1
+        v2 - vector 2
+
+        Returns
+        -------
+        the angle between vectors 1 and 2 in rad.
+
+        """
+
+        return np.arccos(Vect.angle_cos(v1, v2))
+
+    # ----------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def get_angle_in_deg(v1, v2):
+        """
+
+        Parameters
+        ----------
+        v1 - vector 1
+        v2 - vector 2
+
+        Returns
+        -------
+        the angle between vectors 1 and 2 in deg.
+
+        """
+
+        return np.rad2deg(Vect.get_angle_in_rad(v1, v2))
 
     # ----------------------------------------------------------------------------------------------
 
