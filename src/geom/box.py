@@ -94,7 +94,7 @@ class Box:
 
     # ----------------------------------------------------------------------------------------------
 
-    def is_potential_intersect_with_segment(self, s):
+    def is_intersect_with_segment(self, s):
         """
         Check if there is intersection with segment.
 

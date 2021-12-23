@@ -156,7 +156,7 @@ class TrianglesCloud:
         """
 
         # Cold check.
-        if not self.Box.is_potential_intersect_with_segment(s):
+        if not self.Box.is_intersect_with_segment(s):
             return None
 
         if self.is_list():
