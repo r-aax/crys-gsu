@@ -433,6 +433,7 @@ class Triangle:
 
         Returns
         -------
+        triangle is good or no
 
         """
 
