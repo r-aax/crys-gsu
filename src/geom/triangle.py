@@ -422,6 +422,32 @@ class Triangle:
             return [res[0]] + [res[i] for i in range(1, len(res)) if res[i] != res[i - 1]]
         return res
 
+    # ----------------------------------------------------------------------------------------------
+
+    def is_good_triangle(self, corner):
+        """
+
+        Parameters
+        ----------
+        corner - an angle whose value is greater than is not allowed. takes values from 1 to 180 (Float)
+
+        Returns
+        -------
+
+        """
+
+        a, b, c = self.a(), self.b(), self.c()
+        ba = b - a
+        ca = c - a
+        corn1 = Vect.get_angle_in_deg(ba, ca) < corner
+        ab = a - b
+        cb = c - b
+        corn2 = Vect.get_angle_in_deg(ab, cb) < corner
+        ac = a - c
+        bc = b - c
+        corn3 = Vect.get_angle_in_deg(ac, bc) < corner
+        return corn1 and corn2 and corn3
+
 # ==================================================================================================
 
 
@@ -429,6 +455,10 @@ if __name__ == '__main__':
 
     # from vect import Vect
     # from segment import Segment
+
+    # is_good_triangle
+    tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
+    assert(tri1.is_good_triangle(90))
 
     # intersection_with_triangle
     # тест 1 - одинаковые треугольники в одной плоскости, разные объекты, пересечения по 3 вершинам
