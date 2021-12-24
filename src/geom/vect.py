@@ -317,6 +317,28 @@ class Vect:
 
     # ----------------------------------------------------------------------------------------------
 
+    @staticmethod
+    def point_on_vector(v1, v2, p):
+        """
+        is the point on the vector or not
+
+        Parameters
+        ----------
+        v1 - the starting point of the vector
+        v2 - the end point of the vector
+        p - point
+
+        Returns
+        -------
+        True or False
+
+        """
+
+        return math.isclose(v1.dist_to(v2), v1.dist_to(p) + p.dist_to(v2))
+
+
+    # ----------------------------------------------------------------------------------------------
+
     def is_near(self, v, eps):
         """
         Check if vector near another vector.
