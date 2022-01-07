@@ -117,8 +117,6 @@ class TrianglesCloud:
         arr_left = [t for t in mash if t.centroid()[indxyz] < mid_surf]
         arr_right = [t for t in mash if t.centroid()[indxyz] >= mid_surf]
 
-        print(lenxyz, mid_surf, len(arr_left), len(arr_right))
-
         # Checking the correctness of the split.
         if len(arr_left) == 0:
             arr_left = [arr_right[0]]
