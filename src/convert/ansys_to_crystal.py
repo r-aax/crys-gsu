@@ -29,6 +29,9 @@ fensap_variables_to_extract = ['X', 'Y', 'Z', 'Static temperature', 'SF1', 'SF2'
 # Названия переменных drop3d (не обязательно полные), которые надо извлечь.
 drop3d_variables_to_extract = ['X', 'Y', 'Z', 'Collection efficiency-Droplet']
 
+# Названия переменных adiabatic (не обязательно полные), которые нужно извлечь.
+adiabatic_variables_to_extract = ['X', 'Y', 'Z', 'Static temperature']
+
 # --------------------------------------------------------------------------------------------------
 
 
@@ -236,7 +239,7 @@ def filter_zones(filename, ofilename):
         ofilename -- имя выходного файла.
     """
 
-    say('  filter_zones : %s -> %s' % (filename, ofilename))
+    say('    filter_zones : %s -> %s' % (filename, ofilename))
 
     with open(filename, 'r') as f:
         with open(ofilename, 'w') as of:
@@ -284,7 +287,7 @@ def filter_variables(filename, ofilename, variables_names):
         variables_names -- список имен переменных.
     """
 
-    say('  filter_variables : %s -> %s\n    переменные %s' % (filename, ofilename, variables_names))
+    say('    filter_variables : %s -> %s\n    переменные %s' % (filename, ofilename, variables_names))
 
     with open(filename, 'r') as f:
         with open(ofilename, 'w') as of:
@@ -327,70 +330,76 @@ def filter_variables(filename, ofilename, variables_names):
 # --------------------------------------------------------------------------------------------------
 
 
-def merge_fensap_drop3d(ffilename, dfilename, ofilename):
+def merge_fensap_drop3d_adiabatic(ffilename, dfilename, afilename, ofilename):
     """
     Слияние данный в один файл.
 
     Arguments:
         ffilename -- файл fensap,
         dfiliname -- файл drop3d,
+        afilename -- файл adiabatic,
         ofilename -- выходной файл.
     """
 
-    say('  merge_fensap_drop3d : %s, %s -> %s' % (ffilename, dfilename, ofilename))
+    say('    merge_fensap_drop3d_adiabatic : \n    %s, \n    %s, \n    %s \n    -> %s' % (ffilename, dfilename, afilename, ofilename))
 
     with open(ffilename, 'r') as ff:
         with open(dfilename, 'r') as df:
-            with open(ofilename, 'w') as of:
+            with open(afilename, 'r') as af:
+                with open(ofilename, 'w') as of:
 
-                # Цикл по всем строкам входного файла.
-                nodes_to_read, elements_to_read = 0, 0
-                fl, dl = ff.readline(), df.readline()
-                while fl:
+                    # Цикл по всем строкам входного файла.
+                    nodes_to_read, elements_to_read = 0, 0
+                    fl, dl, al = ff.readline(), df.readline(), af.readline()
+                    while fl:
 
-                    if is_str_meta(fl):
-                        if (nodes_to_read > 0) or (elements_to_read > 0):
-                            raise Exception('внутренная ошибка при чтении сетки')
-                        if is_str_title(fl):
-                            of.write(fl)
-                        elif is_str_variables(fl):
-                            of.write('VARIABLES = "X", "Y", "Z", "Flux", "Beta", ' \
-                                     + '"TauX", "TauY", "TauZ", "Ts"\n')
-                        elif is_str_zone(fl):
-                            (nodes_to_read, elements_to_read) = get_zone_nodes_and_elements_count(fl)
-                            of.write(fl)
-                    else:
-                        if nodes_to_read > 0:
-                            ffields = fl.split()
-                            dfields = dl.split()
-                            fields = [ffields[0], ffields[1], ffields[2], ffields[7], dfields[3], \
-                                      ffields[4], ffields[5], ffields[6], ffields[3]]
-                            of.write(' '.join(fields) + '\n')
-                            nodes_to_read -= 1
-                        elif elements_to_read > 0:
-                            of.write(fl)
-                            elements_to_read -= 1
+                        if is_str_meta(fl):
+                            if (nodes_to_read > 0) or (elements_to_read > 0):
+                                raise Exception('внутренная ошибка при чтении сетки')
+                            if is_str_title(fl):
+                                of.write(fl)
+                            elif is_str_variables(fl):
+                                of.write('VARIABLES = "X", "Y", "Z", "Flux", "Beta", ' \
+                                         + '"TauX", "TauY", "TauZ", "Ts", "StatT"\n')
+                            elif is_str_zone(fl):
+                                (nodes_to_read, elements_to_read) = get_zone_nodes_and_elements_count(fl)
+                                of.write(fl)
+                        else:
+                            if nodes_to_read > 0:
+                                ffields = fl.split()
+                                dfields = dl.split()
+                                afields = al.split()
+                                fields = [ffields[0], ffields[1], ffields[2], ffields[7], dfields[3], \
+                                          ffields[4], ffields[5], ffields[6], ffields[3], afields[3]]
+                                of.write(' '.join(fields) + '\n')
+                                nodes_to_read -= 1
+                            elif elements_to_read > 0:
+                                of.write(fl)
+                                elements_to_read -= 1
 
-                    fl, dl = ff.readline(), df.readline()
+                        fl, dl, al = ff.readline(), df.readline(), af.readline()
 
-    ff.close()
-    df.close()
-    of.close()
+        ff.close()
+        df.close()
+        af.close()
+        of.close()
 
 # --------------------------------------------------------------------------------------------------
 
 
-def calculate_htc(filename, ofilename, ta):
+def calculate_htc_recovery_factor(filename, ofilename, air_temperature, air_velocity, heat_capacity):
     """
     Вычисление коэффициента теплоотдачи.
 
     Arguments:
         filename -- имя входного файла,
         ofilename -- имя выходного файла,
-        ta -- температура свободного потока.
+        air_temperature -- температура свободного потока,
+        air_velocity -- скорость свободного потока,
+        heat_capacity -- темлоемкость воздуха.
     """
 
-    say('  calculate_htc : %s -> %s' % (filename, ofilename))
+    say('    calculate_htc : %s -> %s' % (filename, ofilename))
 
     with open(filename, 'r') as f:
         with open(ofilename, 'w') as of:
@@ -407,7 +416,7 @@ def calculate_htc(filename, ofilename, ta):
                         of.write(l)
                     elif is_str_variables(l):
                         of.write('VARIABLES = "X", "Y", "Z", "HTC", "Beta", ' \
-                                 + '"TauX", "TauY", "TauZ"\n')
+                                 + '"TauX", "TauY", "TauZ", "RecoveryFactor"\n')
                     elif is_str_zone(l):
                         (nodes_to_read, elements_to_read) = get_zone_nodes_and_elements_count(l)
                         of.write(l)
@@ -416,14 +425,22 @@ def calculate_htc(filename, ofilename, ta):
 
                         fields = l.split()
                         flux = float(fields[3])
-                        static_temperature = float(fields[8])
+                        t_surf = float(fields[8])
+                        static_temperature = float(fields[9])
+
+                        # Вычисление RecoveryFactor.
+                        k = (2.0 * heat_capacity) / (air_velocity * air_velocity)
+                        recovery_factor = (static_temperature - air_temperature) * k
 
                         # Вычисление HTC.
-                        htc = flux / (ta - static_temperature)
+                        htc = flux / (t_surf - (air_temperature + recovery_factor / k))
                         fields[3] = str(htc)
 
-                        # Отцепляем static temperature.
+                        # Отцепляем последнее поле.
                         fields = fields[:-1]
+
+                        # И записываем туда RecoveryFactor.
+                        fields[-1] = str(recovery_factor)
 
                         of.write(' '.join(fields) + '\n')
                         nodes_to_read -= 1
@@ -459,7 +476,7 @@ def data_from_nodes_to_faces(filename, ofilename, is_reversed_normals):
     g2.load(ofilename)
     g2.store(ofilename)
 
-    say('  data_from_nodes_to_faces : %s -> %s' % (filename, ofilename))
+    say('    data_from_nodes_to_faces : %s -> %s' % (filename, ofilename))
 
 # --------------------------------------------------------------------------------------------------
 
@@ -471,10 +488,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='ansys_to_crystal',
                                      description='Convert data from Ansys to Crystal.',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('basename', help='basename for *.fensap.dat, *.drop3d.dat files')
+    parser.add_argument('basename',
+                        help='basename for *.fensap.dat, *.drop3d.dat, *.adiabatic.dat files')
     parser.add_argument('zones', help='zones to extract')
-    parser.add_argument('-t', '--air_termerature', dest='air_temperature', type=float, default=273.15,
-                        help='temperature of free stream (K)')
+    parser.add_argument('-t', '--air_termerature', dest='air_temperature',
+                        type=float, help='temperature of free stream (K)')
+    parser.add_argument('-v', '--air_velocity', dest='air_velocity',
+                        type=float, help='velocity of free stream (m / s)')
+    parser.add_argument('-cp', '--heat_capacity', dest='heat_capacity',
+                        type=float, help='heat capacity of free stream (J / (kg * K))')
     parser.add_argument('-n', '--normals', dest='normals', choices=['origin', 'reversed'], default='reversed',
                         help='normals orientation')
     args = parser.parse_args()
@@ -485,10 +507,12 @@ if __name__ == '__main__':
     reversed_normals = (args.normals == 'reversed')
 
     say('Входные данные :')
-    say('  dir = %s, base = %s' % (dirn, basen))
-    say('  zones = %s' % zones_to_extract)
-    say('  ta = %f' % args.air_temperature)
-    say('  normals = %s' % args.normals)
+    say('    dir / base      = %s / %s' % (dirn, basen))
+    say('    zones           = %s' % zones_to_extract)
+    say('    air_temperature = %f' % args.air_temperature)
+    say('    air_velocity    = %f' % args.air_velocity)
+    say('    heat_capacity   = %f' % args.heat_capacity)
+    say('    normals         = %s' % args.normals)
 
     # Функции сборки имени файла.
     def cc(d, ph, b, s):
@@ -501,43 +525,47 @@ if __name__ == '__main__':
         else:
             s_str = '.{0}'.format(s)
         return '{0}/{1}{2}{3}.dat'.format(d, ph_str, b, s_str)
-    def cc2(d, ph, b):
-        return cc(d, ph, b, 'fensap'), cc(d, ph, b, 'drop3d')
+    def cc3(d, ph, b):
+        return cc(d, ph, b, 'fensap'), cc(d, ph, b, 'drop3d'), cc(d, ph, b, 'adiabatic')
 
     # Начальные имена.
-    fensap_fn, drop3d_fn = cc2(dirn, '', basen)
-    print(fensap_fn, drop3d_fn)
+    fensap_fn, drop3d_fn, adiabatic_fn = cc3(dirn, '', basen)
+    print(fensap_fn, drop3d_fn, adiabatic_fn)
 
     # Проверка существования файлов.
     if not os.path.exists(fensap_fn):
         raise Exception('файл %s не существует' % fensap_fn)
     elif not os.path.exists(drop3d_fn):
         raise Exception('файл %s не существует' % drop3d_fn)
+    elif not os.path.exists(adiabatic_fn):
+        raise Exception('файл %s не существует' % adiabatic_fn)
     else:
         say('Входные файлы найдены.')
 
     # Фильтрация зон.
-    fensap_fn_ph1, drop3d_fn_ph1 = cc2(dirn, 'phase1', basen)
+    fensap_fn_ph1, drop3d_fn_ph1, adiabatic_fn_ph1 = cc3(dirn, 'phase1', basen)
     say('phase1 : Фильтрация зон : %s' % str(zones_to_extract))
     filter_zones(fensap_fn, fensap_fn_ph1)
     filter_zones(drop3d_fn, drop3d_fn_ph1)
+    filter_zones(adiabatic_fn, adiabatic_fn_ph1)
 
     # Фильтрация переменных.
-    fensap_fn_ph2, drop3d_fn_ph2 = cc2(dirn, 'phase2', basen)
-    say('phase2 : Фильтрация переменных\n  fensap %s\n  drop3d %s'
-        % (str(fensap_variables_to_extract), str(drop3d_variables_to_extract)))
+    fensap_fn_ph2, drop3d_fn_ph2, adiabatic_fn_ph2 = cc3(dirn, 'phase2', basen)
+    say('phase2 : Фильтрация переменных\n    fensap %s\n    drop3d %s\n    adiabatic %s'
+        % (str(fensap_variables_to_extract), str(drop3d_variables_to_extract), str(adiabatic_variables_to_extract)))
     filter_variables(fensap_fn_ph1, fensap_fn_ph2, fensap_variables_to_extract)
     filter_variables(drop3d_fn_ph1, drop3d_fn_ph2, drop3d_variables_to_extract)
+    filter_variables(adiabatic_fn_ph1, adiabatic_fn_ph2, adiabatic_variables_to_extract)
 
-    # Слияние файлов данных fensap и drop3d.
+    # Слияние файлов данных fensap, drop3d и adiabatic.
     fn_ph3 = cc(dirn, 'phase3', basen, '')
     say('phase3 : Слияние в единый файл')
-    merge_fensap_drop3d(fensap_fn_ph2, drop3d_fn_ph2, fn_ph3)
+    merge_fensap_drop3d_adiabatic(fensap_fn_ph2, drop3d_fn_ph2, adiabatic_fn_ph2, fn_ph3)
 
-    # Пересчет HTC.
+    # Пересчет HTC и RecoveryFactor.
     fn_ph4 = cc(dirn, 'phase4', basen, '')
     say('phase4 : Вычисление HTC')
-    calculate_htc(fn_ph3, fn_ph4, args.air_temperature)
+    calculate_htc_recovery_factor(fn_ph3, fn_ph4, args.air_temperature, args.air_velocity, args.heat_capacity)
 
     # Перевод данных с узлов в ячейки.
     fn_ph5 = cc(dirn, '', basen, '')

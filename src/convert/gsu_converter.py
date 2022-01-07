@@ -34,7 +34,7 @@ class Node:
 
     def __init__(self, id = 0,
                  x = 0.0, y = 0.0, z = 0.0, htc = 0.0, beta = 0.0,
-                 taux = 0.0, tauy = 0.0, tauz = 0.0):
+                 taux = 0.0, tauy = 0.0, tauz = 0.0, recovery_factor = 0.0):
         """
         Конструктор.
 
@@ -47,17 +47,16 @@ class Node:
             beta -- коэффициент улавливания влаги,
             taux -- первая координата вектора напряжения сдвига,
             tauy -- вторая координата вектора напряжения сдвига,
-            tauz -- третья координата вектора напряжения сдвига.
+            tauz -- третья координата вектора напряжения сдвига,
+            recovery_factor -- коэффициент восстановления.
         """
 
         self.Id = id
         self.Point = Vector(x, y, z)
-        self.T = 0.0
-        self.Hw = 0.0
-        self.Hi = 0.0
         self.HTC = htc
         self.Beta = beta
         self.Tau = Vector(taux, tauy, tauz)
+        self.RecoveryFactor = recovery_factor
 
     # ----------------------------------------------------------------------------------------------
 
@@ -69,15 +68,16 @@ class Node:
             Копия.
         """
 
-        return Node(id = self.Id,
-                    x = self.Point.X,
-                    y = self.Point.Y,
-                    z = self.Point.Z,
-                    htc = self.HTC,
-                    beta = self.Beta,
-                    taux = self.Tau.X,
-                    tauy = self.Tau.Y,
-                    tauz = self.Tau.Z)
+        return Node(id=self.Id,
+                    x=self.Point.X,
+                    y=self.Point.Y,
+                    z=self.Point.Z,
+                    htc=self.HTC,
+                    beta=self.Beta,
+                    taux=self.Tau.X,
+                    tauy=self.Tau.Y,
+                    tauz=self.Tau.Z,
+                    recovery_factor=self.RecoveryFactor)
 
 # --------------------------------------------------------------------------------------------------
 
@@ -86,7 +86,8 @@ class Face:
     # ----------------------------------------------------------------------------------------------
 
     def __init__(self, n1, n2, n3,
-                 htc = 0.0, beta = 0.0, taux = 0.0, tauy = 0.0, tauz = 0.0):
+                 htc=0.0, beta=0.0, taux=0.0, tauy=0.0, tauz=0.0,
+                 recovery_factor=0.0):
         """
         Конструктор.
 
@@ -98,16 +99,15 @@ class Face:
             beta -- коэффициент улавливания влаги,
             taux -- первая координата вектора напряжения сдвига,
             tauy -- вторая координата вектора напряжения сдвига,
-            tauz -- третья координата вектора напряжения сдвига.
+            tauz -- третья координата вектора напряжения сдвига,
+            recovery_factor -- коэффициент восстановления.
         """
 
         self.Nodes = [n1, n2, n3]
-        self.T = 0.0
-        self.Hw = 0.0
-        self.Hi = 0.0
         self.HTC = htc
         self.Beta = beta
         self.Tau = Vector(taux, tauy, tauz)
+        self.RecoveryFactor = recovery_factor
 
 # --------------------------------------------------------------------------------------------------
 
@@ -220,7 +220,7 @@ class Grid:
                     self.Zones.append(Zone(l.split('T=')[1].split('"')[1]))
                 else:
                     if nodes_to_read > 0:
-                        [x, y, z, htc, beta, taux, tauy, tauz] = l.split()
+                        [x, y, z, htc, beta, taux, tauy, tauz, recovery_factor] = l.split()
 
                         # Считываем координаты и если находим значение, которое
                         # не удается распарсить, то устанавливаем его в 0.0 и выводим предупрежд.
@@ -232,7 +232,8 @@ class Grid:
                         zone.Nodes.append(Node(len(zone.Nodes),
                                                float(x), float(y), float(z),
                                                float(htc), float(beta),
-                                               float(taux), float(tauy), float(tauz)))
+                                               float(taux), float(tauy), float(tauz),
+                                               float(recovery_factor)))
                         nodes_to_read -= 1
                     elif elements_to_read > 0:
                         [s1, s2, s3, s4] = l.split()
@@ -299,14 +300,12 @@ class Grid:
         for z in self.Zones:
             for f in z.Faces:
                 [n1, n2, n3] = f.Nodes
-                f.T = (n1.T + n2.T + n3.T) / 3.0
-                f.Hw = (n1.Hw + n2.Hw + n3.Hw) / 3.0
-                f.Hi = (n1.Hi + n2.Hi + n3.Hi) / 3.0
                 f.HTC = (n1.HTC + n2.HTC + n3.HTC) / 3.0
                 f.Beta = (n1.Beta + n2.Beta + n3.Beta) / 3.0
                 f.Tau = Vector((n1.Tau.X + n2.Tau.X + n3.Tau.X) / 3.0,
                                (n1.Tau.Y + n2.Tau.Y + n3.Tau.Y) / 3.0,
                                (n1.Tau.Z + n2.Tau.Z + n3.Tau.Z) / 3.0)
+                f.RecoveryFactor = (n1.RecoveryFactor + n2.RecoveryFactor + n3.RecoveryFactor) / 3.0
 
     # ----------------------------------------------------------------------------------------------
 
@@ -406,9 +405,7 @@ class Grid:
         """
 
         fl = open(filename, 'w')
-        fl.write('# EXPORT_MODE=CHECK_POINT\n')
-        fl.write('TITLE="FE Surface Data ASCII"\n')
-        fl.write('VARIABLES="X", "Y", "Z", "T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ"\n')
+        fl.write('VARIABLES="X", "Y", "Z", "HTC", "Beta", "TauX", "TauY", "TauZ", "RecoveryFactor"\n')
 
         for z in self.Zones:
             fl.write('ZONE T="%s"\n' % z.Title)
@@ -416,7 +413,7 @@ class Grid:
             fl.write('ELEMENTS=%s\n' % len(z.Faces))
             fl.write('DATAPACKING=BLOCK\n')
             fl.write('ZONETYPE=FETRIANGLE\n')
-            fl.write('VARLOCATION=([4-11]=CELLCENTERED)\n')
+            fl.write('VARLOCATION=([4-9]=CELLCENTERED)\n')
             for n in z.Nodes:
                 fl.write('%f ' % n.Point.X)
             fl.write('\n')
@@ -425,15 +422,6 @@ class Grid:
             fl.write('\n')
             for n in z.Nodes:
                 fl.write('%f ' % n.Point.Z)
-            fl.write('\n')
-            for f in z.Faces:
-                fl.write('%f ' % f.T)
-            fl.write('\n')
-            for f in z.Faces:
-                fl.write('%f ' % f.Hw)
-            fl.write('\n')
-            for f in z.Faces:
-                fl.write('%f ' % f.Hi)
             fl.write('\n')
             for f in z.Faces:
                 fl.write('%f ' % f.HTC)
@@ -449,6 +437,9 @@ class Grid:
             fl.write('\n')
             for f in z.Faces:
                 fl.write('%f ' % f.Tau.Z)
+            fl.write('\n')
+            for f in z.Faces:
+                fl.write('%f ' % f.RecoveryFactor)
             fl.write('\n')
 
             # Осталось добавить линки.
