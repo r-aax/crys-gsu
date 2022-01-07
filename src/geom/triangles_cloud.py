@@ -86,7 +86,7 @@ class TrianglesCloud:
         else:
 
             # Do nothings.
-            # Triangles stay triangels.
+            # Triangles stay triangles.
             pass
 
     # ----------------------------------------------------------------------------------------------
@@ -116,6 +116,8 @@ class TrianglesCloud:
         # Binary partitioning of an array relative to the center point.
         arr_left = [t for t in mash if t.centroid()[indxyz] < mid_surf]
         arr_right = [t for t in mash if t.centroid()[indxyz] >= mid_surf]
+
+        print(lenxyz, mid_surf, len(arr_left), len(arr_right))
 
         # Checking the correctness of the split.
         if len(arr_left) == 0:
@@ -166,7 +168,7 @@ class TrianglesCloud:
         else:
             for sc in self.Subclouds:
                 res = sc.first_intersection_with_segment(s)
-                if res != None:
+                if not res is None:
                     return res
 
         # No intersection is found.
