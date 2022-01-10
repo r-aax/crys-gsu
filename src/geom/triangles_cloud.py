@@ -5,6 +5,11 @@ Triangles cloud realization.
 import numpy as np
 import itertools
 from geom.box import Box
+from geom.triangle import Triangle
+
+# # changing the recursion depth
+# import sys
+# sys.setrecursionlimit(1000)
 
 # ==================================================================================================
 
@@ -91,42 +96,31 @@ class TrianglesCloud:
 
     # ----------------------------------------------------------------------------------------------
 
-    def separate_triangles_list(self, mash):
+    def separate_triangles_list(self, triangles_list):
         """
         Separete triangles list into pair of lists.
 
-        :param mash: List of triangles.
+        :param triangles_list: List of triangles.
         :return: A list of two lists of triangles.
         """
 
-        assert len(mash) > 1, 'internal error'
+        assert len(triangles_list) > 1, 'internal error'
+
+        box = Box.from_the_centers_of_triangles(triangles_list)
 
         # Edge points box.
-        xmax, ymax, zmax = self.Box.MaxX, self.Box.MaxY, self.Box.MaxZ
-        xmin, ymin, zmin = self.Box.MinX, self.Box.MinY, self.Box.MinZ
+        xmax, ymax, zmax = box.MaxX, box.MaxY, box.MaxZ
+        xmin, ymin, zmin = box.MinX, box.MinY, box.MinZ
 
         # Checking the long side.
         lenxyz = [xmax - xmin, ymax - ymin, zmax - zmin]
         indxyz = lenxyz.index(np.amax(lenxyz))
 
-        # Calculating the center of the long side.
-        sumxyz = [xmax + xmin, ymax + ymin, zmax + zmin]
-        mid_surf = sumxyz[indxyz] / 2
+        # separation
+        triangles_list = Triangle.sorting_by_the_selected_axis(triangles_list, indxyz)
+        mid_of_list = len(triangles_list)//2
 
-        # Binary partitioning of an array relative to the center point.
-        arr_left = [t for t in mash if t.centroid()[indxyz] < mid_surf]
-        arr_right = [t for t in mash if t.centroid()[indxyz] >= mid_surf]
-
-        # Checking the correctness of the split.
-        if len(arr_left) == 0:
-            arr_left = [arr_right[0]]
-            arr_right = arr_right[1:]
-        elif len(arr_right) == 0:
-            arr_right = [arr_left[0]]
-            arr_left = arr_left[1:]
-
-        res_arr = [arr_left, arr_right]
-        return res_arr
+        return [triangles_list[:mid_of_list],  triangles_list[mid_of_list:]]
 
     # ----------------------------------------------------------------------------------------------
 

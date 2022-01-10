@@ -462,6 +462,26 @@ class Triangle:
 
     # ----------------------------------------------------------------------------------------------
 
+    @staticmethod
+    def sorting_by_the_selected_axis(triangles_for_sorting, axis):
+        """
+
+        Parameters
+        ----------
+        triangles_for_sorting - list of triangles to sort
+        axis - sorting axis
+
+        Returns
+        -------
+        an array of triangles sorted by the selected axis
+
+        """
+
+        triangles_for_sorting.sort(key=lambda point: point.centroid()[axis])
+        return triangles_for_sorting
+
+    # ----------------------------------------------------------------------------------------------
+
     def __eq__(self, other):
         """
         Compares coordinate triangles
