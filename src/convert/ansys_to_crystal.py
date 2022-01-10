@@ -424,7 +424,7 @@ def calculate_htc_recovery_factor(filename, ofilename, air_temperature, air_velo
                     if nodes_to_read > 0:
 
                         fields = l.split()
-                        flux = float(fields[3])
+                        flux = -float(fields[3])
                         t_surf = float(fields[8])
                         static_temperature = float(fields[9])
 
