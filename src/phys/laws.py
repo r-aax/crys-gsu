@@ -68,7 +68,7 @@ _sublimation_specific_heat_data = {'x':
 
 _sublimation_specific_heat_data['y'] = [v * _KilocalorieDjoules for v in _sublimation_specific_heat_data['y']]
 
-class LinearLaw()
+class LinearLaw():
     def __init__(self, table):
         self.interpolate = make_interp_spline(table['x'], table['y'], 1)
 
@@ -83,9 +83,9 @@ def _quadro(x, a, b, c, d, e):
 
 class FuncLaw():
     def __init__(self, table, func):
-    """
-    :param func: function with parameters to be optimized where 1st parameter is x and the rest are parameters to be optimized
-    """
+        """
+        :param func: function with parameters to be optimized where 1st parameter is x and the rest are parameters to be optimized
+        """
         self.func = func
         self.popt, self.pcov = curve_fit(self.func, table['x'], table['y'])
 
