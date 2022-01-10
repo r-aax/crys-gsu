@@ -712,7 +712,8 @@ class Grid:
 
         # Fixed set of variables for swim.
         variables = ['X', 'Y', 'Z', 'GloId',
-                     'T', 'Hw', 'Hi', 'HTC', 'Beta', 'MImp2', 'Vd2', 'TauX', 'TauY', 'TauZ']
+                     'T', 'Hw', 'Hi', 'HTC', 'Beta', 'MImp2', 'Vd2',
+                     'TauX', 'TauY', 'TauZ', 'RecoveryFactor']
 
         zam = ZonesAdjacencyMatrix(self.Edges, self.Zones)
 

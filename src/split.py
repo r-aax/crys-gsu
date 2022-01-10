@@ -14,7 +14,7 @@ import json
 
 def split(grid_file,
           cry_dir, out_dat_file,
-          split_strategy, fixed_zones=[]):
+          split_strategy, fixed_zones=[], recovery_factor=1.0):
     """
     Split grid.
 
@@ -57,6 +57,13 @@ def split(grid_file,
     for fz in fixed_zones:
         if not fz in grid_zones_names:
             raise Exception('crys-gsu-split : no zone with name "{0}" in the grid'.format(fz))
+
+    # Issue#12 recovery_factor support
+    # Check recovery factor in grid faces data.
+    # If there is no recovery factor in face, then add it.
+    for f in g.Faces:
+        if not 'recovery_factor' in f.Data.keys():
+            f.Data['RecoveryFactor'] = recovery_factor
 
     # Decompose grid.
     if split_strategy[0] == 'h':
@@ -158,6 +165,29 @@ def extract_fixed_zones_from_json(filename):
 # --------------------------------------------------------------------------------------------------
 
 
+def extract_recovery_factor_from_json(filename):
+    """
+    Extract recovery factor from json.
+
+    :param filename: file name
+    :return: recovery factor or 1.0
+    """
+
+    if not os.path.isfile(filename):
+        raise Exception('crys-gsu-split : no such file ({0})'.format(filename))
+
+    with open(filename, 'r') as jf:
+        data = json.load(jf)
+        jf.close()
+
+    try:
+        return data['recovery_factor']
+    except KeyError:
+        return 1.0
+
+# --------------------------------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
 
     import argparse
@@ -187,10 +217,14 @@ if __name__ == '__main__':
     else:
         fixed_zones = []
 
+    # Extract recovery_factor from json.
+    recovery_factor = extract_recovery_factor_from_json(args.json_file)
+
     split(grid_file=args.grid_file,
           cry_dir=args.cry_dir,
           out_dat_file=args.out_dat_file,
           split_strategy=split_strategy,
-          fixed_zones=fixed_zones)
+          fixed_zones=fixed_zones,
+          recovery_factor=recovery_factor)
 
 # --------------------------------------------------------------------------------------------------
