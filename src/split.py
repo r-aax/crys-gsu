@@ -61,9 +61,10 @@ def split(grid_file,
     # Issue#12 recovery_factor support
     # Check recovery factor in grid faces data.
     # If there is no recovery factor in face, then add it.
+    recovery_factor_name = 'RecoveryFactor'
     for f in g.Faces:
-        if not 'recovery_factor' in f.Data.keys():
-            f.Data['RecoveryFactor'] = recovery_factor
+        if not recovery_factor_name in f.Data.keys():
+            f.Data[recovery_factor_name] = recovery_factor
 
     # Decompose grid.
     if split_strategy[0] == 'h':
