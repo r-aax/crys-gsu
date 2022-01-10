@@ -8,6 +8,7 @@ import utils
 import sys
 import os
 import json
+import time
 
 # --------------------------------------------------------------------------------------------------
 
@@ -25,6 +26,8 @@ def split(grid_file,
     :param fixed_zones: list of fixed zones
     :return: actual count of zones after splitting
     """
+
+    start_time = time.time()
 
     pp = pathlib.PurePath(grid_file)
     # Get characteristics of file:
@@ -112,7 +115,12 @@ def split(grid_file,
     else:
         raise Exception('crys-gsu-split : internal error')
 
-    print('crys-gsu-split : done')
+
+    time_stat = 'crys-gsu-split : done, ' \
+                '{0:.3f} seconds spent)'.format(time.time() - start_time)
+    print(time_stat)
+    with open(cry_dir + '/report.txt', 'w') as f:
+        print(time_stat, file=f)
 
     return actual_zones_count
 

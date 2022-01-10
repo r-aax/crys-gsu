@@ -88,8 +88,11 @@ def merge(grid_file, src_dir, dst_dir):
                    header='time;M_imp;M_es;M_stall;M_ini_water;M_water;M_ini_ice;M_ice;Q_conv;Q_es',
                    comments='')
 
-    print('crys-gsu-merge : done ({0} _r_ files generated, '
-          '{1:.3f} seconds spent)'.format(len(gmf.keys()), time.time() - start_time))
+    time_stat = 'crys-gsu-merge : done ({0} _r_ files generated, ' \
+                '{1:.3f} seconds spent)'.format(len(gmf.keys()), time.time() - start_time)
+    print(time_stat)
+    with open(dst_dir + '/report.txt', 'w') as f:
+        print(time_stat, file=f)
 
 # --------------------------------------------------------------------------------------------------
 
