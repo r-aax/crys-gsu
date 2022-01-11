@@ -67,20 +67,6 @@ class Box:
 
     # ----------------------------------------------------------------------------------------------
 
-    @staticmethod
-    def from_the_centers_of_triangles(ts):
-        """
-        Constructor from the centers of triangles list.
-
-        :param ts: Triangles list.
-        :return:   Box.
-        """
-
-        # Merge lists and create box from merged points list.
-        return Box([(t.a() + t.b() + t.c()) / 3.0 for t in ts])
-
-    # ----------------------------------------------------------------------------------------------
-
     def __str__(self):
         """
         String representation.
