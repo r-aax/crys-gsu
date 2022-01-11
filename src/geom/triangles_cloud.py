@@ -106,7 +106,7 @@ class TrianglesCloud:
 
         assert len(triangles_list) > 1, 'internal error'
 
-        box = Box.from_the_centers_of_triangles(triangles_list)
+        box = Box.from_points([t.centroid() for t in triangles_list])
 
         # Edge points box.
         xmax, ymax, zmax = box.MaxX, box.MaxY, box.MaxZ

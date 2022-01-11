@@ -435,7 +435,7 @@ class Triangle:
 
     # ----------------------------------------------------------------------------------------------
 
-    def is_good_triangle(self, corner):
+    def all_corners_smaller(self, corner):
         """
 
         Parameters
@@ -477,7 +477,7 @@ class Triangle:
 
         """
 
-        triangles_for_sorting.sort(key=lambda point: point.centroid()[axis])
+        triangles_for_sorting.sort(key=lambda tri: tri.centroid()[axis])
         return triangles_for_sorting
 
     # ----------------------------------------------------------------------------------------------
@@ -666,7 +666,7 @@ if __name__ == '__main__':
 
     # is_good_triangle
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
-    assert(tri1.is_good_triangle(90))
+    assert(tri1.all_corners_smaller(90))
 
     # intersection_with_triangle
     # тест 1 - одинаковые треугольники в одной плоскости, разные объекты, пересечения по 3 вершинам
