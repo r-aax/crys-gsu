@@ -619,6 +619,19 @@ class Triangle:
             return TrianglesCloud.removing_repetitions(res)
 
         return []
+    
+    def min_side(self):
+        """
+        Calculate the shortest side length.
+
+        Returns
+        -------
+        length of the shortest side.
+        """
+        ab = self.a() - self.b()
+        bc = self.b() - self.c()
+        ca = self.c() - self.a()
+        return min([ab.mod(), bc.mod(), ca.mod()])
 
 # ==================================================================================================
 

@@ -33,6 +33,8 @@ class Node:
         self.Edges = []
         self.Faces = []
 
+        self.border = False
+
     # ----------------------------------------------------------------------------------------------
 
     def is_near(self, n):

@@ -96,6 +96,8 @@ class Grid:
         # Rounded coordinates
         self.RoundedCoordsBag = set()
 
+        self.number_of_border_nodes = 0
+
     # ----------------------------------------------------------------------------------------------
 
     def clear(self):
@@ -1202,5 +1204,17 @@ class Grid:
             line = f.readline()
 
         f.close()
+
+    # ----------------------------------------------------------------------------------------------
+
+    def mark_all_fixed_nodes(self):
+        """Mark border nodes as fixed."""
+        for e in self.Edges:
+            if len(e.Faces) == 1:
+                e.border = True
+                for n in e.Nodes:
+                    if not n.border:
+                        n.border = True
+                        self.number_of_border_nodes += 1
 
 # ==================================================================================================
