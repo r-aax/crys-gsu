@@ -71,6 +71,8 @@ try:
 except FileExistsError:
     pass
 
+meshes = [mesh for mesh in meshes if mesh.endswith('.dat')]
+
 for i, mesh in enumerate(meshes):
     grid = Grid()
     grid.load(mesh)
