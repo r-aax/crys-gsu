@@ -122,7 +122,7 @@ def split(grid_file,
     with open(cry_dir + '/report.txt', 'w') as f:
         print(time_stat, file=f)
 
-    return actual_zones_count
+    return g
 
 # --------------------------------------------------------------------------------------------------
 
@@ -210,6 +210,8 @@ if __name__ == '__main__':
     group.add_argument('-o', '--out_dat_file', help='result in *.dat format (file)')
     parser.add_argument('-j', '--json_file', help='JSON file name')
     parser.add_argument('-s', '--strategy', help='strategy of decomposition (z, n<n> or h<h>)')
+    parser.add_argument('-v', '--verbosity', action='count',
+                        help='increase output verbosity', default=0)
     args = parser.parse_args()
 
     # Extract split_strategy parameter.
