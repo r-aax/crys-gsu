@@ -11,6 +11,7 @@ from gsu.gsu import Grid
 from gsu.node import Node
 from geom.vect import Vect
 from geom.utils import prizmatoid_volume_coefs, displaced_triangle_volume
+from smoothing import NullSpaceSmoothing
 import json
 import statistics
 import time
@@ -125,119 +126,6 @@ class Remesher:
         """
         raise NotImplementedError
 
-
-# ==================================================================================================
-
-
-class PrismRemesher(Remesher):
-    """
-    Remesher that implements prism method.
-
-    1. Caculates the distance of moving the node by taking the average
-       of ice heights of incident faces.
-    
-    2. Calculates the direction of node's movement as average of normals
-       of incident faces.
-
-    3. Shifts the node
-    """
-
-# --------------------------------------------------------------------------------------------------
-
-    def __init__(self, n_rebuild_steps=1):
-        Remesher.__init__(self, n_rebuild_steps)
-
-# --------------------------------------------------------------------------------------------------
-
-    def __call__(self, grid : Grid):
-        """
-        Remesh the grid.
-
-        Parameters
-        ----------
-            grid : Grid obj, triangular grid with Nodes, Faces lists
-                   each face containes Hi param - height of ice.
-        """
-
-        self.calc_ice_chunks(grid)
-
-        for _ in range(self.n_rebuild_steps):
-            shifts = []
-
-            for n in grid.Nodes:
-                height = self.distance(n)
-                assert height >= 0
-                direction = self.direction(n)
-                direction.mul(height)
-                shifts.append(direction)
-
-            for n, shift in zip(grid.Nodes, shifts):
-                n.move(shift)
-
-# --------------------------------------------------------------------------------------------------
-
-    def calc_ice_chunks(self, grid):
-        """
-        Calculate ice chunks for each face in the grid.
-
-        Nodes in the grid are shifted according to ice_chunk volume
-        on each iteration of rebuilding.
-
-        Parameters
-        ----------
-            grid : Grid obj
-                the grid
-        """
-        for f in grid.Faces:
-            f.ice_chunk = f.Hi * f.area() / self.n_rebuild_steps
-            assert f.ice_chunk >= 0
-
-# --------------------------------------------------------------------------------------------------
-
-    def distance(self, node: Node) -> float:
-        """
-        Magnitude of shift.
-
-        Parameters
-        ----------
-            node : Node obj
-                the node being shifted
-
-        Return
-        ------
-            distance : float
-                magnitude of shift
-        """
-        assert len(node.faces) != 0
-
-        distance = 0
-        for f in node.faces:
-            distance += f.ice_chunk / f.area()
-        
-        return distance / len(node.faces)
-
-    # ----------------------------------------------------------------------------------------------
-
-    def direction(self, node: Node) -> Vect:
-        """
-        Direction of shift.
-
-        Parameters
-        ----------
-            node : Node obj
-                the node being shifted
-
-        Return
-        ------
-            direction : Vector obj  
-                direction of shift, unit vector
-        """
-        direction = Vect()
-        for f in node.faces:
-            norm = f.normal()
-            direction.sum(norm)
-        direction.make_unit()
-        return direction
 
 # ==================================================================================================
 
@@ -481,8 +369,7 @@ class TongRemesher:
 
             # Debug export intermediate mesh.
             if self.verbose:
-                write_tecplot(self.grid,
-                              self.outdir + self.mesh_filename.replace('.dat',
+                self.grid.store(self.outdir + self.mesh_filename.replace('.dat',
                                                                        '_{0:05d}.dat'.format(i)))
 
         if self.verbose:
@@ -712,7 +599,7 @@ class TongRemesher:
         self.remember_current_areas()
 
         # Null-space smoothing.
-        # self.null_space_smoothing()
+        self.null_space_smoothing()
 
         # Correction by area.
         self.correction_by_area()
@@ -751,7 +638,7 @@ class TongRemesher:
         # Requirement FR.RM.MT.TN.02.
         # Direction of ice growth in node is mean of all adjacent faces normals.
         for node in self.grid.Nodes:
-            node.ice_dir = sum([f.ice_dir for f in node.Faces])
+            node.ice_dir = sum([f.ice_dir for f in node.Faces], Vect())
             node.ice_dir = node.ice_dir.orth()
 
     # ----------------------------------------------------------------------------------------------
@@ -801,13 +688,13 @@ class TongRemesher:
 
             # Trying to calculate more accurately.
             if f.ice_chunk > eps:
-                a, b, _ = geom.prizmatoid_volume_coefs(f.nodes[0].as_vector(),
-                                                       f.nodes[1].as_vector(),
-                                                       f.nodes[2].as_vector(),
-                                                       f.nodes[0].ice_dir,
-                                                       f.nodes[1].ice_dir,
-                                                       f.nodes[2].ice_dir,
-                                                       f.normal())
+                a, b, _ = prizmatoid_volume_coefs(f.Nodes[0].P,
+                                                  f.Nodes[1].P,
+                                                  f.Nodes[2].P,
+                                                  f.Nodes[0].ice_dir,
+                                                  f.Nodes[1].ice_dir,
+                                                  f.Nodes[2].ice_dir,
+                                                  f.get_triangle().normal_orth())
 
                 # Check if it is needed to solve square equation.
                 if abs(b) > eps:
@@ -889,11 +776,11 @@ class TongRemesher:
         # Update actual ice value.
         for face in self.grid.Faces:
             n1, n2, n3 = face.Nodes[0], face.Nodes[1], face.Nodes[2]
-            p1, p2, p3 = n1.as_vector(), n2.as_vector(), n3.as_vector()
+            p1, p2, p3 = n1.P, n2.P, n3.P
             np1 = p1 + n1.shift
             np2 = p2 + n2.shift
             np3 = p3 + n3.shift
-            v = geom.displaced_triangle_volume(p1, p2, p3, np1, np2, np3)
+            v = displaced_triangle_volume(p1, p2, p3, np1, np2, np3)
 
             # Requirement FR.RM.MT.TN.08
             # Save volume difference that we will try to accrete on the next step.

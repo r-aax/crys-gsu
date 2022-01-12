@@ -1,9 +1,7 @@
-from crysremesh.geom import *
 from scipy.linalg import eig, det
 from numpy import argmax, array, vstack, diag, dot, abs, cumprod, sum, full, arccos, exp, real
-from crysremesh.geom import Vector
-from crysremesh.io import write_tecplot
-from crysremesh.triangular_grid import Grid
+from geom.vect import Vect
+from gsu.gsu import Grid
 from copy import deepcopy
 from collections import deque
 
@@ -50,7 +48,7 @@ class Smoothing:
 
 # --------------------------------------------------------------------------------------------------
 
-    def move_node(self, node, shift: Vector):
+    def move_node(self, node, shift: Vect):
         """Move node for a given shift.
 
         Parameters
@@ -61,12 +59,12 @@ class Smoothing:
               shift
         """
         if self.fix_boundary_nodes:
-            if node.fixed:
+            if node.border:
                 pass
             else:
-                node.move(shift)
+                node.P = node.P + shift
         else:
-            node.move(shift)
+             node.P = node.P + shift
 
 # --------------------------------------------------------------------------------------------------
 
@@ -79,12 +77,12 @@ class Smoothing:
               number of iteration
         """
         print('{}th iteration of {} smoothing'.format(iteration, self.__name__))
-        write_tecplot(self.grid, '{}_smoothing_{}.dat'.format(self.__name__,
+        self.grid.store('{}_smoothing_{}.dat'.format(self.__name__,
                                                               self.name_of_iteration(iteration)))
 
 # --------------------------------------------------------------------------------------------------
 
-    def apply_laplacians(self, laplacians):
+    def apply_shifts(self, shifts):
         """Apply precomputed list of laplacians to the nodes.
         
         Parameters
@@ -92,8 +90,8 @@ class Smoothing:
             laplacians : list of Vector objects
               shifts for nodes
         """
-        assert len(self.grid.Nodes) == len(laplacians)
-        for n, l in zip(self.grid.Nodes, laplacians):
+        assert len(self.grid.Nodes) == len(shifts)
+        for n, l in zip(self.grid.Nodes, shifts):
             self.move_node(n, l)
 
 
@@ -144,10 +142,10 @@ class NullSpaceSmoothing(Smoothing):
         -------
             numpy array (N_FACES, 3)
         """
-        N = node.faces[0].normal().coords_np_array()
+        N = node.Faces[0].get_triangle().normal_orth().coords_as_numpy()
         N = N.reshape((1, 3))
-        for f in node.faces[1:]:
-            normal = f.normal().coords_np_array()
+        for f in node.Faces[1:]:
+            normal = f.get_triangle().normal_orth().coords_as_numpy()
             assert N.shape[1] == normal.shape[1], print(N.shape, normal.shape)
             N = vstack((N, normal))
 
@@ -155,7 +153,7 @@ class NullSpaceSmoothing(Smoothing):
 
 # --------------------------------------------------------------------------------------------------
 
-    def vector_to_avg_of_centroids(self, node):
+    def get_laplacian(self, node):
         """Calculate the vector to the sum of centroids from a node.
 
         Parameters
@@ -167,27 +165,26 @@ class NullSpaceSmoothing(Smoothing):
         -------
             Vector obj
         """
-        dv = Vector()
-        p = node.as_vector()
+        dv = Vect()
+        p = node.P
         weights = 0
 
-        neighbours = node.faces
+        neighbours = node.Faces
 
         assert len(neighbours) > 0
-        assert isinstance(node.Id, int)
 
         for f in neighbours:
-            c = f.centroid()
-            c -= p
+            c = f.get_triangle().centroid()
+            c = c - p
             weight = 1.0
 
-            assert isinstance(c, Vector)
+            assert isinstance(c, Vect)
 
-            c *= weight
-            dv += c
+            c = c * weight
+            dv = dv + c
             weights += weight
 
-        dv /= weights
+        dv = dv / weights
         return dv
 
 # --------------------------------------------------------------------------------------------------
@@ -195,16 +192,16 @@ class NullSpaceSmoothing(Smoothing):
     def smoothing(self):
         """Perform smoothing."""
         for i in range(0, self.num_iterations):
-            laplacians = []
+            shifts = []
             for n in self.grid.Nodes:
                 m = len(n.faces)
-                w = [f.area() for f in n.faces]
+                w = [f.get_triangle().area() for f in n.faces]
                 N = self.create_matrix_of_normals(n)
-                dv = self.vector_to_avg_of_centroids(n)
+                dv = self.get_laplacian(n)
 
                 assert N.shape == (m, 3)
                 assert len(w) == m
-                assert isinstance(dv, Vector)
+                assert isinstance(dv, Vect)
 
                 W = diag(w)
                 NTW = dot(N.T, W)
@@ -224,7 +221,7 @@ class NullSpaceSmoothing(Smoothing):
 
                 k = sum((eigenValues > self.epsilon * eigenValues[0]))
                 ns = eigenVectors[:, k:]
-                dv = dv.coords_np_array().reshape(3, 1)
+                dv = dv.coords_as_np().reshape(3, 1)
 
                 assert ns.shape == (3, 3 - k), 'Wrong eigenvectors shape'
                 assert dv.shape == (3, 1), 'Wrong shape'
@@ -233,12 +230,12 @@ class NullSpaceSmoothing(Smoothing):
                     ttT = dot(ns, ns.T)
                     t = self.st * dot(ttT, dv)
                     assert t.shape == (3, 1), 'Wrong shift shape'
-                    laplacian = Vector(real(t[0, 0]), real(t[1, 0]), real(t[2, 0]))
+                    shift = Vect(real(t[0, 0]), real(t[1, 0]), real(t[2, 0]))
                 else:
-                    laplacian = Vector(0, 0, 0)
-                laplacians.append(laplacian)
+                    shift = Vect(0, 0, 0)
+                shifts.append(shift)
 
-            Smoothing.apply_laplacians(self, laplacians)
+            Smoothing.apply_shifts(self, shifts)
 
             if self.print_intermediate_steps:
                 Smoothing.write_grid_and_print_info(self, i)
