@@ -164,6 +164,17 @@ class Vect:
 
     # ----------------------------------------------------------------------------------------------
 
+    def coords_as_np(self):
+        """Return coordinates as a numpy array.
+
+        Returns
+        -------
+        numpy array of coords.
+        """
+        return np.array(self.coords_list())
+
+    # ----------------------------------------------------------------------------------------------
+
     def rounded_coords_tuple(self, digits):
         """
         Get tuple of rounded coordinates.
@@ -214,15 +225,20 @@ class Vect:
 
     # ----------------------------------------------------------------------------------------------
 
-    def __mul__(self, k):
+    def __mul__(self, op):
         """
         Multiplication vector on number.
 
-        :param k: Value.
+        :param op: Vect, float ot int.
         :return:  Result (vector).
         """
 
-        return Vect(self.X * k, self.Y * k, self.Z * k)
+        if isinstance(op, Vect):
+            return self.X * op.X + self.Y * op.Y + self.Z * op.Z
+        elif isinstance(op, float) or isinstance(op, int):
+            return Vect(self.X * op, self.Y * op, self.Z * op)
+        else:
+            raise Exception('wrong argument type')
 
     # ----------------------------------------------------------------------------------------------
 

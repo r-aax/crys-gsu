@@ -101,9 +101,9 @@ def prizmatoid_volume_coefs(v1: Vect,
     # p_ij, u_ij
     v21 = v2 - v1
     v31 = v3 - v1
-    u1 = n1 / (n * n1)
-    u2 = n2 / (n * n2)
-    u3 = n3 / (n * n3)
+    u1 = n1 / Vect.dot_product(n, n1)
+    u2 = n2 / Vect.dot_product(n, n2)
+    u3 = n3 / Vect.dot_product(n, n3)
     u21 = u2 - u1
     u31 = u3 - u1
 
