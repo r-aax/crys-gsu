@@ -110,6 +110,8 @@ if __name__ == '__main__':
     parser.add_argument('grid_file', help='grid file name')
     parser.add_argument('src_dir', help='directory with source files')
     parser.add_argument('dst_dir', help='destination directory')
+    parser.add_argument('-v', '--verbosity', action='count',
+                        help='increase output verbosity', default=0)
     args = parser.parse_args()
 
     merge(grid_file=args.grid_file,
