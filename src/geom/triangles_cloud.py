@@ -176,6 +176,10 @@ class TrianglesCloud:
         :return: [] or list of triangle pairs - [t1, t2]
         """
 
+        # # if it is the same object
+        # if id(self) == id(tc):
+        #     return []
+
         # Cold check.
         if not self.Box.is_potential_intersect_with_box(tc.Box):
             return []
