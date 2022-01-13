@@ -95,6 +95,10 @@ for i, mesh in enumerate(meshes):
         print('Mesh #{} was written into {}'.format(i, outputfilename))
 
 if args.verbosity > 1:
-    print('Total time: {} s'.format(time.time() - start))
+    time_stat = 'Total time: {} s'.format(time.time() - start)
+    print(time_stat)
+    with open(outdir + '/report.txt', 'w') as f:
+        print(time_stat, file=f)
+
 
 # ==================================================================================================
