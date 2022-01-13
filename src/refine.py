@@ -5,6 +5,7 @@ refine grid from file
 import os
 import time
 from gsu.gsu import Grid
+from geom.triangle import Triangle
 from geom.triangles_cloud import TrianglesCloud
 
 # TODO реализовать метод перестроения сетки - перестроение пересекающихся треугольников
@@ -22,6 +23,29 @@ def refine_grid(grid_file, out_grid_file):
     -------
 
     """
+
+    def point_on_edge_of_triangle(point, tri):
+        """
+        The method finds the edge to which the point belongs and the opposite vertex of the triangle.
+
+        Parameters
+        ----------
+        point: Vect object
+        tri: Triangle object
+
+        Returns: [[Vect, Vect], Vect]
+        -------
+
+        """
+        # Get all points.
+        a, b, c = tri.a(), tri.b(), tri.c()
+
+        if not Triangle(a, b, point).area():
+            return [[a, b], c]
+        elif not Triangle(point, b, c).area():
+            return [[b, c], a]
+        else:
+            return [[c, a], b]
 
     # Check for grid file.
     if not os.path.isfile(grid_file):
@@ -48,19 +72,24 @@ def refine_grid(grid_file, out_grid_file):
 
         # analysis of each triangle
         for tri in [tr1, tr2]:
-            points_in_triangel = []
+            points_in_triangle = []
+
             # analyze the intersection points for the triangle
             for point in intersection_points:
                 position_in_the_triangle = tri.point_in_triangle(point)
                 if position_in_the_triangle != 0 and position_in_the_triangle != 1:
-                    points_in_triangel.append([position_in_the_triangle, point])
-            if points_in_triangel == []:
+                    points_in_triangle.append([position_in_the_triangle, point])
+
+            if points_in_triangle == []:
                 # do not rebuild this triangle
                 pass
+
             else:
-                if len(points_in_triangel) == 1:
-                    if points_in_triangel[0][0] == 2:
-                        # TODO анализ точки Р2 - к какому ребру приндлежит
+
+                if len(points_in_triangle) == 1:
+
+                    if points_in_triangle[0][0] == 2:
+                        res_pos = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
                         # TODO перестроить этот треугольник внутри сетки
                         # return [Triangle(А, B, P2), Triangle(B, C, P2)]
                         pass
@@ -68,22 +97,29 @@ def refine_grid(grid_file, out_grid_file):
                         # TODO построить три новых треугольника в сетке на месте старого
                         # return [Triangle(А, B, P3), Triangle(B, C, P3) , Triangle(А, C, P3)]
                         pass
+
                 else:
-                    if points_in_triangel[0][0] == 2 and points_in_triangel[1][0] == 2:
-                        # TODO анализ точки Р21 - к какому ребру приндлежит
-                        # TODO анализ точки Р22 - к какому ребру приндлежит
-                        # if < принадлежат одному ребру >:
-                        #     < построить три новых треугольника >
-                        # else:
-                        #     < построить три новых треугольника >
-                        pass
-                    elif points_in_triangel[0][0] == 3 and points_in_triangel[1][0] == 3:
-                        # TODO построить три новых треугольника в сетке на месте старого
-                        pass
-                    else:
+
+                    if points_in_triangle[0][0] == 2 and points_in_triangle[1][0] == 2:
+                        res_pos1 = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
+                        res_pos2 = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
+
+                        # belong the same edge
+                        if functools.reduce(lambda x, y : x and y, map(lambda p, q: p == q, res_pos1[0], res_pos2[0]),
+                                            True):
+                            # TODO построить три новых треугольника в сетке на месте старого
+                            pass
+                        else:
+                            # TODO построить три новых треугольника в сетке на месте старого
+                            pass
+
+                    elif points_in_triangle[0][0] == 3 and points_in_triangle[1][0] == 3:
                         # TODO построить три новых треугольника в сетке на месте старого
                         pass
 
+                    else:
+                        # TODO построить три новых треугольника в сетке на месте старого
+                        pass
 
     # Save grid.
     g.store(out_grid_file)
