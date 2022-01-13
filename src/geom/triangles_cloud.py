@@ -192,55 +192,6 @@ class TrianglesCloud:
                    for t2 in tc.Triangles
                    if t1.intersection_with_triangle(t2) != []]
 
-    # ----------------------------------------------------------------------------------------------
-
-    def replacing_triangles_at_the_intersection(self, t1, t2):
-        """
-        Removes old triangles from the triangle cloud and adds new triangles.
-
-        Parameters
-        ----------
-        t1 - triangle 1
-        t2 - triangle 2
-
-        Returns
-        -------
-        None
-
-        """
-
-        new_triangle_list = t1.rearranging_intersecting_triangles(t2)
-        if new_triangle_list:
-            # modified triangle cloud
-            self.Triangles.remove(t1)
-            self.Triangles.remove(t2)
-            self.Triangles += new_triangle_list
-
-    # ----------------------------------------------------------------------------------------------
-
-    @staticmethod
-    def removing_repetitions(list_of_triangles):
-        """
-
-        Parameters
-        ----------
-        list_of_triangles - list of triangles to sort
-
-        Returns
-        -------
-        The list of triangles cleared of repetitions
-
-        """
-
-        for tri in list_of_triangles:
-            count = 0
-            for other in list_of_triangles:
-                if tri == other:
-                    if count:
-                        list_of_triangles.remove(other)
-                    count += 1
-        return list_of_triangles
-
 # ==================================================================================================
 
 

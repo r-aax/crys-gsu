@@ -503,122 +503,6 @@ class Triangle:
         return False
 
     # ----------------------------------------------------------------------------------------------
-
-    def points_for_split_the_triangle(self):
-        """
-
-        Divides the triangle into two on the longest side.
-
-        Returns
-        -------
-        A list of two points ['the vertex opposite the long side', 'center of the long side'] (Vect object).
-
-        """
-
-        a, b, c = self.a(), self.b(), self.c()
-        ab = a.dist_to(b)
-        bc = b.dist_to(c)
-        ca = c.dist_to(a)
-        if ab > bc:
-            if ab > ca:
-                return [c, (a + b) / 2]
-            else:
-                return [b, (a + c) / 2]
-        else:
-            if bc > ca:
-                return [a, (c + b) / 2]
-            else:
-                return [b, (a + c) / 2]
-
-    # ----------------------------------------------------------------------------------------------
-
-    def split_the_triangle_on_the_split_point(self, position, point):
-        """
-        Splits the triangle into new triangles depending on the split point.
-
-        Parameters
-        ----------
-        point - the split point
-        position - position of the point in the triangle
-
-        Returns
-        -------
-        List of new triangles.
-
-        """
-
-        if position == 0:
-            return self
-        elif position == 1:
-            return self
-        elif position == 2:
-            if Vect.point_on_vector(self.a(), self.b(), point):
-                return [Triangle(self.a(), point, self.c()), Triangle(point, self.b(), self.c())]
-            elif Vect.point_on_vector(self.b(), self.c(), point):
-                return [Triangle(self.a(), self.b(), point), Triangle(self.a(), point, self.c())]
-            elif Vect.point_on_vector(self.c(), self.a(), point):
-                return [Triangle(self.a(), self.b(), point), Triangle(point, self.b(), self.c())]
-        elif position == 3:
-            # TODO дописать разбиение треугольника, когда точка внутри него
-            pass
-        return []
-
-    # ----------------------------------------------------------------------------------------------
-
-    def rearranging_intersecting_triangles(self, other):
-        """
-
-        Parameters
-        ----------
-        other - another triangle
-
-        Returns
-        -------
-        list of objects triangle or []
-
-        """
-
-        res = []
-
-        # получаем список точек пересечений обоих треугольников
-        list_of_points = self.intersection_with_triangle(other)
-
-        # перестраиваем каждый их двух треугольников
-        for tri in [self, other]:
-            list_of_new_triangles = [tri]
-            points_in_triangel = []
-
-            # находим точки пересечений для этого треугольника
-            for point in list_of_points:
-                answer = tri.point_in_triangle(point)
-                if answer != 0 and answer != 1:
-                    points_in_triangel.append([answer, point])
-
-            if points_in_triangel:
-                # сортируем, чтобы точки в ребрах были первыми
-                points_in_triangel.sort()
-
-                # для каждой точки проводим разбиение треугольника
-                # TODO тип расположения точки в треугольнике (0, 1, 2 или 3) указаны для исходного треугольника,
-                #  а для генерируемых нужно относительно них пересчитывать - сейчас не так
-                #  скорее всего придется генератор заменить на цикл с опознанием расположения точек
-                #  для каждого нового треугольника
-
-                for p in points_in_triangel:
-                    list_of_new_triangles = list(itertools.chain(*[t.split_the_triangle_on_the_split_point(*p) \
-                                                                   for t in list_of_new_triangles]))
-
-                # записываем список треугольников в общий список для вывода
-                res += list_of_new_triangles
-
-        if res:
-            # проверяем на наличие одинаковых треугольников и удаляем их из списка
-            # в классе TrianglesCloud написать статический, который принимает список треугольников,
-            # проверяет список на наличие одинаковых треугольников, удаляет одинаковые,
-            # возвращает очищенный от повторений список треугольников
-            return TrianglesCloud.removing_repetitions(res)
-
-        return []
     
     def min_side(self):
         """
@@ -640,12 +524,6 @@ if __name__ == '__main__':
 
     # from vect import Vect
     # from segment import Segment
-
-    # rearranging_intersecting_triangles
-    tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
-    tri2 = Triangle(Vect(1, 0.1, 0), Vect(9, 0.1, 0), Vect(5, 9, 0))
-    res = tri1.rearranging_intersecting_triangles(tri2)
-    assert(res == [])
 
     # point_in_triangle
     tri1 = Triangle(Vect(0, 0, 0), Vect(10, 0, 0), Vect(5, 10, 0))
