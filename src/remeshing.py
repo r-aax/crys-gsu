@@ -59,7 +59,7 @@ def wsum(a, w):
         Weighted sum.
     """
 
-    return sum(zipwith(a, w, lambda ai, wi: ai * wi)) / sum(w)
+    return sum(zipwith(a, w, lambda ai, wi: ai * wi), start=Vect()) / sum(w)
 
 # ==================================================================================================
 
