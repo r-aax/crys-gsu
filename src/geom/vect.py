@@ -242,30 +242,6 @@ class Vect:
 
     # ----------------------------------------------------------------------------------------------
 
-    def __radd__(self, v):
-        """
-        Addition of two vectors.
-
-        :param v: Vector.
-        :return:  Result.
-        """
-
-        return Vect(self.X + v.X, self.Y + v.Y, self.Z + v.Z)
-
-    # ----------------------------------------------------------------------------------------------
-
-    def __rsub__(self, v):
-        """
-        Subtraction of two vectors.
-
-        :param v: Vector.
-        :return:  Result.
-        """
-
-        return Vect(self.X - v.X, self.Y - v.Y, self.Z - v.Z)
-
-    # ----------------------------------------------------------------------------------------------
-
     def __rmul__(self, op):
         """
         Multiplication vector on number.
