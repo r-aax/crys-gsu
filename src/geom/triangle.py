@@ -517,6 +517,21 @@ class Triangle:
         ca = self.c() - self.a()
         return min([ab.mod(), bc.mod(), ca.mod()])
 
+    # ----------------------------------------------------------------------------------------------
+
+    def is_good(self):
+        """
+
+        Returns: The quality level of the triangle (Float).
+        -------
+
+        """
+
+        # Get all points.
+        a, b, c = self.a(), self.b(), self.c()
+
+        return (a.dist_to(b)**2 + b.dist_to(c)**2 + c.dist_to(a)**2) / sqrt(self.area())
+
 # ==================================================================================================
 
 
