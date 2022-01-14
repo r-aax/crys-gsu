@@ -60,7 +60,7 @@ def refine_grid(grid_file, out_grid_file):
     g = Grid()
     g.load(grid_file)
 
-    # поиск пересечений элементов сетки (треугольников)
+    # finding intersections of grid elements (triangles)
     triangles_list = g.get_triangles_list()
     triangles_cloud = TrianglesCloud(triangles_list)
     res_intersect = triangles_cloud.intersection_with_triangles_cloud(triangles_cloud)
@@ -80,7 +80,7 @@ def refine_grid(grid_file, out_grid_file):
                 if position_in_the_triangle != 0 and position_in_the_triangle != 1:
                     points_in_triangle.append([position_in_the_triangle, point])
 
-            if points_in_triangle == []:
+            if not points_in_triangle:
                 # do not rebuild this triangle
                 pass
 
