@@ -242,6 +242,47 @@ class Vect:
 
     # ----------------------------------------------------------------------------------------------
 
+    def __radd__(self, v):
+        """
+        Addition of two vectors.
+
+        :param v: Vector.
+        :return:  Result.
+        """
+
+        return Vect(self.X + v.X, self.Y + v.Y, self.Z + v.Z)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def __rsub__(self, v):
+        """
+        Subtraction of two vectors.
+
+        :param v: Vector.
+        :return:  Result.
+        """
+
+        return Vect(self.X - v.X, self.Y - v.Y, self.Z - v.Z)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def __rmul__(self, op):
+        """
+        Multiplication vector on number.
+
+        :param op: Vect, float ot int.
+        :return:  Result (vector).
+        """
+
+        if isinstance(op, Vect):
+            return self.X * op.X + self.Y * op.Y + self.Z * op.Z
+        elif isinstance(op, float) or isinstance(op, int):
+            return Vect(self.X * op, self.Y * op, self.Z * op)
+        else:
+            raise Exception('wrong argument type')
+
+    # ----------------------------------------------------------------------------------------------
+
     def __truediv__(self, k):
         """
         Division on float value.
