@@ -4,6 +4,7 @@ refine grid from file
 
 import os
 import time
+import functools
 from gsu.gsu import Grid
 from geom.triangle import Triangle
 from geom.triangles_cloud import TrianglesCloud
@@ -65,61 +66,84 @@ def refine_grid(grid_file, out_grid_file):
     triangles_cloud = TrianglesCloud(triangles_list)
     res_intersect = triangles_cloud.intersection_with_triangles_cloud(triangles_cloud)
 
-    for tr1, tr2 in res_intersect:
+    # необходимо отсортировать по треугольникам и объединить точки пересечений по одному треугольнику в один список
+    res_intersect.sort(key=lambda list_of_tri_and_points: id(list_of_tri_and_points[0]))
+    res_intersect_new_list = [res_intersect[0]]
+    for i in range(1, len(res_intersect)):
+        if id(res_intersect[i][0]) != id(res_intersect[i-1][0]):
+            res_intersect_new_list.append(res_intersect[i])
+        else:
+            res_intersect_new_list[-1][1] += res_intersect[i][1]
 
-        # intersection points
-        intersection_points = tr1.intersection_with_triangle(tr2)
+    # одинаковые точки нужно отсеять # TODO плохо отсеиваются - разные значения из-за разных округлений
+    for i in res_intersect_new_list:
+        res = i[1]
+        res.sort()
+        i[1] = [res[0]] + [res[i] for i in range(1, len(res)) if res[i] != res[i - 1]]
 
-        # analysis of each triangle
-        for tri in [tr1, tr2]:
-            points_in_triangle = []
+    for tri, intersection_points in res_intersect_new_list:
 
-            # analyze the intersection points for the triangle
-            for point in intersection_points:
-                position_in_the_triangle = tri.point_in_triangle(point)
-                if position_in_the_triangle != 0 and position_in_the_triangle != 1:
-                    points_in_triangle.append([position_in_the_triangle, point])
+        points_in_triangle = []
 
-            if not points_in_triangle:
-                # do not rebuild this triangle
-                pass
+        # analyze the intersection points for the triangle
+        for point in intersection_points:
+            position_in_the_triangle = tri.point_in_triangle(point)
+            if position_in_the_triangle != 0 and position_in_the_triangle != 1:
+                points_in_triangle.append([position_in_the_triangle, point])
 
-            else:
+        if not points_in_triangle:
+            # do not rebuild this triangle
+            pass
 
-                if len(points_in_triangle) == 1:
+        else:
 
-                    if points_in_triangle[0][0] == 2:
-                        res_pos = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
-                        # TODO перестроить этот треугольник внутри сетки
-                        # return [Triangle(А, B, P2), Triangle(B, C, P2)]
+            # перестроения треугольника при 1 точке
+            if len(points_in_triangle) == 1:
+
+                if points_in_triangle[0][0] == 2:
+                    res_pos = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
+                    # TODO перестроить этот треугольник
+                    # return [Triangle(А, B, P2), Triangle(B, C, P2)]
+                    pass
+                else:
+                    # TODO построить три новых треугольника в сетке на месте старого
+                    # return [Triangle(А, B, P3), Triangle(B, C, P3) , Triangle(А, C, P3)]
+                    pass
+
+            # перестроения треугольника при 2 точках
+            elif len(points_in_triangle) == 2:
+
+                if points_in_triangle[0][0] == 2 and points_in_triangle[1][0] == 2:
+                    res_pos1 = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
+                    res_pos2 = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
+
+                    # belong the same edge
+                    if functools.reduce(lambda x, y : x and y, map(lambda p, q: p == q, res_pos1[0], res_pos2[0]),
+                                        True):
+                        # TODO построить три новых треугольника в сетке на месте старого
                         pass
                     else:
                         # TODO построить три новых треугольника в сетке на месте старого
-                        # return [Triangle(А, B, P3), Triangle(B, C, P3) , Triangle(А, C, P3)]
                         pass
+
+                elif points_in_triangle[0][0] == 3 and points_in_triangle[1][0] == 3:
+                    # TODO построить три новых треугольника в сетке на месте старого
+                    pass
 
                 else:
+                    # TODO построить три новых треугольника в сетке на месте старого
+                    pass
 
-                    if points_in_triangle[0][0] == 2 and points_in_triangle[1][0] == 2:
-                        res_pos1 = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
-                        res_pos2 = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
+            # перестроения треугольника при 3 точках
+            elif len(points_in_triangle) == 3:
+                # TODO перестроение треугольника при 3 точках
+                pass
 
-                        # belong the same edge
-                        if functools.reduce(lambda x, y : x and y, map(lambda p, q: p == q, res_pos1[0], res_pos2[0]),
-                                            True):
-                            # TODO построить три новых треугольника в сетке на месте старого
-                            pass
-                        else:
-                            # TODO построить три новых треугольника в сетке на месте старого
-                            pass
+            # перестроения треугольника при прочих количествах точек
+            else:
+                # TODO перестроение треугольника при прочих количествах точек
+                pass
 
-                    elif points_in_triangle[0][0] == 3 and points_in_triangle[1][0] == 3:
-                        # TODO построить три новых треугольника в сетке на месте старого
-                        pass
-
-                    else:
-                        # TODO построить три новых треугольника в сетке на месте старого
-                        pass
 
     # Save grid.
     g.store(out_grid_file)

@@ -191,10 +191,24 @@ class TrianglesCloud:
             return list(itertools.chain(*[self.intersection_with_triangles_cloud(b) for b in tc.Subclouds]))
 
         else:
-            return [[t1, t2]
-                   for t1 in self.Triangles
-                   for t2 in tc.Triangles
-                   if t1.intersection_with_triangle(t2) != []]
+            # return [[t1, t2]
+            #        for t1 in self.Triangles
+            #        for t2 in tc.Triangles
+            #        if t1.intersection_with_triangle(t2) != []]
+
+            # список треугольник и его точки
+            list_tri_and_intersection_points = []
+            for t1 in self.Triangles:
+                for t2 in tc.Triangles:
+                    point_of_intersect = t1.intersection_with_triangle(t2)
+                    if point_of_intersect != []:
+                        list_tri_and_intersection_points.append([t1, point_of_intersect])
+                        list_tri_and_intersection_points.append([t2, point_of_intersect])
+
+            # необходимо отсортировать по треугольникам и объединить точки пересечений по одному треугольнику в один
+            # одинаковые точки нужно отсеять
+            return list_tri_and_intersection_points
+
 
 # ==================================================================================================
 
