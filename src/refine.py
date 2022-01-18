@@ -5,6 +5,7 @@ refine grid from file
 import os
 import time
 import functools
+import math
 from gsu.gsu import Grid
 from geom.triangle import Triangle
 from geom.triangles_cloud import TrianglesCloud
@@ -75,11 +76,15 @@ def refine_grid(grid_file, out_grid_file):
         else:
             res_intersect_new_list[-1][1] += res_intersect[i][1]
 
-    # одинаковые точки нужно отсеять # TODO плохо отсеиваются - разные значения из-за разных округлений
+    # одинаковые точки нужно отсеять
     for i in res_intersect_new_list:
         res = i[1]
         res.sort()
-        i[1] = [res[0]] + [res[i] for i in range(1, len(res)) if res[i] != res[i - 1]]
+        # i[1] = [res[0]] + [res[i] for i in range(1, len(res)) if res[i] != res[i - 1]]
+        i[1] = [res[0]] + [res[i] for i in range(1, len(res)) if
+                           not math.isclose(res[i].X, res[i - 1].X) and
+                           not math.isclose(res[i].Y, res[i - 1].Y) and
+                           not math.isclose(res[i].Z, res[i - 1].Z)]
 
     for tri, intersection_points in res_intersect_new_list:
 
