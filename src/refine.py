@@ -7,10 +7,12 @@ import time
 import functools
 import math
 from gsu.gsu import Grid
+from gsu.node import Node
+from gsu.edge import Edge
+from gsu.face import Face
+from geom.vect import Vect
 from geom.triangle import Triangle
 from geom.triangles_cloud import TrianglesCloud
-
-# TODO реализовать метод перестроения сетки - перестроение пересекающихся треугольников
 
 
 def refine_grid(grid_file, out_grid_file):
@@ -48,6 +50,8 @@ def refine_grid(grid_file, out_grid_file):
             return [[b, c], a]
         else:
             return [[c, a], b]
+
+    # ----------------------------------------------------------------------------------------------
 
     # Check for grid file.
     if not os.path.isfile(grid_file):
@@ -88,7 +92,11 @@ def refine_grid(grid_file, out_grid_file):
 
     for tri, intersection_points in res_intersect_new_list:
 
+        # список точек в треугольнике
         points_in_triangle = []
+
+        # объект сетки для перестроения
+        tri_in_grid = tri.BackRef
 
         # analyze the intersection points for the triangle
         for point in intersection_points:
@@ -112,7 +120,87 @@ def refine_grid(grid_file, out_grid_file):
                     pass
                 else:
                     # TODO построить три новых треугольника в сетке на месте старого
-                    # return [Triangle(А, B, P3), Triangle(B, C, P3) , Triangle(А, C, P3)]
+
+                    # 1) временно сохранить Data
+                    data = tri_in_grid.Data.copy()
+
+                    ### обернуть в отдельную функцию ###
+                    # 2) открыть Edges и в каждом Edge удалить Face этого треугольника
+                    edges = []
+                    for edge in tri_in_grid.Edges:
+                        edge.Faces.remove(tri_in_grid)
+                        edges.append(edge)
+                    # 3) открыть Nodes и в каждом Node удалить Face этого треугольника
+                    nodes = []
+                    for node in tri_in_grid.Nodes:
+                        node.Faces.remove(tri_in_grid)
+                        nodes.append(node)
+                    # 4) открыть Zone и удалить Face этого треугольника
+                    zone = tri_in_grid.Zone
+                    zone.Faces.remove(tri_in_grid)
+                    # 5) удаление треугольника из сетки
+                    g.Faces.remove(tri_in_grid)
+                    ### --------------------------- ###
+
+                    # 6) добавить новые фейсы
+                    # 6.1) создать фейс
+                    f1 = Face(list(data.keys()), list(data.values()))
+                    f2 = Face(list(data.keys()), list(data.values()))
+                    f3 = Face(list(data.keys()), list(data.values()))
+
+                    # 6.2) линк Zone
+                    f1.Zone = zone
+                    zone.Faces.append(f1)
+                    f2.Zone = zone
+                    zone.Faces.append(f2)
+                    f3.Zone = zone
+                    zone.Faces.append(f3)
+
+                    # 6.3) добавить и залинковать к ним Node и Edge
+                    # Nodes
+                    n1 = nodes[0]
+                    n2 = nodes[1]
+                    n3 = nodes[2]
+                    n4 = Node(points_in_triangle[0][1])
+
+                    f1.Nodes += [n1, n2, n4]
+                    f2.Nodes += [n2, n3, n4]
+                    f3.Nodes += [n1, n3, n4]
+
+                    n1.Faces += [f1, f3]
+                    n2.Faces += [f1, f2]
+                    n3.Faces += [f2, f3]
+                    n4.Faces += [f1, f2, f3]
+
+                    # Edges
+                    e1 = edges[0]
+                    e2 = edges[1]
+                    e3 = edges[2]
+                    e4 = Edge()
+                    e5 = Edge()
+                    e6 = Edge()
+
+                    n1.Edges += []
+                    n2.Edges += []
+                    n3.Edges += []
+                    n4.Edges += [e4, e5, e6]
+
+                    e1.Nodes += []
+                    e2.Nodes += []
+                    e3.Nodes += []
+                    e4.Nodes += [n4, n1]
+                    e5.Nodes += [n4, n2]
+                    e6.Nodes += [n4, n3]
+
+                    e1.Faces += []
+                    e2.Faces += []
+                    e3.Faces += []
+                    e4.Faces += [f1, f3]
+                    e5.Faces += [f1, f2]
+                    e6.Faces += [f3, f2]
+
+                    del tri_in_grid
+
                     pass
 
             # перестроения треугольника при 2 точках
@@ -147,6 +235,14 @@ def refine_grid(grid_file, out_grid_file):
             # перестроения треугольника при прочих количествах точек
             else:
                 # TODO перестроение треугольника при прочих количествах точек
+                # если len(points_in_triangle) > 3, то разбиваем треугольник в сетке на 3 треугольника по точке,
+                # ближайшей к центру треугольника
+                # выводим их в виде объектов класса Треугольник в конец списка res_intersect_new_list как,
+                # res_intersect_new_list.append([tri1, points_in_triangle],
+                #                               [tri2, points_in_triangle],
+                #                               [tri3, points_in_triangle])
+                # где points_in_triangle - набор точек, которые однозначно пересекали исходный треугольник
+                # так новые треугольники попадут в конец цикла и тоже будут рассмотрены и разбиты на части
                 pass
 
 
