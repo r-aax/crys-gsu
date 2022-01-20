@@ -119,44 +119,36 @@ def refine_grid(grid_file, out_grid_file):
                     # return [Triangle(А, B, P2), Triangle(B, C, P2)]
                     pass
                 else:
-                    # TODO построить три новых треугольника в сетке на месте старого
-
+                    # перестроение треугольника по одной точке Р3 на три новых треугольника
                     # 1) временно сохранить Data
                     data = tri_in_grid.Data.copy()
 
-                    ### обернуть в отдельную функцию ###
                     # 2) открыть Edges и в каждом Edge удалить Face этого треугольника
                     edges = []
                     for edge in tri_in_grid.Edges:
                         edge.Faces.remove(tri_in_grid)
                         edges.append(edge)
+
                     # 3) открыть Nodes и в каждом Node удалить Face этого треугольника
                     nodes = []
                     for node in tri_in_grid.Nodes:
                         node.Faces.remove(tri_in_grid)
                         nodes.append(node)
+
                     # 4) открыть Zone и удалить Face этого треугольника
                     zone = tri_in_grid.Zone
                     zone.Faces.remove(tri_in_grid)
+
                     # 5) удаление треугольника из сетки
                     g.Faces.remove(tri_in_grid)
-                    ### --------------------------- ###
 
                     # 6) добавить новые фейсы
-                    # 6.1) создать фейс
+                    # создать фейс
                     f1 = Face(list(data.keys()), list(data.values()))
                     f2 = Face(list(data.keys()), list(data.values()))
                     f3 = Face(list(data.keys()), list(data.values()))
 
-                    # 6.2) линк Zone
-                    f1.Zone = zone
-                    zone.Faces.append(f1)
-                    f2.Zone = zone
-                    zone.Faces.append(f2)
-                    f3.Zone = zone
-                    zone.Faces.append(f3)
-
-                    # 6.3) добавить и залинковать к ним Node и Edge
+                    # добавить и залинковать к ним Node и Edge
                     # Nodes
                     n1 = nodes[0]
                     n2 = nodes[1]
@@ -173,35 +165,59 @@ def refine_grid(grid_file, out_grid_file):
                     n4.Faces += [f1, f2, f3]
 
                     # Edges
-                    e1 = edges[0]
-                    e2 = edges[1]
-                    e3 = edges[2]
+                    for edge in edges:
+                        if n1 in edge.Nodes and n2 in edge.Nodes:
+                            e1 = edge
+                        elif n2 in edge.Nodes and n3 in edge.Nodes:
+                            e2 = edge
+                        else:
+                            e3 = edge
+
                     e4 = Edge()
                     e5 = Edge()
                     e6 = Edge()
 
-                    n1.Edges += []
-                    n2.Edges += []
-                    n3.Edges += []
+                    n1.Edges += [e4]
+                    n2.Edges += [e5]
+                    n3.Edges += [e6]
                     n4.Edges += [e4, e5, e6]
 
-                    e1.Nodes += []
-                    e2.Nodes += []
-                    e3.Nodes += []
+                    # это исходные ребра, их точки не поменялись
+                    # e1.Nodes += []
+                    # e2.Nodes += []
+                    # e3.Nodes += []
+                    # новые ребра
                     e4.Nodes += [n4, n1]
                     e5.Nodes += [n4, n2]
                     e6.Nodes += [n4, n3]
 
-                    e1.Faces += []
-                    e2.Faces += []
-                    e3.Faces += []
+                    e1.Faces += [f1]
+                    e2.Faces += [f2]
+                    e3.Faces += [f3]
                     e4.Faces += [f1, f3]
                     e5.Faces += [f1, f2]
                     e6.Faces += [f3, f2]
 
-                    del tri_in_grid
+                    # добавить данные в Grid
+                    g.Faces += [f1, f2, f3]
+                    g.Edges += [e4, e5, e6]
+                    g.Nodes += [n4]
+                    g.RoundedCoordsBag.add(n4.RoundedCoords)
 
-                    pass
+                    # линк Zone
+                    f1.Zone = zone
+                    f2.Zone = zone
+                    f3.Zone = zone
+
+                    zone.Faces += [f1]
+                    zone.Faces += [f2]
+                    zone.Faces += [f3]
+
+                    zone.Edges += [e4, e5, e6]
+
+                    zone.Nodes += [n4]
+
+                    del tri_in_grid
 
             # перестроения треугольника при 2 точках
             elif len(points_in_triangle) == 2:
