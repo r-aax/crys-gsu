@@ -72,8 +72,13 @@ def refine_grid(grid_file, out_grid_file):
     res_intersect = triangles_cloud.intersection_with_triangles_cloud(triangles_cloud)
 
     # необходимо отсортировать по треугольникам и объединить точки пересечений по одному треугольнику в один список
+    # сортировка списка треугольников по id
     res_intersect.sort(key=lambda list_of_tri_and_points: id(list_of_tri_and_points[0]))
+    # первый элемент просто записываем в новый список
     res_intersect_new_list = [res_intersect[0]]
+    # остальные элементы сравниваем с предыдущими
+    # если треугольники одинаковвые, то к предыдущему дописывем список точек
+    # если треугольники разные - дописываем в новый список треугольник с точками
     for i in range(1, len(res_intersect)):
         if id(res_intersect[i][0]) != id(res_intersect[i-1][0]):
             res_intersect_new_list.append(res_intersect[i])
@@ -81,14 +86,12 @@ def refine_grid(grid_file, out_grid_file):
             res_intersect_new_list[-1][1] += res_intersect[i][1]
 
     # одинаковые точки нужно отсеять
-    for i in res_intersect_new_list:
-        res = i[1]
-        res.sort()
-        # i[1] = [res[0]] + [res[i] for i in range(1, len(res)) if res[i] != res[i - 1]]
-        i[1] = [res[0]] + [res[i] for i in range(1, len(res)) if
-                           not math.isclose(res[i].X, res[i - 1].X) and
-                           not math.isclose(res[i].Y, res[i - 1].Y) and
-                           not math.isclose(res[i].Z, res[i - 1].Z)]
+    for j in res_intersect_new_list:
+        j[1].sort()
+        j[1] = [j[1][0]] + [j[1][i] for i in range(1, len(j[1])) if
+                           not (math.isclose(j[1][i].X, j[1][i - 1].X) and
+                                math.isclose(j[1][i].Y, j[1][i - 1].Y) and
+                                math.isclose(j[1][i].Z, j[1][i - 1].Z))]
 
     for tri, intersection_points in res_intersect_new_list:
 
