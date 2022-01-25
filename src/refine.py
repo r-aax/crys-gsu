@@ -41,6 +41,7 @@ def refine_grid(grid_file, out_grid_file):
         -------
 
         """
+
         # Get all points.
         a, b, c = tri.a(), tri.b(), tri.c()
 
@@ -52,6 +53,26 @@ def refine_grid(grid_file, out_grid_file):
             return [[c, a], b]
 
     # ----------------------------------------------------------------------------------------------
+
+    def in_point_class(arg, points_list):
+        """
+
+        Parameters
+        ----------
+        arg: class number (0, 1, 2 or 3)
+        points_list: list of point lists and their class numbers
+
+        Returns: True or False
+        -------
+
+        """
+
+        for i in points_list:
+            if arg == i[-1]:
+                return True
+        return False
+
+    # =================================================================================================
 
     # Check for grid file.
     if not os.path.isfile(grid_file):
@@ -100,6 +121,7 @@ def refine_grid(grid_file, out_grid_file):
 
         # объект сетки для перестроения
         tri_in_grid = tri.BackRef
+        assert(tri_in_grid)
 
         # analyze the intersection points for the triangle
         for point in intersection_points:
@@ -246,24 +268,28 @@ def refine_grid(grid_file, out_grid_file):
                     # TODO построить три новых треугольника в сетке на месте старого
                     pass
 
-            # перестроения треугольника при 3 точках
-            elif len(points_in_triangle) == 3:
-                # TODO перестроение треугольника при 3 точках
-                pass
+            # # перестроения треугольника при 3 точках
+            # elif len(points_in_triangle) == 3:
+            #     # TODO перестроение треугольника при 3 точках
+            #     pass
 
             # перестроения треугольника при прочих количествах точек
             else:
                 # TODO перестроение треугольника при прочих количествах точек
-                # если len(points_in_triangle) > 3, то разбиваем треугольник в сетке на 3 треугольника по точке,
-                # ближайшей к центру треугольника
-                # выводим их в виде объектов класса Треугольник в конец списка res_intersect_new_list как,
-                # res_intersect_new_list.append([tri1, points_in_triangle],
-                #                               [tri2, points_in_triangle],
-                #                               [tri3, points_in_triangle])
-                # где points_in_triangle - набор точек, которые однозначно пересекали исходный треугольник
-                # так новые треугольники попадут в конец цикла и тоже будут рассмотрены и разбиты на части
-                pass
-
+                if in_point_class(3, points_in_triangle):
+                    # если len(points_in_triangle) > 3, то разбиваем треугольник в сетке на 3 треугольника по точке,
+                    # ближайшей к центру треугольника
+                    # выводим их в виде объектов класса Треугольник в конец списка res_intersect_new_list как,
+                    # res_intersect_new_list.append([tri1, points_in_triangle],
+                    #                               [tri2, points_in_triangle],
+                    #                               [tri3, points_in_triangle])
+                    # где points_in_triangle - набор точек, которые однозначно пересекали исходный треугольник
+                    # так новые треугольники попадут в конец цикла и тоже будут рассмотрены и разбиты на части
+                    pass
+                else:
+                    # нет ни одной точки в центре треугольника => есть много точек на ребрах (больше двух)
+                    # нужно разработать алгоритм действий в этом случае
+                    pass
 
     # Save grid.
     g.store(out_grid_file)
