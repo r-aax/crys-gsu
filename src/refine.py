@@ -68,9 +68,47 @@ def refine_grid(grid_file, out_grid_file):
         """
 
         for i in points_list:
-            if arg == i[-1]:
+            if arg == i[0]:
                 return True
         return False
+
+    # ----------------------------------------------------------------------------------------------
+
+    def del_face_from_grid_and_get_data_from_face(tri_in_grid, g):
+        """
+
+        Parameters
+        ----------
+        face: Face in Grid
+        g: Grid object
+
+        Returns: data, nodes, edges, zone form Face in Grid
+        -------
+
+        """
+        # 1) временно сохранить Data
+        data = tri_in_grid.Data.copy()
+
+        # 2) открыть Edges и в каждом Edge удалить Face этого треугольника
+        edges = []
+        for edge in tri_in_grid.Edges:
+            edge.Faces.remove(tri_in_grid)
+            edges.append(edge)
+
+        # 3) открыть Nodes и в каждом Node удалить Face этого треугольника
+        nodes = []
+        for node in tri_in_grid.Nodes:
+            node.Faces.remove(tri_in_grid)
+            nodes.append(node)
+
+        # 4) открыть Zone и удалить Face этого треугольника
+        zone = tri_in_grid.Zone
+        zone.Faces.remove(tri_in_grid)
+
+        # 5) удаление треугольника из сетки
+        g.Faces.remove(tri_in_grid)
+
+        return data, nodes, edges, zone
 
     # =================================================================================================
 
@@ -139,35 +177,68 @@ def refine_grid(grid_file, out_grid_file):
             if len(points_in_triangle) == 1:
 
                 if points_in_triangle[0][0] == 2:
-                    res_pos = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
+                    # точка находится на ребре у этого треугольника и у еще одного
+                    # в этом проходе цикла необходимо перестроить только этот треугольник,
+                    # потому что второй или уже перестроен или в очереди на перестроение
+                    # с использованием этой же точки
+
+                    # перестроение треугольника по одной точке Р2 на два новых треугольника
                     # TODO перестроить этот треугольник
                     # return [Triangle(А, B, P2), Triangle(B, C, P2)]
+
+                    # удалить Face из Grid и вынуть все необходимые данные
+                    data, nodes, edges, zone = del_face_from_grid_and_get_data_from_face(tri_in_grid, g)
+
+                    # создать фейсы
+                    f1 = Face(list(data.keys()), list(data.values()))
+                    f2 = Face(list(data.keys()), list(data.values()))
+
+                    # Nodes
+                    # n4 - новый нод, который необходимо создать
+                    # не известно между какими нодами лежит n4
+                    n4 = Node(points_in_triangle[0][1])
+
+                    # необходимо это определить
+                    list_of_point_for_node, opposite_point = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
+
+                    # зададим однозначные ссылки на конкретные ноды (ноды существующие в сетке)
+                    # n1 и n2 - ноды ребра для разбиения
+                    # n3 - противоположный нод
+                    for node in nodes:
+                        if node.P == list_of_point_for_node[0]:
+                            n1 = node
+                        elif node.P == list_of_point_for_node[1]:
+                            n2 = node
+                        else:
+                            n3 = node
+
+                    # Edges
+                    # ищем соответствующие ребра
+                    # e1 и е2 - целые ребра
+                    # е3 - ребро для разбиения и последующего удаления
+                    # е4 и е5 - новые ребра
+                    for edge in edges:
+                        if n1 in edge.Nodes and n3 in edge.Nodes:
+                            e1 = edge
+                        elif n2 in edge.Nodes and n3 in edge.Nodes:
+                            e2 = edge
+                        else:
+                            e3 = edge
+
+                    # новые ребра
+                    e4 = Edge()
+                    e5 = Edge()
+
+                    # TODO если удалить е3 из Grid, то у противоположного треугольника не будет ребра е3,
+                    #  т.е. треугольник будет состоять из 4 ребер, а нет трех, что поломает все алгоритмы
+
                     pass
                 else:
                     # перестроение треугольника по одной точке Р3 на три новых треугольника
-                    # 1) временно сохранить Data
-                    data = tri_in_grid.Data.copy()
+                    # удалить Face из Grid и вынуть все необходимые данные
+                    data, nodes, edges, zone = del_face_from_grid_and_get_data_from_face(tri_in_grid, g)
 
-                    # 2) открыть Edges и в каждом Edge удалить Face этого треугольника
-                    edges = []
-                    for edge in tri_in_grid.Edges:
-                        edge.Faces.remove(tri_in_grid)
-                        edges.append(edge)
-
-                    # 3) открыть Nodes и в каждом Node удалить Face этого треугольника
-                    nodes = []
-                    for node in tri_in_grid.Nodes:
-                        node.Faces.remove(tri_in_grid)
-                        nodes.append(node)
-
-                    # 4) открыть Zone и удалить Face этого треугольника
-                    zone = tri_in_grid.Zone
-                    zone.Faces.remove(tri_in_grid)
-
-                    # 5) удаление треугольника из сетки
-                    g.Faces.remove(tri_in_grid)
-
-                    # 6) добавить новые фейсы
+                    # добавить новые фейсы
                     # создать фейс
                     f1 = Face(list(data.keys()), list(data.values()))
                     f2 = Face(list(data.keys()), list(data.values()))
@@ -226,8 +297,11 @@ def refine_grid(grid_file, out_grid_file):
                     # добавить данные в Grid
                     g.Faces += [f1, f2, f3]
                     g.Edges += [e4, e5, e6]
-                    g.Nodes += [n4]
-                    g.RoundedCoordsBag.add(n4.RoundedCoords)
+                    # TODO а надо ли добавлять Node в Grid? ведь это чья-то вершина, которая уже там есть
+                    # может все к существующему объекту привязывать, а не к новому?
+                    if not n4 in g.Nodes:
+                        g.Nodes += [n4]
+                        g.RoundedCoordsBag.add(n4.RoundedCoords)
 
                     # линк Zone
                     f1.Zone = zone
@@ -249,23 +323,23 @@ def refine_grid(grid_file, out_grid_file):
 
                 if points_in_triangle[0][0] == 2 and points_in_triangle[1][0] == 2:
                     res_pos1 = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
-                    res_pos2 = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
+                    res_pos2 = point_on_edge_of_triangle(points_in_triangle[1][1], tri)
 
                     # belong the same edge
                     if functools.reduce(lambda x, y : x and y, map(lambda p, q: p == q, res_pos1[0], res_pos2[0]),
                                         True):
-                        # TODO построить три новых треугольника в сетке на месте старого
+                        # TODO построить три новых треугольника в сетке на месте старого (две точки на одном ребре)
                         pass
                     else:
-                        # TODO построить три новых треугольника в сетке на месте старого
+                        # TODO построить три новых треугольника в сетке на месте старого (две точки на двух ребрах)
                         pass
 
                 elif points_in_triangle[0][0] == 3 and points_in_triangle[1][0] == 3:
-                    # TODO построить три новых треугольника в сетке на месте старого
+                    # TODO построить три новых треугольника в сетке на месте старого (обе точки в центре)
                     pass
 
                 else:
-                    # TODO построить три новых треугольника в сетке на месте старого
+                    # TODO построить три новых треугольника в сетке на месте старого (одна в центре, вторая на ребре)
                     pass
 
             # # перестроения треугольника при 3 точках

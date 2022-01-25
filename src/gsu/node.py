@@ -48,6 +48,23 @@ class Node:
 
         return self.RoundedCoords == n.RoundedCoords
 
+    # ----------------------------------------------------------------------------------------------
+
+    def __eq__(self, other):
+        """
+
+        Parameters
+        ----------
+        other: Another node
+
+        Returns: True - if nodes are near to each other,
+                 False - otherwise.
+        -------
+
+        """
+
+        return self.is_near(other)
+
 # ==================================================================================================
 
 
