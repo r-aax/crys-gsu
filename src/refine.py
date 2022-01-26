@@ -110,6 +110,27 @@ def refine_grid(grid_file, out_grid_file):
 
         return data, nodes, edges, zone
 
+    # ----------------------------------------------------------------------------------------------
+
+    def get_node_from_list_of_nodes(vect, nodes):
+        """
+
+        Parameters
+        ----------
+        vect: Vect
+        nodes: List of Nodes
+
+        Returns: Node or None
+        -------
+
+        """
+
+        node = Node(vect)
+        if node in nodes:
+            return nodes[nodes.index(node)]
+
+        return None
+
     # =================================================================================================
 
     # Check for grid file.
@@ -152,6 +173,7 @@ def refine_grid(grid_file, out_grid_file):
                                 math.isclose(j[1][i].Y, j[1][i - 1].Y) and
                                 math.isclose(j[1][i].Z, j[1][i - 1].Z))]
 
+    # Поочереди перестраиваем все треугольники (если у них есть точки для перестроения)
     for tri, intersection_points in res_intersect_new_list:
 
         # список точек в треугольнике
@@ -249,7 +271,16 @@ def refine_grid(grid_file, out_grid_file):
                     n1 = nodes[0]
                     n2 = nodes[1]
                     n3 = nodes[2]
-                    n4 = Node(points_in_triangle[0][1])
+                    # если нод существует - работать с существующим
+                    old_node = get_node_from_list_of_nodes(points_in_triangle[0][1], g.Nodes)
+                    if old_node:
+                        n4 = old_node
+                    # если нет - создать новый и добавить его в сетку
+                    else:
+                        n4 = Node(points_in_triangle[0][1])
+                        # добавить данные в Grid
+                        g.Nodes += [n4]
+                        g.RoundedCoordsBag.add(n4.RoundedCoords)
 
                     f1.Nodes += [n1, n2, n4]
                     f2.Nodes += [n2, n3, n4]
@@ -297,11 +328,6 @@ def refine_grid(grid_file, out_grid_file):
                     # добавить данные в Grid
                     g.Faces += [f1, f2, f3]
                     g.Edges += [e4, e5, e6]
-                    # TODO а надо ли добавлять Node в Grid? ведь это чья-то вершина, которая уже там есть
-                    # может все к существующему объекту привязывать, а не к новому?
-                    if not n4 in g.Nodes:
-                        g.Nodes += [n4]
-                        g.RoundedCoordsBag.add(n4.RoundedCoords)
 
                     # линк Zone
                     f1.Zone = zone
