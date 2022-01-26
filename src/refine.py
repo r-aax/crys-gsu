@@ -238,7 +238,6 @@ def refine_grid(grid_file, out_grid_file):
 
                     # Nodes
                     # не известно между какими нодами лежит n4
-
                     # необходимо это определить
                     list_of_point_for_node, opposite_point = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
 
@@ -264,6 +263,7 @@ def refine_grid(grid_file, out_grid_file):
                         # добавить данные в Grid
                         g.Nodes += [n4]
                         g.RoundedCoordsBag.add(n4.RoundedCoords)
+                        zone.Nodes += [n4]
 
                     # Edges
                     # ищем соответствующие ребра
@@ -280,7 +280,17 @@ def refine_grid(grid_file, out_grid_file):
                     e5 = Edge()
 
                     # TODO если удалить е3 из Grid, то у противоположного треугольника не будет ребра е3,
-                    #  т.е. треугольник будет состоять из 4 ребер, а нет трех, что поломает все алгоритмы
+                    #  т.е. треугольник будет состоять из 4 ребер, а не трех, что поломает все алгоритмы
+
+                    # если это первый из двух треугольников для перестроения относительно этой точки,
+                    # то в е4 и е5 записываем f1 и f2, е3 не удаляем из противоположного фейса, сетки и нодов,
+                    # е4 и е5 не записываем в противоположный фейс
+                    if e3.Faces:
+                        pass
+                    # если это второй, то в e4 и e5 записываем f1, f2 и противоположные файсы (их там два -
+                    # по одному на каждое ребро), е3 удалить из сетки, зоны и нодов
+                    else:
+                        pass
 
                     pass
                 else:
@@ -309,6 +319,7 @@ def refine_grid(grid_file, out_grid_file):
                         # добавить данные в Grid
                         g.Nodes += [n4]
                         g.RoundedCoordsBag.add(n4.RoundedCoords)
+                        zone.Nodes += [n4]
 
                     f1.Nodes += [n1, n2, n4]
                     f2.Nodes += [n2, n3, n4]
@@ -367,8 +378,6 @@ def refine_grid(grid_file, out_grid_file):
                     zone.Faces += [f3]
 
                     zone.Edges += [e4, e5, e6]
-
-                    zone.Nodes += [n4]
 
                     del tri_in_grid
 
