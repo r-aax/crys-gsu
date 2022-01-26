@@ -199,14 +199,35 @@ def refine_grid(grid_file, out_grid_file):
             if len(points_in_triangle) == 1:
 
                 if points_in_triangle[0][0] == 2:
+                    # перестроение треугольника по одной точке Р2 на два новых треугольника
+
                     # точка находится на ребре у этого треугольника и у еще одного
                     # в этом проходе цикла необходимо перестроить только этот треугольник,
                     # потому что второй или уже перестроен или в очереди на перестроение
                     # с использованием этой же точки
 
-                    # перестроение треугольника по одной точке Р2 на два новых треугольника
-                    # TODO перестроить этот треугольник
-                    # return [Triangle(А, B, P2), Triangle(B, C, P2)]
+                    #             n3
+                    #            *
+                    #           /|\
+                    #          / | \
+                    #         /  |  \
+                    #      e1/   |   \e2
+                    #       /    |    \
+                    #      /  f1 |  f2 \
+                    #     /      |      \
+                    #    /       |       \
+                    #   *--------*--------*
+                    #  n1   e4  n4   e5   n2
+                    #             e3
+                    #
+                    # n1, n2, n3 - исходные ноды
+                    # n4 - новый или исходный нод
+                    #
+                    # e1 и е2 - исходные ребра
+                    # е3 - ребро для разбиения и последующего удаления
+                    # е4 и е5 - новые ребра
+                    #
+                    # f1, f2 - новые фейсы
 
                     # удалить Face из Grid и вынуть все необходимые данные
                     data, nodes, edges, zone = del_face_from_grid_and_get_data_from_face(tri_in_grid, g)
@@ -216,9 +237,7 @@ def refine_grid(grid_file, out_grid_file):
                     f2 = Face(list(data.keys()), list(data.values()))
 
                     # Nodes
-                    # n4 - новый нод, который необходимо создать
                     # не известно между какими нодами лежит n4
-                    n4 = Node(points_in_triangle[0][1])
 
                     # необходимо это определить
                     list_of_point_for_node, opposite_point = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
@@ -234,11 +253,20 @@ def refine_grid(grid_file, out_grid_file):
                         else:
                             n3 = node
 
+                    # n4 - уже существует или это новая вершина для сетки?
+                    # если нод существует - работать с существующим
+                    old_node = get_node_from_list_of_nodes(points_in_triangle[0][1], g.Nodes)
+                    if old_node:
+                        n4 = old_node
+                    # если нет - создать новый и добавить его в сетку
+                    else:
+                        n4 = Node(points_in_triangle[0][1])
+                        # добавить данные в Grid
+                        g.Nodes += [n4]
+                        g.RoundedCoordsBag.add(n4.RoundedCoords)
+
                     # Edges
                     # ищем соответствующие ребра
-                    # e1 и е2 - целые ребра
-                    # е3 - ребро для разбиения и последующего удаления
-                    # е4 и е5 - новые ребра
                     for edge in edges:
                         if n1 in edge.Nodes and n3 in edge.Nodes:
                             e1 = edge
