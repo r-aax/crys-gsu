@@ -1217,4 +1217,114 @@ class Grid:
                         n.border = True
                         self.number_of_border_nodes += 1
 
+    # ----------------------------------------------------------------------------------------------
+
+    def divide_face(self, face, p):
+        """
+
+        Atomic grid transformation. Dividing a face by a point.
+
+        Parameters
+        ----------
+        face: Face
+        p: Vector
+
+        Returns
+        -------
+
+        """
+
+        # analyze the intersection points for the triangle
+        assert(face.get_triangle().point_in_triangle(p) == 3)
+
+        # det all data and del from grid
+        data = face.Data.copy()
+        edges = []
+        for edge in face.Edges:
+            edge.Faces.remove(face)
+            edges.append(edge)
+        nodes = []
+        for node in face.Nodes:
+            node.Faces.remove(face)
+            nodes.append(node)
+        zone = face.Zone
+        zone.Faces.remove(face)
+        self.Faces.remove(face)
+
+        # get new faces
+        f1 = Face(list(data.keys()), list(data.values()))
+        f2 = Face(list(data.keys()), list(data.values()))
+        f3 = Face(list(data.keys()), list(data.values()))
+
+        # Nodes
+        n1 = nodes[0]
+        n2 = nodes[1]
+        n3 = nodes[2]
+
+        # P is old node or not
+        node = Node(p)
+        if node in self.Nodes:
+            n4 = self.Nodes[self.Nodes.index(node)]
+        else:
+            n4 = node
+            # data in Grid
+            self.Nodes += [n4]
+            self.RoundedCoordsBag.add(n4.RoundedCoords)
+            zone.Nodes += [n4]
+
+        f1.Nodes += [n1, n2, n4]
+        f2.Nodes += [n2, n3, n4]
+        f3.Nodes += [n1, n3, n4]
+
+        n1.Faces += [f1, f3]
+        n2.Faces += [f1, f2]
+        n3.Faces += [f2, f3]
+        n4.Faces += [f1, f2, f3]
+
+        # Edges
+        for edge in edges:
+            if n1 in edge.Nodes and n2 in edge.Nodes:
+                e1 = edge
+            elif n2 in edge.Nodes and n3 in edge.Nodes:
+                e2 = edge
+            else:
+                e3 = edge
+
+        e4 = Edge()
+        e5 = Edge()
+        e6 = Edge()
+
+        n1.Edges += [e4]
+        n2.Edges += [e5]
+        n3.Edges += [e6]
+        n4.Edges += [e4, e5, e6]
+
+        e4.Nodes += [n4, n1]
+        e5.Nodes += [n4, n2]
+        e6.Nodes += [n4, n3]
+
+        e1.Faces += [f1]
+        e2.Faces += [f2]
+        e3.Faces += [f3]
+        e4.Faces += [f1, f3]
+        e5.Faces += [f1, f2]
+        e6.Faces += [f3, f2]
+
+        f1.Edges += [e1, e4, e5]
+        f2.Edges += [e2, e5, e6]
+        f3.Edges += [e2, e4, e6]
+
+        self.Faces += [f1, f2, f3]
+        self.Edges += [e4, e5, e6]
+
+        f1.Zone = zone
+        f2.Zone = zone
+        f3.Zone = zone
+
+        zone.Faces += [f1]
+        zone.Faces += [f2]
+        zone.Faces += [f3]
+
+        zone.Edges += [e4, e5, e6]
+
 # ==================================================================================================
