@@ -1327,4 +1327,111 @@ class Grid:
 
         zone.Edges += [e4, e5, e6]
 
+        del face
+
+        # ----------------------------------------------------------------------------------------------
+
+    def collapse_face(self, face):
+        """
+
+        Atomic grid transformation. Tightening the grid along the borders.
+
+        Parameters
+        ----------
+        face: Face
+
+        Returns
+        -------
+
+        """
+
+        # det all data and del from grid
+        data1 = face.Data.copy()
+
+        edges1 = []
+        max_len_edge = None
+        for edge in face.Edges:
+            edge.Faces.remove(face)
+            edges1.append(edge)
+
+        for edge in edges1:
+            len_edge = edge.len_edge()
+            if max_len_edge is None:
+                max_len_edge = len_edge
+                max_edge = edge
+            if len_edge > max_len_edge:
+                max_len_edge = len_edge
+                max_edge = edge
+
+        nodes1 = []
+        for node in face.Nodes:
+            node.Faces.remove(face)
+            nodes1.append(node)
+
+        zone = face.Zone
+        zone.Faces.remove(face)
+        self.Faces.remove(face)
+
+        other_face = max_edge.Faces[0]
+
+        # det all data and del from grid (other face)
+        data2 = other_face.Data.copy()
+        edges2 = []
+        for edge in other_face.Edges:
+            edge.Faces.remove(other_face)
+            edges2.append(edge)
+        nodes2 = []
+        for node in other_face.Nodes:
+            node.Faces.remove(other_face)
+            nodes2.append(node)
+
+        zone.Faces.remove(other_face)
+        self.Faces.remove(other_face)
+
+        # get new faces
+        f1 = Face(list(data1.keys()), list(data1.values()))
+        f2 = Face(list(data2.keys()), list(data2.values()))
+
+        # get nodes
+        n1_f1 = max_edge.Nodes[0]
+        n2_f2 = max_edge.Nodes[1]
+        n3_f1_f2 = [i for i in face.Nodes if id(i) != id(n1_f1) and id(i) != id(n2_f2)][0]
+        n4_f1_f2 = [i for i in other_face.Nodes if id(i) != id(n1_f1) and id(i) != id(n2_f2)][0]
+
+        # get edges
+        face.Edges.remove(max_edge)
+        other_face.Edges.remove(max_edge)
+        e1_f1 = [edge for edge in face.Edges for node in edge.Nodes if id(node) == id(n1_f1)][0]
+        e2_f1 = [edge for edge in other_face.Edges for node in edge.Nodes if id(node) == id(n1_f1)][0]
+        e3_f2 = [edge for edge in face.Edges for node in edge.Nodes if id(node) == id(n2_f2)][0]
+        e4_f2 = [edge for edge in other_face.Edges for node in edge.Nodes if id(node) == id(n2_f2)][0]
+        e5_f1_f2 = Edge()
+        e5_f1_f2.Nodes += [n3_f1_f2, n4_f1_f2]
+
+        # link nodes
+        f1.Nodes += [n1_f1, n3_f1_f2, n4_f1_f2]
+        f2.Nodes += [n2_f2, n3_f1_f2, n4_f1_f2]
+        n1_f1.Edges.remove(max_edge)
+        n2_f2.Edges.remove(max_edge)
+
+        # link edges
+        f1.Edges += [e1_f1, e2_f1, e5_f1_f2]
+        f2.Edges += [e3_f2, e4_f2, e5_f1_f2]
+
+        # link zone
+        f1.Zone = zone
+        f2.Zone = zone
+        zone.Faces += [f1, f2]
+        zone.Edges += [e5_f1_f2]
+        zone.Edges.remove(max_edge)
+
+        # link grid
+        self.Edges.remove(max_edge)
+        self.Edges += [e5_f1_f2]
+        self.Faces += [f1, f2]
+
+        del max_edge
+        del face
+        del other_face
+
 # ==================================================================================================

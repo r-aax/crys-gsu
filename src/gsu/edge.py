@@ -26,6 +26,21 @@ class Edge:
 
     # ----------------------------------------------------------------------------------------------
 
+    def len_edge(self):
+        """
+        Edge length.
+
+        Returns: Edge length.
+        -------
+
+        """
+
+        assert(len(self.Nodes) == 2)
+
+        return self.Nodes[0].P.dist_to(self.Nodes[1].P)
+
+    # ----------------------------------------------------------------------------------------------
+
     def is_border(self):
         """
         Check if edge is border edge.
