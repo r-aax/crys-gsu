@@ -1347,7 +1347,8 @@ class Grid:
         """
 
         # det all data and del from grid
-        data1 = face.Data.copy()
+        # one data for two
+        data = face.Data.copy()
 
         edges1 = []
         max_len_edge = None
@@ -1364,6 +1365,8 @@ class Grid:
                 max_len_edge = len_edge
                 max_edge = edge
 
+        assert(len(max_edge.Faces) == 1)
+
         nodes1 = []
         for node in face.Nodes:
             node.Faces.remove(face)
@@ -1376,7 +1379,7 @@ class Grid:
         other_face = max_edge.Faces[0]
 
         # det all data and del from grid (other face)
-        data2 = other_face.Data.copy()
+        # data2 = other_face.Data.copy()
         edges2 = []
         for edge in other_face.Edges:
             edge.Faces.remove(other_face)
@@ -1390,8 +1393,8 @@ class Grid:
         self.Faces.remove(other_face)
 
         # get new faces
-        f1 = Face(list(data1.keys()), list(data1.values()))
-        f2 = Face(list(data2.keys()), list(data2.values()))
+        f1 = Face(list(data.keys()), list(data.values()))
+        f2 = Face(list(data.keys()), list(data.values()))
 
         # get nodes
         n1_f1 = max_edge.Nodes[0]

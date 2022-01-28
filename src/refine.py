@@ -201,6 +201,10 @@ def refine_grid(grid_file, out_grid_file):
             # перестроения треугольника при 1 точке
             if len(points_in_triangle) == 1:
 
+                if len(tri_in_grid.Edges[1].Faces) == 2:
+                    g.collapse_face(tri_in_grid)
+                    # g.cut_edge(tri_in_grid.Edges[1], points_in_triangle[0][1])
+
                 if points_in_triangle[0][0] == 2:
                     # перестроение треугольника по одной точке Р2 на два новых треугольника
 
@@ -372,11 +376,8 @@ def refine_grid(grid_file, out_grid_file):
 
                 else:
 
-                    if len(tri_in_grid.Edges[1].Faces) == 2:
-                        g.cut_edge(tri_in_grid.Edges[1], points_in_triangle[0][1])
-
                     # g.divide_face(tri_in_grid, points_in_triangle[0][1])
-
+                    pass
             # перестроения треугольника при 2 точках
             elif len(points_in_triangle) == 2:
 
@@ -400,6 +401,7 @@ def refine_grid(grid_file, out_grid_file):
                 else:
                     # TODO построить три новых треугольника в сетке на месте старого (одна в центре, вторая на ребре)
                     pass
+                pass
 
             # перестроения треугольника при 3 точках
             elif len(points_in_triangle) == 3:
