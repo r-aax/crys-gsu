@@ -232,162 +232,30 @@ def refine_grid(grid_file, out_grid_file):
                     #
                     # f1, f2 - новые фейсы
 
-                    # удалить Face из Grid и вынуть все необходимые данные
-                    data, nodes, edges, zone = del_face_from_grid_and_get_data_from_face(tri_in_grid, g)
-
-                    # создать фейсы
-                    f1 = Face(list(data.keys()), list(data.values()))
-                    f2 = Face(list(data.keys()), list(data.values()))
-
-                    # Nodes
-                    # не известно между какими нодами лежит n4
-                    # необходимо это определить
-                    list_of_point_for_node, opposite_point = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
-
-                    # зададим однозначные ссылки на конкретные ноды (ноды существующие в сетке)
-                    # n1 и n2 - ноды ребра для разбиения
-                    # n3 - противоположный нод
-                    for node in nodes:
-                        if node.P == list_of_point_for_node[0]:
-                            n1 = node
-                        elif node.P == list_of_point_for_node[1]:
-                            n2 = node
-                        else:
-                            n3 = node
-
-                    # n4 - уже существует или это новая вершина для сетки?
-                    # если нод существует - работать с существующим
-                    old_node = get_node_from_list_of_nodes(points_in_triangle[0][1], g.Nodes)
-                    if old_node:
-                        n4 = old_node
-                    # если нет - создать новый и добавить его в сетку
-                    else:
-                        n4 = Node(points_in_triangle[0][1])
-                        # добавить данные в Grid
-                        g.Nodes += [n4]
-                        g.RoundedCoordsBag.add(n4.RoundedCoords)
-                        zone.Nodes += [n4]
-
-                    f1.Nodes += [n1, n3, n4]
-                    f2.Nodes += [n2, n3, n4]
-
-                    n1.Faces += [f1]
-                    n2.Faces += [f2]
-                    n3.Faces += [f1, f2]
-                    n4.Faces += [f1, f2]
-
-                    # Edges
-                    # ищем соответствующие ребра
-                    for edge in edges:
-                        if n1 in edge.Nodes and n3 in edge.Nodes:
-                            e1 = edge
-                        elif n2 in edge.Nodes and n3 in edge.Nodes:
-                            e2 = edge
-                        else:
-                            e3 = edge
-
-                    # новые ребра
-                    e6 = Edge()
-
-                    # линк нового ребра к точке
-                    n3.Edges += [e6]
-
-                    # линк точек к новому ребру
-                    e6.Nodes += [n4, n3]
-
-                    # линк новых фейсов к ребрам
-                    e1.Faces += [f1]
-                    e2.Faces += [f2]
-                    e6.Faces += [f1, f2]
-
-                    # линк Zone c Face
-                    f1.Zone = zone
-                    f2.Zone = zone
-                    zone.Faces += [f1, f2]
-
-                    # первичное перестроение треугольника
-                    # но либо в паре, либо на краю
-                    if len(e3.Faces) <= 2:
-
-                        e4 = Edge()
-                        e5 = Edge()
-
-                        n1.Edges += [e4]
-                        n2.Edges += [e5]
-                        n4.Edges += [e4, e5, e6]
-
-                        e4.Nodes += [n4, n1]
-                        e5.Nodes += [n4, n2]
-
-                        e4.Faces += [f1]
-                        e5.Faces += [f2]
-
-                        f1.Edges += [e1, e4, e6]
-                        f2.Edges += [e2, e5, e6]
-
-                        zone.Edges += [e4, e5, e6]
-
-                        # в е3.Faces умышленно создать аномалию - записать два лишних фeйса f1 и f2,
-                        # это позволит определять - это первый треугольник из пары (первичное перестроение,
-                        # даже когда этот первый треугольник на краю и с другой стороны ребра нет второго фейса),
-                        # или это вторичное перестроение и нужно учесть два новых треугольника,
-                        # вместо старого, с другой стороны ребра е3.
-                        # для этого из е3 удалим Face старый и добавим два новых,
-                        # это приведет к тому, что в ребре будет 3 фейса, вместо двух возможных,
-                        # что не позволит пройти проверку условия len(e3.Faces) <= 2
-                        # и отправит треугольник на вторичное перестроение
-                        e3.Faces += [f1, f2]
-                        # если в ребре только два новых фейса, то но было на краю и его можно удалить
-                        if len(e3.Faces) <= 2:
-                            # удалить ребро е3
-                            e3.Nodes[0].Edges.remove(e3)
-                            e3.Nodes[1].Edges.remove(e3)
-                            tri_in_grid.Edges.remove(e3)
-                            zone.Edges.remove(e3)
-                            g.Edges.remove(e3)
-                            del e3
-                        # если ребро было смежным - сохранить (в нем информация для перестроения второго треугольника)
-                        else:
-                            pass
-
-                    # вторичное перестроение треугольника
-                    # TODO это ответвление должно быть у всех случаем перестроения треугольника с точкой на ребре:
-                    #  оно должно отвечать за альтернативное перестроение, когда противоположная сторона ребра,
-                    #  на котором находится точка разбиения, уже перестроена
-                    else:
-
-                        # найти ребра e4 и e5
-                        # n4.Faces
-
-
-
-                        # удалить ребро е3
-                        e3.Nodes[0].Edges.remove(e3)
-                        e3.Nodes[1].Edges.remove(e3)
-                        tri_in_grid.Edges.remove(e3)
-                        zone.Edges.remove(e3)
-                        g.Edges.remove(e3)
-                        del e3
-                        pass
-
-                else:
-
-                    g.divide_face(tri_in_grid, points_in_triangle[0][1])
-                    # # перестроение треугольника по одной точке Р3 на три новых треугольника
                     # # удалить Face из Grid и вынуть все необходимые данные
                     # data, nodes, edges, zone = del_face_from_grid_and_get_data_from_face(tri_in_grid, g)
                     #
-                    # # добавить новые фейсы
-                    # # создать фейс
+                    # # создать фейсы
                     # f1 = Face(list(data.keys()), list(data.values()))
                     # f2 = Face(list(data.keys()), list(data.values()))
-                    # f3 = Face(list(data.keys()), list(data.values()))
                     #
-                    # # добавить и залинковать к ним Node и Edge
                     # # Nodes
-                    # n1 = nodes[0]
-                    # n2 = nodes[1]
-                    # n3 = nodes[2]
+                    # # не известно между какими нодами лежит n4
+                    # # необходимо это определить
+                    # list_of_point_for_node, opposite_point = point_on_edge_of_triangle(points_in_triangle[0][1], tri)
+                    #
+                    # # зададим однозначные ссылки на конкретные ноды (ноды существующие в сетке)
+                    # # n1 и n2 - ноды ребра для разбиения
+                    # # n3 - противоположный нод
+                    # for node in nodes:
+                    #     if node.P == list_of_point_for_node[0]:
+                    #         n1 = node
+                    #     elif node.P == list_of_point_for_node[1]:
+                    #         n2 = node
+                    #     else:
+                    #         n3 = node
+                    #
+                    # # n4 - уже существует или это новая вершина для сетки?
                     # # если нод существует - работать с существующим
                     # old_node = get_node_from_list_of_nodes(points_in_triangle[0][1], g.Nodes)
                     # if old_node:
@@ -400,69 +268,114 @@ def refine_grid(grid_file, out_grid_file):
                     #     g.RoundedCoordsBag.add(n4.RoundedCoords)
                     #     zone.Nodes += [n4]
                     #
-                    # f1.Nodes += [n1, n2, n4]
+                    # f1.Nodes += [n1, n3, n4]
                     # f2.Nodes += [n2, n3, n4]
-                    # f3.Nodes += [n1, n3, n4]
                     #
-                    # n1.Faces += [f1, f3]
-                    # n2.Faces += [f1, f2]
-                    # n3.Faces += [f2, f3]
-                    # n4.Faces += [f1, f2, f3]
+                    # n1.Faces += [f1]
+                    # n2.Faces += [f2]
+                    # n3.Faces += [f1, f2]
+                    # n4.Faces += [f1, f2]
                     #
                     # # Edges
+                    # # ищем соответствующие ребра
                     # for edge in edges:
-                    #     if n1 in edge.Nodes and n2 in edge.Nodes:
+                    #     if n1 in edge.Nodes and n3 in edge.Nodes:
                     #         e1 = edge
                     #     elif n2 in edge.Nodes and n3 in edge.Nodes:
                     #         e2 = edge
                     #     else:
                     #         e3 = edge
                     #
-                    # e4 = Edge()
-                    # e5 = Edge()
+                    # # новые ребра
                     # e6 = Edge()
                     #
-                    # n1.Edges += [e4]
-                    # n2.Edges += [e5]
+                    # # линк нового ребра к точке
                     # n3.Edges += [e6]
-                    # n4.Edges += [e4, e5, e6]
                     #
-                    # # это исходные ребра, их точки не поменялись
-                    # # e1.Nodes += []
-                    # # e2.Nodes += []
-                    # # e3.Nodes += []
-                    # # новые ребра
-                    # e4.Nodes += [n4, n1]
-                    # e5.Nodes += [n4, n2]
+                    # # линк точек к новому ребру
                     # e6.Nodes += [n4, n3]
                     #
+                    # # линк новых фейсов к ребрам
                     # e1.Faces += [f1]
                     # e2.Faces += [f2]
-                    # e3.Faces += [f3]
-                    # e4.Faces += [f1, f3]
-                    # e5.Faces += [f1, f2]
-                    # e6.Faces += [f3, f2]
+                    # e6.Faces += [f1, f2]
                     #
-                    # f1.Edges += [e1, e4, e5]
-                    # f2.Edges += [e2, e5, e6]
-                    # f3.Edges += [e2, e4, e6]
-                    #
-                    # # добавить данные в Grid
-                    # g.Faces += [f1, f2, f3]
-                    # g.Edges += [e4, e5, e6]
-                    #
-                    # # линк Zone
+                    # # линк Zone c Face
                     # f1.Zone = zone
                     # f2.Zone = zone
-                    # f3.Zone = zone
+                    # zone.Faces += [f1, f2]
                     #
-                    # zone.Faces += [f1]
-                    # zone.Faces += [f2]
-                    # zone.Faces += [f3]
+                    # # первичное перестроение треугольника
+                    # # но либо в паре, либо на краю
+                    # if len(e3.Faces) <= 2:
                     #
-                    # zone.Edges += [e4, e5, e6]
+                    #     e4 = Edge()
+                    #     e5 = Edge()
+                    #
+                    #     n1.Edges += [e4]
+                    #     n2.Edges += [e5]
+                    #     n4.Edges += [e4, e5, e6]
+                    #
+                    #     e4.Nodes += [n4, n1]
+                    #     e5.Nodes += [n4, n2]
+                    #
+                    #     e4.Faces += [f1]
+                    #     e5.Faces += [f2]
+                    #
+                    #     f1.Edges += [e1, e4, e6]
+                    #     f2.Edges += [e2, e5, e6]
+                    #
+                    #     zone.Edges += [e4, e5, e6]
+                    #
+                    #     # в е3.Faces умышленно создать аномалию - записать два лишних фeйса f1 и f2,
+                    #     # это позволит определять - это первый треугольник из пары (первичное перестроение,
+                    #     # даже когда этот первый треугольник на краю и с другой стороны ребра нет второго фейса),
+                    #     # или это вторичное перестроение и нужно учесть два новых треугольника,
+                    #     # вместо старого, с другой стороны ребра е3.
+                    #     # для этого из е3 удалим Face старый и добавим два новых,
+                    #     # это приведет к тому, что в ребре будет 3 фейса, вместо двух возможных,
+                    #     # что не позволит пройти проверку условия len(e3.Faces) <= 2
+                    #     # и отправит треугольник на вторичное перестроение
+                    #     e3.Faces += [f1, f2]
+                    #     # если в ребре только два новых фейса, то но было на краю и его можно удалить
+                    #     if len(e3.Faces) <= 2:
+                    #         # удалить ребро е3
+                    #         e3.Nodes[0].Edges.remove(e3)
+                    #         e3.Nodes[1].Edges.remove(e3)
+                    #         tri_in_grid.Edges.remove(e3)
+                    #         zone.Edges.remove(e3)
+                    #         g.Edges.remove(e3)
+                    #         del e3
+                    #     # если ребро было смежным - сохранить (в нем информация для перестроения второго треугольника)
+                    #     else:
+                    #         pass
+                    #
+                    # # вторичное перестроение треугольника
+                    # # TODO это ответвление должно быть у всех случаем перестроения треугольника с точкой на ребре:
+                    # #  оно должно отвечать за альтернативное перестроение, когда противоположная сторона ребра,
+                    # #  на котором находится точка разбиения, уже перестроена
+                    # else:
+                    #
+                    #     # найти ребра e4 и e5
+                    #     # n4.Faces
+                    #
+                    #
+                    #
+                    #     # удалить ребро е3
+                    #     e3.Nodes[0].Edges.remove(e3)
+                    #     e3.Nodes[1].Edges.remove(e3)
+                    #     tri_in_grid.Edges.remove(e3)
+                    #     zone.Edges.remove(e3)
+                    #     g.Edges.remove(e3)
+                    #     del e3
+                        pass
 
-                    pass
+                else:
+
+                    if len(tri_in_grid.Edges[1].Faces) == 2:
+                        g.cut_edge(tri_in_grid.Edges[1], points_in_triangle[0][1])
+
+                    # g.divide_face(tri_in_grid, points_in_triangle[0][1])
 
             # перестроения треугольника при 2 точках
             elif len(points_in_triangle) == 2:
@@ -510,8 +423,6 @@ def refine_grid(grid_file, out_grid_file):
                     # нет ни одной точки в центре треугольника => есть много точек на ребрах (больше трех)
                     # нужно разработать алгоритм действий в этом случае
                     pass
-
-            del tri_in_grid
 
     # Save grid.
     g.store(out_grid_file)

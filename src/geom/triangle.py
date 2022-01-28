@@ -350,9 +350,9 @@ class Triangle:
         a, b, c = self.a(), self.b(), self.c()
 
         # А point in a triangle if the sum of the formed areas is equal to the area of the original triangle.
-        ar1 = Triangle(a, b, point).area()
-        ar2 = Triangle(a, point, c).area()
-        ar3 = Triangle(point, b, c).area()
+        ar1 = round(Triangle(a, b, point).area(), 10)
+        ar2 = round(Triangle(a, point, c).area(), 10)
+        ar3 = round(Triangle(point, b, c).area(), 10)
         if math.isclose(self.area(), ar1 + ar2 + ar3):
             return bool(ar1) + bool(ar2) + bool(ar3)
         return 0

@@ -1327,9 +1327,10 @@ class Grid:
 
         zone.Edges += [e4, e5, e6]
 
+        # del
         del face
 
-        # ----------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------
 
     def collapse_face(self, face):
         """
@@ -1430,8 +1431,193 @@ class Grid:
         self.Edges += [e5_f1_f2]
         self.Faces += [f1, f2]
 
+        # del
         del max_edge
         del face
         del other_face
+
+    # ----------------------------------------------------------------------------------------------
+
+    def cut_edge(self, edge, p):
+        """
+
+        Atomic grid transformation. Splitting an edge.
+
+        Parameters
+        ----------
+        edge: Edge
+        p: Vect
+
+        Returns
+        -------
+
+                    n3
+                   *
+                  /|\
+                 / | \
+                /  |  \
+               /   |   \
+              /    |    \
+             /     |     \
+            / f1_1 | f1_2 \
+           /       |n5     \
+        n2*--------*--------* n1
+          \        |        /
+           \ f2_2  | f2_1  /
+            \      |      /
+             \     |     /
+              \    |    /
+               \   |   /
+                \  |  /
+                 \ | /
+                  \|/
+                   *
+                    n4
+        """
+
+        # wrong edge
+        assert(len(edge.Faces) == 2)
+
+        # det all data and del from grid
+        f1 = edge.Faces[0]
+        f2 = edge.Faces[1]
+
+
+        tri = f2.get_triangle()
+        tri.point_in_triangle(p)
+        np = tri.point_in_triangle(p)
+
+        # rise exception if point is not in any triangle
+        assert(f1.get_triangle().point_in_triangle(p) == 3 or f2.get_triangle().point_in_triangle(p) == 3 or
+               (f1.get_triangle().point_in_triangle(p) == 2 and f2.get_triangle().point_in_triangle(p) == 2))
+
+        # get data
+        data1 = f1.Data.copy()
+        data2 = f2.Data.copy()
+
+        # remove faces
+        zone = f1.Zone
+        zone.Faces.remove(f1)
+        zone.Faces.remove(f2)
+        self.Faces.remove(f1)
+        self.Faces.remove(f2)
+
+        f1.Edges.remove(edge)
+        f2.Edges.remove(edge)
+        for ed in f1.Edges:
+            ed.Faces.remove(f1)
+        for ed in f2.Edges:
+            ed.Faces.remove(f2)
+
+        for node in f1.Nodes:
+            node.Faces.remove(f1)
+        for node in f2.Nodes:
+            node.Faces.remove(f2)
+
+        # new faces
+        f1_1 = Face(list(data1.keys()), list(data1.values()))
+        f1_2 = Face(list(data1.keys()), list(data1.values()))
+        f2_1 = Face(list(data2.keys()), list(data2.values()))
+        f2_2 = Face(list(data2.keys()), list(data2.values()))
+
+        # Nodes
+        n1_f1_2_f2_1 = edge.Nodes[0]
+        n2_f1_1_f2_2 = edge.Nodes[1]
+        n3_f1_1_f1_2 = [i for i in f1.Nodes if id(i) != id(n1_f1_2_f2_1) and id(i) != id(n2_f1_1_f2_2)][0]
+        n4_f2_1_f2_2 = [i for i in f2.Nodes if id(i) != id(n1_f1_2_f2_1) and id(i) != id(n2_f1_1_f2_2)][0]
+
+        # P is old node or not
+        node = Node(p)
+        if node in self.Nodes:
+            n5_f1_1_f1_2_f2_1_f2_2 = self.Nodes[self.Nodes.index(node)]
+        else:
+            n5_f1_1_f1_2_f2_1_f2_2 = node
+            # data in Grid
+            self.Nodes += [n5_f1_1_f1_2_f2_1_f2_2]
+            self.RoundedCoordsBag.add(n5_f1_1_f1_2_f2_1_f2_2.RoundedCoords)
+            zone.Nodes += [n5_f1_1_f1_2_f2_1_f2_2]
+
+        # Edges
+        e13 = [ed for ed in f1.Edges for node in ed.Nodes if id(node) == id(n1_f1_2_f2_1)][0]
+        e23 = [ed for ed in f1.Edges for node in ed.Nodes if id(node) == id(n2_f1_1_f2_2)][0]
+        e14 = [ed for ed in f2.Edges for node in ed.Nodes if id(node) == id(n1_f1_2_f2_1)][0]
+        e24 = [ed for ed in f2.Edges for node in ed.Nodes if id(node) == id(n2_f1_1_f2_2)][0]
+        e15 = Edge()
+        e25 = Edge()
+        e35 = Edge()
+        e45 = Edge()
+
+        # link nodes
+        n5_f1_1_f1_2_f2_1_f2_2.Edges += [e15, e25, e35, e45]
+        n5_f1_1_f1_2_f2_1_f2_2.Faces += [f1_1, f1_2, f2_1, f2_2]
+        n1_f1_2_f2_1.Edges += [e15]
+        n2_f1_1_f2_2.Edges += [e25]
+        n3_f1_1_f1_2.Edges += [e35]
+        n4_f2_1_f2_2.Edges += [e45]
+        n1_f1_2_f2_1.Faces += [f1_2, f2_1]
+        n2_f1_1_f2_2.Faces += [f1_1, f2_2]
+        n3_f1_1_f1_2.Faces += [f1_1, f1_2]
+        n4_f2_1_f2_2.Faces += [f2_1, f2_2]
+        n1_f1_2_f2_1.Edges.remove(edge)
+        n2_f1_1_f2_2.Edges.remove(edge)
+
+        # link edges
+        e15.Faces += [f1_2, f2_1]
+        e25.Faces += [f1_1, f2_2]
+        e35.Faces += [f1_2, f1_1]
+        e45.Faces += [f2_2, f2_1]
+        e15.Nodes += [n1_f1_2_f2_1, n5_f1_1_f1_2_f2_1_f2_2]
+        e25.Nodes += [n2_f1_1_f2_2, n5_f1_1_f1_2_f2_1_f2_2]
+        e35.Nodes += [n3_f1_1_f1_2, n5_f1_1_f1_2_f2_1_f2_2]
+        e45.Nodes += [n4_f2_1_f2_2, n5_f1_1_f1_2_f2_1_f2_2]
+        e13.Faces += [f1_2]
+        e23.Faces += [f1_1]
+        e14.Faces += [f2_1]
+        e24.Faces += [f2_2]
+
+        # link faces
+        f1_1.Nodes += [n3_f1_1_f1_2, n2_f1_1_f2_2, n5_f1_1_f1_2_f2_1_f2_2]
+        f1_2.Nodes += [n3_f1_1_f1_2, n1_f1_2_f2_1, n5_f1_1_f1_2_f2_1_f2_2]
+        f2_2.Nodes += [n4_f2_1_f2_2, n2_f1_1_f2_2, n5_f1_1_f1_2_f2_1_f2_2]
+        f2_1.Nodes += [n4_f2_1_f2_2, n1_f1_2_f2_1, n5_f1_1_f1_2_f2_1_f2_2]
+        f1_1.Edges += [e23, e25, e35]
+        f1_2.Edges += [e13, e15, e35]
+        f2_1.Edges += [e14, e15, e45]
+        f2_2.Edges += [e24, e25, e45]
+        f1_1.Zone = zone
+        f1_2.Zone = zone
+        f2_1.Zone = zone
+        f2_2.Zone = zone
+
+        #link zone
+        zone.Faces += [f1_1, f1_2, f2_1, f2_2]
+        zone.Edges.remove(edge)
+        zone.Edges += [e15, e25, e35, e45]
+        zone.Nodes += [n5_f1_1_f1_2_f2_1_f2_2]
+
+        #link grid
+        self.Nodes += [n5_f1_1_f1_2_f2_1_f2_2]
+        self.Edges.remove(edge)
+        self.Edges += [e15, e25, e35, e45]
+        self.Faces += [f1_1, f1_2, f2_1, f2_2]
+
+        # del # TODO найти метод, который удаляет объекты из памяти
+        # edge.Nodes.rempve(n1_f1_2_f2_1)
+        # edge.Nodes.rempve(n2_f1_1_f2_2)
+        # edge.Faces.remove(f1)
+        # edge.Faces.remove(f2)
+        # f1.Nodes.remove(n1_f1_2_f2_1)
+        # f1.Nodes.remove(n2_f1_1_f2_2)
+        # f1.Nodes.remove(n3_f1_1_f1_2)
+        # f2.Nodes.remove(n1_f1_2_f2_1)
+        # f2.Nodes.remove(n2_f1_1_f2_2)
+        # f2.Nodes.remove(n4_f2_1_f2_2)
+        # f1.Edges.remove(e13)
+        # f1.Edges.remove(e23)
+        # f2.Edges.remove(e14)
+        # f2.Edges.remove(e24)
+        del f1
+        del f2
+        del edge
 
 # ==================================================================================================
