@@ -204,6 +204,7 @@ def refine_grid(grid_file, out_grid_file):
                 if len(tri_in_grid.Edges[1].Faces) == 2:
                     g.collapse_face(tri_in_grid)
                     # g.cut_edge(tri_in_grid.Edges[1], points_in_triangle[0][1])
+                    pass
 
                 if points_in_triangle[0][0] == 2:
                     # перестроение треугольника по одной точке Р2 на два новых треугольника

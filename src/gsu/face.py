@@ -151,6 +151,25 @@ class Face:
 
         return t
 
+    # ----------------------------------------------------------------------------------------------
+
+    def max_edge_from_face(self):
+        """
+
+        Returns: edge with max len
+        -------
+
+        """
+
+        max_edge = self.Edges[0]
+        max_len_edge = max_edge.len_edge()
+        for edge in self.Edges[1:]:
+            len_edge = edge.len_edge()
+            if len_edge > max_len_edge:
+                max_len_edge = len_edge
+                max_edge = edge
+
+        return max_edge
 
 # ==================================================================================================
 
