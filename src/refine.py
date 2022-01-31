@@ -376,7 +376,7 @@ def refine_grid(grid_file, out_grid_file):
 
                 else:
 
-                    # g.divide_face(tri_in_grid, points_in_triangle[0][1])
+                    g.divide_face(tri_in_grid, points_in_triangle[0][1])
                     pass
             # перестроения треугольника при 2 точках
             elif len(points_in_triangle) == 2:

@@ -188,7 +188,6 @@ class Grid:
 
         return [f.get_triangle() for f in self.Faces]
 
-
     # ----------------------------------------------------------------------------------------------
 
     def print_info(self,
@@ -308,7 +307,7 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
-    def add_face(self, f):
+    def add_face(self, f, global_id=None):
         """
         Add face.
 
@@ -316,8 +315,12 @@ class Grid:
         :return: added face
         """
 
-        # Just correct global id and add.
-        f.GloId = len(self.Faces)
+        # Just correct global id.
+        if not global_id is None:
+            f.GloId = global_id
+        else:
+            f.GloId = len(self.Faces)
+        # and add
         self.Faces.append(f)
 
         return f
@@ -1219,6 +1222,43 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
+    def del_face_from_everywhere(self, face):
+        """
+
+        Parameters
+        ----------
+        face: Face
+
+        Returns: True
+        -------
+
+        """
+
+        for node in face.Nodes:
+            node.Faces.remove(face)
+        for edge in face.Edges:
+            edge.Faces.remove(face)
+        face.Zone.Faces.remove(face)
+        self.Faces.remove(face)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def data_from_face(self, face):
+        """
+
+        Parameters
+        ----------
+        face: Face
+
+        Returns: {'data': face.Data, 'nodes': face.Nodes, 'edges': face.Edges, 'zone': face.Zone, 'gloid': face.GloId}
+        -------
+
+        """
+
+        return {'data': face.Data, 'nodes': face.Nodes, 'edges': face.Edges, 'zone': face.Zone, 'gloid': face.GloId}
+
+    # ----------------------------------------------------------------------------------------------
+
     def divide_face(self, face, p):
         """
 
@@ -1234,54 +1274,32 @@ class Grid:
 
         """
 
-        # analyze the intersection points for the triangle
-        assert(face.get_triangle().point_in_triangle(p) == 3)
+        all_data = self.data_from_face(face)
+        data = all_data['data'].copy()
+        nodes = all_data['nodes']
+        edges = all_data['edges']
+        zone = all_data['zone']
+        gloid = all_data['gloid']
 
-        # det all data and del from grid
-        data = face.Data.copy()
-        edges = []
-        for edge in face.Edges:
-            edge.Faces.remove(face)
-            edges.append(edge)
-        nodes = []
-        for node in face.Nodes:
-            node.Faces.remove(face)
-            nodes.append(node)
-        zone = face.Zone
-        zone.Faces.remove(face)
-        self.Faces.remove(face)
+        self.del_face_from_everywhere(face)
 
         # get new faces
         f1 = Face(list(data.keys()), list(data.values()))
         f2 = Face(list(data.keys()), list(data.values()))
         f3 = Face(list(data.keys()), list(data.values()))
 
-        # Nodes
+        # get nodes
         n1 = nodes[0]
         n2 = nodes[1]
         n3 = nodes[2]
-
-        # P is old node or not
-        node = Node(p)
-        if node in self.Nodes:
-            n4 = self.Nodes[self.Nodes.index(node)]
+        n4 = Node(p)
+        node = self.add_node(n4, True)
+        if id(node) == id(none):
+            zone.add_node(n4)
         else:
             n4 = node
-            # data in Grid
-            self.Nodes += [n4]
-            self.RoundedCoordsBag.add(n4.RoundedCoords)
-            zone.Nodes += [n4]
 
-        f1.Nodes += [n1, n2, n4]
-        f2.Nodes += [n2, n3, n4]
-        f3.Nodes += [n1, n3, n4]
-
-        n1.Faces += [f1, f3]
-        n2.Faces += [f1, f2]
-        n3.Faces += [f2, f3]
-        n4.Faces += [f1, f2, f3]
-
-        # Edges
+        # get edges
         for edge in edges:
             if n1 in edge.Nodes and n2 in edge.Nodes:
                 e1 = edge
@@ -1289,46 +1307,55 @@ class Grid:
                 e2 = edge
             else:
                 e3 = edge
-
         e4 = Edge()
         e5 = Edge()
         e6 = Edge()
 
-        n1.Edges += [e4]
-        n2.Edges += [e5]
-        n3.Edges += [e6]
-        n4.Edges += [e4, e5, e6]
+        # links
+        n1.link_node_edge(e4)
+        n2.link_node_edge(e5)
+        n3.link_node_edge(e6)
+        n4.link_node_edge(e4)
+        n4.link_node_edge(e5)
+        n4.link_node_edge(e6)
 
-        e4.Nodes += [n4, n1]
-        e5.Nodes += [n4, n2]
-        e6.Nodes += [n4, n3]
+        e1.link_edge_face(f1)
+        e2.link_edge_face(f2)
+        e3.link_edge_face(f3)
+        e4.link_edge_face(f1)
+        e4.link_edge_face(f3)
+        e5.link_edge_face(f1)
+        e5.link_edge_face(f2)
+        e6.link_edge_face(f2)
+        e6.link_edge_face(f3)
 
-        e1.Faces += [f1]
-        e2.Faces += [f2]
-        e3.Faces += [f3]
-        e4.Faces += [f1, f3]
-        e5.Faces += [f1, f2]
-        e6.Faces += [f3, f2]
+        n1.link_node_face(f1)
+        n1.link_node_face(f3)
+        n2.link_node_face(f1)
+        n2.link_node_face(f2)
+        n3.link_node_face(f2)
+        n3.link_node_face(f3)
+        n4.link_node_face(f1)
+        n4.link_node_face(f2)
+        n4.link_node_face(f3)
 
-        f1.Edges += [e1, e4, e5]
-        f2.Edges += [e2, e5, e6]
-        f3.Edges += [e2, e4, e6]
+        # link grid with faces
+        self.add_face(f1, gloid)
+        self.add_face(f2)
+        self.add_face(f3)
 
-        self.Faces += [f1, f2, f3]
-        self.Edges += [e4, e5, e6]
+        # link grid
+        self.add_node(e4, False)
+        self.add_node(e5, False)
+        self.add_node(e6, False)
 
-        f1.Zone = zone
-        f2.Zone = zone
-        f3.Zone = zone
-
-        zone.Faces += [f1]
-        zone.Faces += [f2]
-        zone.Faces += [f3]
-
-        zone.Edges += [e4, e5, e6]
-
-        # del
-        del face
+        # link zone
+        zone.add_face(f1)
+        zone.add_face(f2)
+        zone.add_face(f3)
+        zone.add_edge(e4)
+        zone.add_edge(e5)
+        zone.add_edge(e6)
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1433,11 +1460,6 @@ class Grid:
         self.Edges.remove(max_edge)
         self.Edges += [e5_f1_f2]
         self.Faces += [f1, f2]
-
-        # del
-        del max_edge
-        del face
-        del other_face
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1603,24 +1625,5 @@ class Grid:
         self.Edges.remove(edge)
         self.Edges += [e15, e25, e35, e45]
         self.Faces += [f1_1, f1_2, f2_1, f2_2]
-
-        # del # TODO найти метод, который удаляет объекты из памяти
-        # edge.Nodes.rempve(n1_f1_2_f2_1)
-        # edge.Nodes.rempve(n2_f1_1_f2_2)
-        # edge.Faces.remove(f1)
-        # edge.Faces.remove(f2)
-        # f1.Nodes.remove(n1_f1_2_f2_1)
-        # f1.Nodes.remove(n2_f1_1_f2_2)
-        # f1.Nodes.remove(n3_f1_1_f1_2)
-        # f2.Nodes.remove(n1_f1_2_f2_1)
-        # f2.Nodes.remove(n2_f1_1_f2_2)
-        # f2.Nodes.remove(n4_f2_1_f2_2)
-        # f1.Edges.remove(e13)
-        # f1.Edges.remove(e23)
-        # f2.Edges.remove(e14)
-        # f2.Edges.remove(e24)
-        del f1
-        del f2
-        del edge
 
 # ==================================================================================================
