@@ -462,6 +462,22 @@ class Vect:
                     a.Z * b.X - a.X * b.Z,
                     a.X * b.Y - a.Y * b.X)
 
+    @staticmethod
+    def middle_point(a, b):
+        """
+
+        Parameters
+        ----------
+        a: Vect
+        b: Vect
+
+        Returns: the midpoint between a and b (Vect)
+        -------
+
+        """
+
+        return (a + b) / 2
+
 # ==================================================================================================
 
 

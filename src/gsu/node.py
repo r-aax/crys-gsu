@@ -65,6 +65,29 @@ class Node:
 
         return self.is_near(other)
 
+    # ----------------------------------------------------------------------------------------------
+
+    def replacing_node(self, n):
+        """
+
+        Parameters
+        ----------
+        n: other Node
+
+        Returns: the starting point will be replaced and consolidation by the point n
+        -------
+
+        """
+
+        n.Edges += self.Edges
+        n.Faces += self.Faces
+        for ed in self.Edges:
+            ed.Nodes.remove(self)
+            ed.Nodes += [n]
+        for face in self.Faces:
+            face.Nodes.remove(self)
+            face.Nodes += [n]
+
 # ==================================================================================================
 
 

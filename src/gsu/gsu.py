@@ -1235,7 +1235,7 @@ class Grid:
         ----------
         face: Face
 
-        Returns: True
+        Returns
         -------
 
         """
@@ -1264,8 +1264,37 @@ class Grid:
         edge.Nodes[0].Edges.remove(edge)
         edge.Nodes[1].Edges.remove(edge)
         if edge.Faces:
-            edge.Faces[0].Zone.Edges.remove(edge)
+            for f in edge.Faces:
+                f.Edges.remove(edge)
+        for z in self.Zones:
+            if edge in z.Edges:
+                z.Edges.remove(edge)
         self.Edges.remove(edge)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def del_node_from_everywhere(self, node):
+        """
+
+        Parameters
+        ----------
+        node: Node
+
+        Returns
+        -------
+
+        """
+        if node.Edges:
+            for ed in node.Edges:
+                if node in ed.Nodes:
+                    ed.Nodes.remove(node)
+        if node.Faces:
+            for face in node.Faces:
+                if node in face.Nodes:
+                    face.Nodes.remove(node)
+        node.Faces[0].Zone.Nodes.remove(node)
+        self.Nodes.remove(node)
+        self.RoundedCoordsBag.remove(node.RoundedCoords)
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1580,6 +1609,74 @@ class Grid:
             zone.add_edge(e25)
             zone.add_edge(e35)
             zone.add_edge(e45)
+
+            return True
+        else:
+            return False
+
+    # ----------------------------------------------------------------------------------------------
+
+    def collapse_edge(self, edge):
+        """
+
+        Atomic grid transformation. Tightening along the edge.
+
+        Parameters
+        ----------
+        edge: Edge
+
+        Returns
+        -------
+
+        """
+
+        if len(edge.Faces) == 2:
+
+            # det all data and del from grid
+            f1 = edge.Faces[0]
+            f2 = edge.Faces[1]
+
+            self.del_face_from_everywhere(f1)
+            self.del_face_from_everywhere(f2)
+
+            self.del_edge_from_everywhere(edge)
+
+            # Nodes
+            n1 = edge.Nodes[0]
+            n2 = edge.Nodes[1]
+
+            vect_coord_new_p = Vect.middle_point(n1.P, n2.P)
+
+            self.RoundedCoordsBag.remove(n1.RoundedCoords)
+            n1.P = vect_coord_new_p
+            n1.RoundedCoords = n1.P.rounded_coords_tuple(10)
+            self.RoundedCoordsBag.add(n1.RoundedCoords)
+
+            # edges
+            f1.Edges.remove(edge)
+            e1 = [ed for ed in f1.Edges for node in ed.Nodes if id(node) == id(n2)][0]
+            f2.Edges.remove(edge)
+            e2 = [ed for ed in f2.Edges for node in ed.Nodes if id(node) == id(n2)][0]
+
+            if e1.Faces:
+                e3 = [ed for ed in f1.Edges for node in ed.Nodes if id(node) == id(n1)][0]
+                Grid.link_edge_face(e3, e1.Faces[0])
+            if e2.Faces:
+                e4 = [ed for ed in f2.Edges for node in ed.Nodes if id(node) == id(n1)][0]
+                Grid.link_edge_face(e4, e2.Faces[0])
+
+            self.del_edge_from_everywhere(e1)
+            self.del_edge_from_everywhere(e2)
+
+            n2.replacing_node(n1)
+            self.del_node_from_everywhere(n2)
+
+            self.Faces[-1].GloId = f1.GloId
+            self.Faces[-2].GloId = f2.GloId
+            self.Edges[-1].GloId = edge.GloId
+            self.Edges[-2].GloId = e1.GloId
+            self.Edges[-3].GloId = e2.GloId
+            self.Nodes[-1].GloId = n2.GloId
 
             return True
         else:

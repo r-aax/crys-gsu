@@ -202,7 +202,8 @@ def refine_grid(grid_file, out_grid_file):
             if len(points_in_triangle) == 1:
 
                 if len(tri_in_grid.Edges[1].Faces) == 2:
-                    g.collapse_face(tri_in_grid)
+                    # g.collapse_face(tri_in_grid)
+                    g.collapse_edge(tri_in_grid.Edges[1])
                     # g.cut_edge(tri_in_grid.Edges[1], points_in_triangle[0][1] + Vect(1, 1, 1))
                     # g.cut_edge(tri_in_grid.Edges[1], points_in_triangle[0][1])
                     pass
