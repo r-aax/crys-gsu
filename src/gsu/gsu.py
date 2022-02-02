@@ -291,7 +291,7 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
-    def add_edge(self, e):
+    def add_edge(self, e, global_id=None):
         """
         Add edge to grid.
 
@@ -300,7 +300,10 @@ class Grid:
         """
 
         # Just add edge with global id correction.
-        e.GloId = len(self.Edges)
+        if not global_id is None:
+            e.GloId = global_id
+        else:
+            e.GloId = len(self.Edges)
         self.Edges.append(e)
 
         return e
@@ -1241,9 +1244,11 @@ class Grid:
         """
 
         for node in face.Nodes:
-            node.Faces.remove(face)
+            if face in node.Faces:
+                node.Faces.remove(face)
         for edge in face.Edges:
-            edge.Faces.remove(face)
+            if face in edge.Faces:
+                edge.Faces.remove(face)
         face.Zone.Faces.remove(face)
         self.Faces.remove(face)
 
@@ -1383,9 +1388,9 @@ class Grid:
         self.add_face(f3)
 
         # link grid
-        self.add_node(e4, False)
-        self.add_node(e5, False)
-        self.add_node(e6, False)
+        self.add_edge(e4)
+        self.add_edge(e5)
+        self.add_edge(e6)
 
         # link zone
         zone.add_face(f1)
@@ -1418,8 +1423,8 @@ class Grid:
         max_edge = face.max_edge_from_face()
         if len(max_edge.Faces) == 2:
             self.del_face_from_everywhere(face)
-            other_face = max_edge.Faces[0]
             self.del_edge_from_everywhere(max_edge)
+            other_face = max_edge.Faces[0]
             gloid2 = other_face.GloId
             self.del_face_from_everywhere(other_face)
 
@@ -1435,13 +1440,12 @@ class Grid:
 
             # get edges
             face.Edges.remove(max_edge)
-            other_face.Edges.remove(max_edge)
             e1 = [edge for edge in face.Edges for node in edge.Nodes if id(node) == id(n1)][0]
             e2 = [edge for edge in other_face.Edges for node in edge.Nodes if id(node) == id(n1)][0]
             e3 = [edge for edge in face.Edges for node in edge.Nodes if id(node) == id(n2)][0]
             e4 = [edge for edge in other_face.Edges for node in edge.Nodes if id(node) == id(n2)][0]
             e5 = Edge()
-            self.add_edge(e5)
+            self.add_edge(e5, max_edge.GloId)
             Grid.link_node_edge(n3, e5)
             Grid.link_node_edge(n4, e5)
 
@@ -1560,7 +1564,7 @@ class Grid:
             e25 = Edge()
             e35 = Edge()
             e45 = Edge()
-            self.add_edge(e15)
+            self.add_edge(e15, edge.GloId)
             self.add_edge(e25)
             self.add_edge(e35)
             self.add_edge(e45)
@@ -1677,6 +1681,81 @@ class Grid:
             self.Edges[-2].GloId = e1.GloId
             self.Edges[-3].GloId = e2.GloId
             self.Nodes[-1].GloId = n2.GloId
+
+            return True
+        else:
+            return False
+
+    # ----------------------------------------------------------------------------------------------
+
+    def cut_single_edge(self, edge, p):
+        """
+
+        Atomic grid transformation. Splitting a single edge.
+
+        Parameters
+        ----------
+        edge: Edge
+        p: Vect
+
+        Returns
+        -------
+
+                    n3
+                   *
+                  /|\
+                 / | \
+                /  |  \
+               /   |   \
+              /    |    \
+             /     |     \
+            / f1   |   f2 \
+           /       |n4     \
+        n2*--------*--------* n1
+
+        """
+
+        if len(edge.Faces) == 1:
+
+            # det all data and del from grid
+            face = edge.Faces[0]
+            data = face.Data.copy()
+            gloid = face.GloId
+            zone = face.Zone
+
+            self.del_face_from_everywhere(face)
+
+            self.del_edge_from_everywhere(edge)
+
+            # new faces
+            f1 = Face(list(data.keys()), list(data.values()))
+            f2 = Face(list(data.keys()), list(data.values()))
+
+            self.add_face(f1, gloid)
+            self.add_face(f2)
+
+            # Nodes
+            n1 = edge.Nodes[0]
+            n2 = edge.Nodes[1]
+            n3 = [i for i in face.Nodes if id(i) != id(n1) and id(i) != id(n2)][0]
+            n4 = Node(p)
+            node = self.add_node(n4, True)
+            if id(node) == id(n4):
+                zone.add_node(n4)
+            else:
+                n4 = node
+
+            # Edges
+            face.Edges.remove(edge)
+            e13 = [ed for ed in face.Edges for node in ed.Nodes if id(node) == id(n1)][0]
+            e23 = [ed for ed in face.Edges for node in ed.Nodes if id(node) == id(n2)][0]
+            e14 = Edge()
+            e24 = Edge()
+            e34 = Edge()
+            self.add_edge(e14)
+            self.add_edge(e24)
+            self.add_edge(e34)
+
 
             return True
         else:

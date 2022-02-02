@@ -170,6 +170,109 @@ def case_014_convert_grid_stall_to_check_point(test='cyl/cyl_stall'):
     g.convert_grid_stall_to_check_point()
     g.store('grids/{0}_case_014.dat'.format(test))
 
+# --------------------------------------------------------------------------------------------------
+
+def case_015_GloId_in_grid_for_divide_face():
+
+    g = gsu.Grid()
+    g.load('grids/wing_1.dat')
+    print('face id')
+    print([f.GloId for f in g.Faces])
+    print('edge id')
+    print([f.GloId for f in g.Edges])
+    print('node id')
+    print([f.GloId for f in g.Nodes])
+
+    f = g.Faces[0]
+    g.divide_face(f, f.get_triangle().centroid())
+
+    print('face id after')
+    print([f.GloId for f in g.Faces])
+    print('edge id after')
+    print([f.GloId for f in g.Edges])
+    print('node id after')
+    print([f.GloId for f in g.Nodes])
+
+# --------------------------------------------------------------------------------------------------
+
+def case_016_GloId_in_grid_for_collapse_face():
+
+    g = gsu.Grid()
+    g.load('grids/wing_1.dat')
+    print('face id')
+    print([f.GloId for f in g.Faces])
+    print('edge id')
+    print([f.GloId for f in g.Edges])
+    print('node id')
+    print([f.GloId for f in g.Nodes])
+
+    f = g.Faces[0]
+    g.collapse_face(f)
+
+    print('face id after')
+    print([f.GloId for f in g.Faces])
+    print('edge id after')
+    print([f.GloId for f in g.Edges])
+    print('node id after')
+    print([f.GloId for f in g.Nodes])
+
+# --------------------------------------------------------------------------------------------------
+
+def case_017_GloId_in_grid_for_cut_edge():
+
+    g = gsu.Grid()
+    g.load('grids/wing_1.dat')
+    print('face id')
+    print([f.GloId for f in g.Faces])
+    print('edge id')
+    print([f.GloId for f in g.Edges])
+    print('node id')
+    print([f.GloId for f in g.Nodes])
+
+    n = 0
+    len(g.Faces[n].Edges[0].Faces)
+    w = True
+    while w:
+        w = not len(g.Faces[n].Edges[0].Faces) == 2
+        if not w:
+            g.cut_edge(g.Faces[n].Edges[0], g.Faces[n].get_triangle().centroid())
+        n += 1
+
+    print('face id after')
+    print([f.GloId for f in g.Faces])
+    print('edge id after')
+    print([f.GloId for f in g.Edges])
+    print('node id after')
+    print([f.GloId for f in g.Nodes])
+
+# --------------------------------------------------------------------------------------------------
+
+def case_018_GloId_in_grid_for_collapse_edge():
+
+    g = gsu.Grid()
+    g.load('grids/wing_1.dat')
+    print('face id')
+    print([f.GloId for f in g.Faces])
+    print('edge id')
+    print([f.GloId for f in g.Edges])
+    print('node id')
+    print([f.GloId for f in g.Nodes])
+
+    n = 0
+    len(g.Faces[n].Edges[0].Faces)
+    w = True
+    while w:
+        w = not len(g.Faces[n].Edges[0].Faces) == 2
+        if not w:
+            g.collapse_edge(g.Faces[n].Edges[0])
+        n += 1
+
+    print('face id after')
+    print([f.GloId for f in g.Faces])
+    print('edge id after')
+    print([f.GloId for f in g.Edges])
+    print('node id after')
+    print([f.GloId for f in g.Nodes])
 
 # ==================================================================================================
 
@@ -181,6 +284,10 @@ if __name__ == '__main__':
     # case_007_store_load_faces_calc_data()
     # case_009_store_mpi()
     # case_014_convert_grid_stall_to_check_point()
+    # case_015_GloId_in_grid_for_divide_face()
+    # case_016_GloId_in_grid_for_collapse_face()
+    # case_017_GloId_in_grid_for_cut_edge()
+    case_018_GloId_in_grid_for_collapse_edge()
 
     pass
 
