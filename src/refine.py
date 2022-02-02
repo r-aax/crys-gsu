@@ -218,8 +218,7 @@ def refine_grid(grid_file, out_grid_file):
                     if len(ed.Faces) == 2:
                         g.cut_edge(ed, rebuilding_points[0][1])
                     else:
-                        # TODO метод разбиение треугольника по ребру, когда нет соседа
-                        pass
+                        g.cut_single_edge(ed, rebuilding_points[0][1])
 
                 else:
                     # перестроение треугольника по одной точке Р3 на 3 новых треугольника

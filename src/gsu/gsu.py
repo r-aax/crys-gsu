@@ -1711,7 +1711,7 @@ class Grid:
              /     |     \
             / f1   |   f2 \
            /       |n4     \
-        n2*--------*--------* n1
+        n1*--------*--------* n2
 
         """
 
@@ -1724,7 +1724,6 @@ class Grid:
             zone = face.Zone
 
             self.del_face_from_everywhere(face)
-
             self.del_edge_from_everywhere(edge)
 
             # new faces
@@ -1752,10 +1751,37 @@ class Grid:
             e14 = Edge()
             e24 = Edge()
             e34 = Edge()
-            self.add_edge(e14)
+            self.add_edge(e14, edge.GloId)
             self.add_edge(e24)
             self.add_edge(e34)
 
+            # Links
+            Grid.link_node_edge(n4, e14)
+            Grid.link_node_edge(n4, e24)
+            Grid.link_node_edge(n4, e34)
+            Grid.link_node_edge(n1, e14)
+            Grid.link_node_edge(n2, e24)
+            Grid.link_node_edge(n3, e34)
+
+            Grid.link_node_face(n3, f1)
+            Grid.link_node_face(n3, f2)
+            Grid.link_node_face(n4, f1)
+            Grid.link_node_face(n4, f2)
+            Grid.link_node_face(n1, f1)
+            Grid.link_node_face(n2, f2)
+
+            Grid.link_edge_face(e34, f1)
+            Grid.link_edge_face(e34, f2)
+            Grid.link_edge_face(e13, f1)
+            Grid.link_edge_face(e23, f2)
+            Grid.link_edge_face(e14, f1)
+            Grid.link_edge_face(e24, f2)
+
+            zone.add_face(f1)
+            zone.add_face(f2)
+            zone.add_edge(e14)
+            zone.add_edge(e24)
+            zone.add_edge(e34)
 
             return True
         else:
