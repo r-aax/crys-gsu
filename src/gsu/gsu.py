@@ -1787,4 +1787,31 @@ class Grid:
         else:
             return False
 
+    # ----------------------------------------------------------------------------------------------
+
+    def cut_edge_with_two_nodes(self, edge, p1, p2):
+        """
+
+        Atomic grid transformation. Splitting an edge with two points.
+
+        Parameters
+        ----------
+        edge: Edge
+        p1: Vect
+        p2: Vect
+
+        Returns
+        -------
+
+        """
+
+        if len(edge.Faces) == 1:
+
+            return True
+        elif len(edge.Faces) == 2:
+
+            return True
+        else:
+            return False
+
 # ==================================================================================================
