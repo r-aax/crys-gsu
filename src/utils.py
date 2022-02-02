@@ -145,38 +145,3 @@ def group_txt_files_by_timestamps(fs):
             d.update([(tm, [f])])
 
     return d
-
-# --------------------------------------------------------------------------------------------------
-
-
-if __name__ == '__main__':
-
-    # flatten
-    assert(flatten([]) == [])
-    assert(flatten([1]) == [1])
-    assert(flatten([1, 2]) == [1, 2])
-    assert(flatten([1, [2, 3]]) == [1, 2, 3])
-    assert(flatten([1, [2, [3], 4], 5]) == [1, 2, 3, 4, 5])
-
-    # has_filename_timestamp
-    assert(not has_filename_timestamp(''))
-    assert(not has_filename_timestamp('short'))
-    assert(not has_filename_timestamp('name_000000aaa000'))
-    assert(not has_filename_timestamp('nameX000111222333'))
-    assert(has_filename_timestamp('name_000000000000'))
-    assert(has_filename_timestamp('name_111222333444'))
-    assert(not has_filename_timestamp('name_111222333444_r'))
-
-    # get_filename_and_timestamp_pair
-    assert(get_filename_and_timestamp_pair('name') == ('name', '000000000000'))
-    assert(get_filename_and_timestamp_pair('name_000111222333') == ('name', '000111222333'))
-
-    # dummy_split_filename
-    assert(dummy_split_filename('bunny_00001_111222333444.cry') == \
-           ('bunny', 1, 111222333444, 'cry'))
-
-    # is_filename_correct_crys_{cry/txt}_file
-    assert(is_filename_correct_crys_cry_file('bunny_00004_444333222111.cry', 'bunny'))
-    assert(is_filename_correct_crys_txt_file('bunny_00004_444333222111.txt', 'bunny'))
-
-# --------------------------------------------------------------------------------------------------
