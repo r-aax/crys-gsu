@@ -1231,7 +1231,7 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
-    def del_face_from_everywhere(self, face):
+    def del_face(self, face):
         """
 
         Parameters
@@ -1254,7 +1254,7 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
-    def del_edge_from_everywhere(self, edge):
+    def del_edge(self, edge):
         """
 
         Parameters
@@ -1278,7 +1278,7 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
-    def del_node_from_everywhere(self, node):
+    def del_node(self, node):
         """
 
         Parameters
@@ -1324,7 +1324,7 @@ class Grid:
         zone = face.Zone
         gloid = face.GloId
 
-        self.del_face_from_everywhere(face)
+        self.del_face(face)
 
         # get new faces
         f1 = Face(list(data.keys()), list(data.values()))
@@ -1343,13 +1343,9 @@ class Grid:
             n4 = node
 
         # get edges
-        for edge in edges:
-            if n1 in edge.Nodes and n2 in edge.Nodes:
-                e1 = edge
-            elif n2 in edge.Nodes and n3 in edge.Nodes:
-                e2 = edge
-            else:
-                e3 = edge
+        e1 = Grid.find_edge(n1, n2)
+        e2 = Grid.find_edge(n2, n3)
+        e3 = Grid.find_edge(n1, n3)
         e4 = Edge()
         e5 = Edge()
         e6 = Edge()
@@ -1422,11 +1418,11 @@ class Grid:
 
         max_edge = face.max_edge_from_face()
         if len(max_edge.Faces) == 2:
-            self.del_face_from_everywhere(face)
-            self.del_edge_from_everywhere(max_edge)
+            self.del_face(face)
+            self.del_edge(max_edge)
             other_face = max_edge.Faces[0]
             gloid2 = other_face.GloId
-            self.del_face_from_everywhere(other_face)
+            self.del_face(other_face)
 
             # get new faces
             f1 = Face(list(data.keys()), list(data.values()))
@@ -1525,10 +1521,10 @@ class Grid:
             data2 = f2.Data.copy()
             gloid2 = f2.GloId
 
-            self.del_face_from_everywhere(f1)
-            self.del_face_from_everywhere(f2)
+            self.del_face(f1)
+            self.del_face(f2)
 
-            self.del_edge_from_everywhere(edge)
+            self.del_edge(edge)
 
             # new faces
             f1_1 = Face(list(data1.keys()), list(data1.values()))
@@ -1640,10 +1636,10 @@ class Grid:
             f1 = edge.Faces[0]
             f2 = edge.Faces[1]
 
-            self.del_face_from_everywhere(f1)
-            self.del_face_from_everywhere(f2)
+            self.del_face(f1)
+            self.del_face(f2)
 
-            self.del_edge_from_everywhere(edge)
+            self.del_edge(edge)
 
             # Nodes
             n1 = edge.Nodes[0]
@@ -1669,11 +1665,11 @@ class Grid:
                 e4 = [ed for ed in f2.Edges for node in ed.Nodes if id(node) == id(n1)][0]
                 Grid.link_edge_face(e4, e2.Faces[0])
 
-            self.del_edge_from_everywhere(e1)
-            self.del_edge_from_everywhere(e2)
+            self.del_edge(e1)
+            self.del_edge(e2)
 
             n2.replacing_node(n1)
-            self.del_node_from_everywhere(n2)
+            self.del_node(n2)
 
             self.Faces[-1].GloId = f1.GloId
             self.Faces[-2].GloId = f2.GloId
@@ -1723,8 +1719,8 @@ class Grid:
             gloid = face.GloId
             zone = face.Zone
 
-            self.del_face_from_everywhere(face)
-            self.del_edge_from_everywhere(edge)
+            self.del_face(face)
+            self.del_edge(edge)
 
             # new faces
             f1 = Face(list(data.keys()), list(data.values()))
@@ -1824,8 +1820,8 @@ class Grid:
             gloid = face.GloId
             zone = face.Zone
 
-            self.del_face_from_everywhere(face)
-            self.del_edge_from_everywhere(edge)
+            self.del_face(face)
+            self.del_edge(edge)
 
             # new faces
             f1 = Face(list(data.keys()), list(data.values()))
@@ -1922,9 +1918,9 @@ class Grid:
             data2 = face2.Data.copy()
             gloid2 = face2.GloId
 
-            self.del_face_from_everywhere(face1)
-            self.del_face_from_everywhere(face2)
-            self.del_edge_from_everywhere(edge)
+            self.del_face(face1)
+            self.del_face(face2)
+            self.del_edge(edge)
 
             # new faces
             f1 = Face(list(data1.keys()), list(data1.values()))
@@ -2053,5 +2049,24 @@ class Grid:
 
         else:
             return False
+
+    # ----------------------------------------------------------------------------------------------
+
+    def cut_two_edges_with_two_nodes(self, edge1, edge2, p1, p2):
+        """
+
+        Parameters
+        ----------
+        edge1: Edge
+        edge2: Edge
+        p1: Vect
+        p2: Vect
+
+        Returns
+        -------
+
+        """
+
+        pass
 
 # ==================================================================================================
