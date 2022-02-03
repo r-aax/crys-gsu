@@ -77,44 +77,6 @@ def refine_grid(grid_file, out_grid_file):
 
     # ----------------------------------------------------------------------------------------------
 
-    def del_face_from_grid_and_get_data_from_face(tri_in_grid, g):
-        """
-
-        Parameters
-        ----------
-        face: Face in Grid
-        g: Grid object
-
-        Returns: data, nodes, edges, zone form Face in Grid
-        -------
-
-        """
-        # 1) сохранить Data
-        data = tri_in_grid.Data.copy()
-
-        # 2) открыть Edges и в каждом Edge удалить Face этого треугольника
-        edges = []
-        for edge in tri_in_grid.Edges:
-            edge.Faces.remove(tri_in_grid)
-            edges.append(edge)
-
-        # 3) открыть Nodes и в каждом Node удалить Face этого треугольника
-        nodes = []
-        for node in tri_in_grid.Nodes:
-            node.Faces.remove(tri_in_grid)
-            nodes.append(node)
-
-        # 4) открыть Zone и удалить Face этого треугольника
-        zone = tri_in_grid.Zone
-        zone.Faces.remove(tri_in_grid)
-
-        # 5) удаление треугольника из сетки
-        g.Faces.remove(tri_in_grid)
-
-        return data, nodes, edges, zone
-
-    # ----------------------------------------------------------------------------------------------
-
     def get_node_from_list_of_nodes(vect, nodes):
         """
 
@@ -133,6 +95,129 @@ def refine_grid(grid_file, out_grid_file):
             return nodes[nodes.index(node)]
 
         return None
+
+    # ----------------------------------------------------------------------------------------------
+
+    def refine(g, intersections_list):
+        """
+
+        Данный метод перестраивает сетку на основе списка пересечений.
+
+        Parameters
+        ----------
+        g: Сетка
+        intersections_list: Список пересечений,
+        элементы которого предстваленны в виде списка пар [треугольник, [точки пересечений]]
+
+        Returns: Перестроенная сетка g
+        -------
+
+        """
+
+        # Поочереди перестраиваем все треугольники (если у них есть точки для перестроения)
+        for tri, intersection_points in intersections_list:
+
+            # список точек в треугольнике
+            rebuilding_points = []
+
+            # объект сетки для перестроения
+            face = tri.BackRef
+            assert (face)
+
+            # analyze the intersection points for the triangle
+            for point in intersection_points:
+                position_in_the_triangle = tri.point_in_triangle(point)
+                if position_in_the_triangle != 0 and position_in_the_triangle != 1:
+                    rebuilding_points.append([position_in_the_triangle, point])
+
+            if not rebuilding_points:
+                # do not rebuild this triangle
+                pass
+
+            else:
+
+                # перестроения треугольника при 1 точке
+                if len(rebuilding_points) == 1:
+
+                    if rebuilding_points[0][0] == 2:
+                        # перестроение треугольника по одной точке Р2 на два новых треугольника
+                        # чтобы воспользоваться атомарным методом "Разбиение ребра", необходимо:
+                        # 1) определить какому ребру принадлежит точка
+                        # 2) есть ли с обратной стороны ребра еще один face
+                        res_pos = point_on_edge_of_triangle(rebuilding_points[0][1], tri)
+                        # вершины ребра
+                        n1 = res_pos[0][0]
+                        n2 = res_pos[0][1]
+                        node1 = Node(n1)
+                        node2 = Node(n2)
+                        ed = [ed for ed in face.Edges if (ed.Nodes[0].P == node1.P and ed.Nodes[1].P == node2.P) or
+                              (ed.Nodes[1].P == node1.P and ed.Nodes[0].P == node2.P)][0]
+
+                        if len(ed.Faces) == 2:
+                            g.cut_edge(ed, rebuilding_points[0][1])
+                        else:
+                            g.cut_single_edge(ed, rebuilding_points[0][1])
+
+                    else:
+                        # перестроение треугольника по одной точке Р3 на 3 новых треугольника
+                        g.divide_face(face, rebuilding_points[0][1])
+                        pass
+
+                # перестроения треугольника при 2 точках
+                elif len(rebuilding_points) == 2:
+
+                    if rebuilding_points[0][0] == 2 and rebuilding_points[1][0] == 2:
+                        res_pos1 = point_on_edge_of_triangle(rebuilding_points[0][1], tri)
+                        res_pos2 = point_on_edge_of_triangle(rebuilding_points[1][1], tri)
+
+                        # belong the same edge
+                        if functools.reduce(lambda x, y: x and y, map(lambda p, q: p == q, res_pos1[0], res_pos2[0]),
+                                            True):
+
+                            # вершины ребра
+                            n1 = res_pos1[0][0]
+                            n2 = res_pos1[0][1]
+                            node1 = Node(n1)
+                            node2 = Node(n2)
+                            ed = [ed for ed in face.Edges if (ed.Nodes[0].P == node1.P and ed.Nodes[1].P == node2.P) or
+                                  (ed.Nodes[1].P == node1.P and ed.Nodes[0].P == node2.P)][0]
+                            g.cut_edge_with_two_nodes(ed, rebuilding_points[0][1], rebuilding_points[1][1])
+
+                        else:
+                            # TODO построить три новых треугольника в сетке на месте старого (две точки на двух ребрах)
+                            pass
+
+                    elif rebuilding_points[0][0] == 3 and rebuilding_points[1][0] == 3:
+                        # TODO построить три новых треугольника в сетке на месте старого (обе точки в центре)
+                        pass
+
+                    else:
+                        # TODO построить три новых треугольника в сетке на месте старого (одна в центре, вторая на ребре)
+                        pass
+                    pass
+
+                # # перестроения треугольника при 3 точках
+                # elif len(rebuilding_points) == 3:
+                #     # TODO перестроение треугольника при 3 точках
+                #     pass
+
+                # перестроения треугольника при прочих количествах точек
+                else:
+                    # TODO перестроение треугольника при прочих количествах точек
+                    if in_point_class(3, rebuilding_points):
+                        # если len(rebuilding_points) > 3, то разбиваем треугольник в сетке на 3 треугольника по точке,
+                        # ближайшей к центру треугольника
+                        # выводим их в виде объектов класса Треугольник в конец списка res_intersect_new_list как,
+                        # res_intersect_new_list.append([tri1, rebuilding_points],
+                        #                               [tri2, rebuilding_points],
+                        #                               [tri3, rebuilding_points])
+                        # где rebuilding_points - набор точек, которые однозначно пересекали исходный треугольник
+                        # так новые треугольники попадут в конец цикла и тоже будут рассмотрены и разбиты на части
+                        pass
+                    else:
+                        # нет ни одной точки в центре треугольника => есть много точек на ребрах (больше трех)
+                        # нужно разработать алгоритм действий в этом случае
+                        pass
 
     # =================================================================================================
 
@@ -177,111 +262,8 @@ def refine_grid(grid_file, out_grid_file):
                                 math.isclose(j[1][i].Z, j[1][i - 1].Z))]
 
     # Поочереди перестраиваем все треугольники (если у них есть точки для перестроения)
-    for tri, intersection_points in res_intersect_new_list:
+    refine(g, res_intersect_new_list)
 
-        # список точек в треугольнике
-        rebuilding_points = []
-
-        # объект сетки для перестроения
-        face = tri.BackRef
-        assert(face)
-
-        # analyze the intersection points for the triangle
-        for point in intersection_points:
-            position_in_the_triangle = tri.point_in_triangle(point)
-            if position_in_the_triangle != 0 and position_in_the_triangle != 1:
-                rebuilding_points.append([position_in_the_triangle, point])
-
-        if not rebuilding_points:
-            # do not rebuild this triangle
-            pass
-
-        else:
-
-            # перестроения треугольника при 1 точке
-            if len(rebuilding_points) == 1:
-
-                if rebuilding_points[0][0] == 2:
-                    # перестроение треугольника по одной точке Р2 на два новых треугольника
-                    # чтобы воспользоваться атомарным методом "Разбиение ребра", необходимо:
-                    # 1) определить какому ребру принадлежит точка
-                    # 2) есть ли с обратной стороны ребра еще один face
-                    res_pos = point_on_edge_of_triangle(rebuilding_points[0][1], tri)
-                    # вершины ребра
-                    n1 = res_pos[0][0]
-                    n2 = res_pos[0][1]
-                    node1 = Node(n1)
-                    node2 = Node(n2)
-                    ed = [ed for ed in face.Edges if (ed.Nodes[0].P == node1.P and ed.Nodes[1].P == node2.P) or
-                          (ed.Nodes[1].P == node1.P and ed.Nodes[0].P == node2.P)][0]
-
-                    if len(ed.Faces) == 2:
-                        g.cut_edge(ed, rebuilding_points[0][1])
-                    else:
-                        g.cut_single_edge(ed, rebuilding_points[0][1])
-
-                else:
-                    # перестроение треугольника по одной точке Р3 на 3 новых треугольника
-                    g.divide_face(face, rebuilding_points[0][1])
-                    pass
-
-            # перестроения треугольника при 2 точках
-            elif len(rebuilding_points) == 2:
-
-                if rebuilding_points[0][0] == 2 and rebuilding_points[1][0] == 2:
-                    res_pos1 = point_on_edge_of_triangle(rebuilding_points[0][1], tri)
-                    res_pos2 = point_on_edge_of_triangle(rebuilding_points[1][1], tri)
-
-                    # belong the same edge
-                    if functools.reduce(lambda x, y : x and y, map(lambda p, q: p == q, res_pos1[0], res_pos2[0]),
-                                        True):
-
-                        # вершины ребра
-                        n1 = res_pos1[0][0]
-                        n2 = res_pos1[0][1]
-                        node1 = Node(n1)
-                        node2 = Node(n2)
-                        ed = [ed for ed in face.Edges if (ed.Nodes[0].P == node1.P and ed.Nodes[1].P == node2.P) or
-                              (ed.Nodes[1].P == node1.P and ed.Nodes[0].P == node2.P)][0]
-                        g.cut_edge_with_two_nodes(ed, rebuilding_points[0][1], rebuilding_points[1][1])
-
-                    else:
-                        # TODO построить три новых треугольника в сетке на месте старого (две точки на двух ребрах)
-                        pass
-
-                elif rebuilding_points[0][0] == 3 and rebuilding_points[1][0] == 3:
-                    # TODO построить три новых треугольника в сетке на месте старого (обе точки в центре)
-                    pass
-
-                else:
-                    # TODO построить три новых треугольника в сетке на месте старого (одна в центре, вторая на ребре)
-                    pass
-                pass
-
-            # # перестроения треугольника при 3 точках
-            # elif len(rebuilding_points) == 3:
-            #     # TODO перестроение треугольника при 3 точках
-            #     pass
-
-            # перестроения треугольника при прочих количествах точек
-            else:
-                # TODO перестроение треугольника при прочих количествах точек
-                if in_point_class(3, rebuilding_points):
-                    # если len(rebuilding_points) > 3, то разбиваем треугольник в сетке на 3 треугольника по точке,
-                    # ближайшей к центру треугольника
-                    # выводим их в виде объектов класса Треугольник в конец списка res_intersect_new_list как,
-                    # res_intersect_new_list.append([tri1, rebuilding_points],
-                    #                               [tri2, rebuilding_points],
-                    #                               [tri3, rebuilding_points])
-                    # где rebuilding_points - набор точек, которые однозначно пересекали исходный треугольник
-                    # так новые треугольники попадут в конец цикла и тоже будут рассмотрены и разбиты на части
-                    pass
-                else:
-                    # нет ни одной точки в центре треугольника => есть много точек на ребрах (больше трех)
-                    # нужно разработать алгоритм действий в этом случае
-                    pass
-
-    # Save grid.
     g.store(out_grid_file)
 
     print(f'crys-gsu-refine : done (time estimated = {time.time() - start_time} s)')
