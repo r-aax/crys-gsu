@@ -1913,6 +1913,142 @@ class Grid:
 
         elif len(edge.Faces) == 2:
 
+            # det all data and del from grid
+            face1 = edge.Faces[0]
+            face2 = edge.Faces[1]
+            data1 = face1.Data.copy()
+            gloid1 = face1.GloId
+            zone = face1.Zone
+            data2 = face2.Data.copy()
+            gloid2 = face2.GloId
+
+            self.del_face_from_everywhere(face1)
+            self.del_face_from_everywhere(face2)
+            self.del_edge_from_everywhere(edge)
+
+            # new faces
+            f1 = Face(list(data1.keys()), list(data1.values()))
+            f2 = Face(list(data1.keys()), list(data1.values()))
+            f3 = Face(list(data1.keys()), list(data1.values()))
+            f4 = Face(list(data2.keys()), list(data2.values()))
+            f5 = Face(list(data2.keys()), list(data2.values()))
+            f6 = Face(list(data2.keys()), list(data2.values()))
+
+            self.add_face(f1, gloid1)
+            self.add_face(f2, gloid2)
+            self.add_face(f3)
+            self.add_face(f4)
+            self.add_face(f5)
+            self.add_face(f6)
+
+            # Nodes
+            n1 = edge.Nodes[0]
+            n2 = edge.Nodes[1]
+            n3 = [i for i in face1.Nodes if id(i) != id(n1) and id(i) != id(n2)][0]
+            n6 = [i for i in face2.Nodes if id(i) != id(n1) and id(i) != id(n2)][0]
+            n4 = Node(p1)
+            node = self.add_node(n4, True)
+            if id(node) == id(n4):
+                zone.add_node(n4)
+            else:
+                n4 = node
+            n5 = Node(p2)
+            node = self.add_node(n5, True)
+            if id(node) == id(n5):
+                zone.add_node(n5)
+            else:
+                n5 = node
+
+            # Edges
+            face1.Edges.remove(edge)
+            face2.Edges.remove(edge)
+            e13 = [ed for ed in face1.Edges for node in ed.Nodes if id(node) == id(n1)][0]
+            e23 = [ed for ed in face1.Edges for node in ed.Nodes if id(node) == id(n2)][0]
+            e16 = [ed for ed in face2.Edges for node in ed.Nodes if id(node) == id(n1)][0]
+            e26 = [ed for ed in face2.Edges for node in ed.Nodes if id(node) == id(n2)][0]
+            e14 = Edge()
+            e25 = Edge()
+            e45 = Edge()
+            e34 = Edge()
+            e35 = Edge()
+            e46 = Edge()
+            e56 = Edge()
+            self.add_edge(e14, edge.GloId)
+            self.add_edge(e25)
+            self.add_edge(e45)
+            self.add_edge(e34)
+            self.add_edge(e35)
+            self.add_edge(e46)
+            self.add_edge(e56)
+
+            # Links
+            Grid.link_node_edge(n1, e14)
+            Grid.link_node_edge(n2, e25)
+            Grid.link_node_edge(n3, e34)
+            Grid.link_node_edge(n3, e35)
+            Grid.link_node_edge(n4, e14)
+            Grid.link_node_edge(n4, e34)
+            Grid.link_node_edge(n4, e45)
+            Grid.link_node_edge(n4, e46)
+            Grid.link_node_edge(n5, e25)
+            Grid.link_node_edge(n5, e35)
+            Grid.link_node_edge(n5, e45)
+            Grid.link_node_edge(n5, e56)
+            Grid.link_node_edge(n6, e46)
+            Grid.link_node_edge(n6, e56)
+
+            Grid.link_node_face(n1, f1)
+            Grid.link_node_face(n1, f4)
+            Grid.link_node_face(n2, f3)
+            Grid.link_node_face(n2, f6)
+            Grid.link_node_face(n3, f1)
+            Grid.link_node_face(n3, f2)
+            Grid.link_node_face(n3, f3)
+            Grid.link_node_face(n4, f1)
+            Grid.link_node_face(n4, f2)
+            Grid.link_node_face(n4, f4)
+            Grid.link_node_face(n4, f5)
+            Grid.link_node_face(n5, f2)
+            Grid.link_node_face(n5, f3)
+            Grid.link_node_face(n5, f5)
+            Grid.link_node_face(n5, f6)
+            Grid.link_node_face(n6, f4)
+            Grid.link_node_face(n6, f5)
+            Grid.link_node_face(n6, f6)
+
+            Grid.link_edge_face(e14, f1)
+            Grid.link_edge_face(e13, f1)
+            Grid.link_edge_face(e34, f1)
+            Grid.link_edge_face(e34, f2)
+            Grid.link_edge_face(e45, f2)
+            Grid.link_edge_face(e35, f2)
+            Grid.link_edge_face(e25, f3)
+            Grid.link_edge_face(e35, f3)
+            Grid.link_edge_face(e23, f3)
+            Grid.link_edge_face(e16, f4)
+            Grid.link_edge_face(e14, f4)
+            Grid.link_edge_face(e46, f4)
+            Grid.link_edge_face(e45, f5)
+            Grid.link_edge_face(e46, f5)
+            Grid.link_edge_face(e56, f5)
+            Grid.link_edge_face(e26, f6)
+            Grid.link_edge_face(e25, f6)
+            Grid.link_edge_face(e56, f6)
+
+            zone.add_face(f1)
+            zone.add_face(f2)
+            zone.add_face(f3)
+            zone.add_face(f4)
+            zone.add_face(f5)
+            zone.add_face(f6)
+            zone.add_edge(e14)
+            zone.add_edge(e25)
+            zone.add_edge(e45)
+            zone.add_edge(e34)
+            zone.add_edge(e35)
+            zone.add_edge(e46)
+            zone.add_edge(e56)
+
             return True
 
         else:
