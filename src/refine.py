@@ -235,8 +235,16 @@ def refine_grid(grid_file, out_grid_file):
                     # belong the same edge
                     if functools.reduce(lambda x, y : x and y, map(lambda p, q: p == q, res_pos1[0], res_pos2[0]),
                                         True):
-                        # TODO построить три новых треугольника в сетке на месте старого (две точки на одном ребре)
-                        pass
+
+                        # вершины ребра
+                        n1 = res_pos1[0][0]
+                        n2 = res_pos1[0][1]
+                        node1 = Node(n1)
+                        node2 = Node(n2)
+                        ed = [ed for ed in face.Edges if (ed.Nodes[0].P == node1.P and ed.Nodes[1].P == node2.P) or
+                              (ed.Nodes[1].P == node1.P and ed.Nodes[0].P == node2.P)][0]
+                        g.cut_edge_with_two_nodes(ed, rebuilding_points[0][1], rebuilding_points[1][1])
+
                     else:
                         # TODO построить три новых треугольника в сетке на месте старого (две точки на двух ребрах)
                         pass
