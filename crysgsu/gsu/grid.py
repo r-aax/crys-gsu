@@ -11,23 +11,6 @@ import gsu
 # ==================================================================================================
 
 
-def mean_nodes_point(ns):
-    """
-    Get mean point of nodes.
-
-    :param ns: nodes
-    :return: mean point
-    """
-
-    xs = [n.P[0] for n in ns]
-    ys = [n.P[1] for n in ns]
-    zs = [n.P[2] for n in ns]
-
-    return sum(xs) / len(xs), sum(ys) / len(ys), sum(zs) / len(zs)
-
-# ==================================================================================================
-
-
 class Grid:
     """
     Grid (Surface Unstructured).
@@ -1054,7 +1037,6 @@ class Grid:
 
         self.post_decompose()
 
-
     # ----------------------------------------------------------------------------------------------
 
     def decompose_farhat(self, count=32, new_name=None, fz_names=[]):
@@ -1121,19 +1103,32 @@ class Grid:
 
     def move_from_mean_point(self, k=0.1):
         """
-        Move zones from mean point.
+        Move all zones away from mean point (grid explosion).
+        This method is compatible only with grid which was loaded without merge nodes option.
 
-        :param k: factor while zones moving
+        Parameters
+        ----------
+        k : float
+            Coefficient - how far from mean point it is needed to be moved.
         """
 
-        gx, gy, gz = mean_nodes_point(self.Nodes)
+        # Mean point function.
+        def mean_p(nodes):
+            return sum([n.P for n in nodes], start=geom.Vect()) / len(nodes)
 
+        # Grid mean point.
+        g_mean = mean_p(self.Nodes)
+
+        # Move each zone.
         for z in self.Zones:
-            zx, zy, zz = mean_nodes_point(z.Nodes)
-            vx, vy, vz = k * (zx - gz), k * (zy - gy), k * (zz - gz)
+
+            # Zone mean point.
+            z_mean = mean_p(z.Nodes)
+            shift = (z_mean - g_mean) * k
+
+            # Move.
             for n in z.Nodes:
-                p = n.P
-                n.P = (p[0] + vx, p[1] + vy, p[2] + vz)
+                n.P += shift
 
     # ----------------------------------------------------------------------------------------------
 
@@ -1147,7 +1142,6 @@ class Grid:
         with open(filename, 'w', newline='\n') as f:
             f.write('VARIABLES="GloId", "T", "Hw", "Hi"\n')
             for face in self.Faces:
-                p = mean_nodes_point(face.Nodes)
                 f.write(face.get_glo_id_t_hw_hi_str() + '\n')
             f.close()
 
