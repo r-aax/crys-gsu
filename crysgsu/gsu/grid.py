@@ -289,6 +289,7 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
+    @staticmethod
     def link_node_edge(node, edge):
         """
         Link node with edge.
@@ -299,11 +300,13 @@ class Grid:
 
         assert (type(node) is gsu.Node)
         assert (type(edge) is gsu.Edge)
+
         node.Edges.append(edge)
         edge.Nodes.append(node)
 
     # ----------------------------------------------------------------------------------------------
 
+    @staticmethod
     def link_node_face(node, face):
         """
         Link face with node.
@@ -314,11 +317,13 @@ class Grid:
 
         assert(type(node) is gsu.Node)
         assert (type(face) is gsu.Face)
+
         node.Faces.append(face)
         face.Nodes.append(node)
 
     # ----------------------------------------------------------------------------------------------
 
+    @staticmethod
     def link_edge_face(edge, face):
         """
         Link edge with face.
@@ -329,6 +334,7 @@ class Grid:
 
         assert (type(edge) is gsu.Edge)
         assert (type(face) is gsu.Face)
+
         # Check if it is enable to link the face with the edge.
         if len(edge.Faces) == 2:
             raise Exception('Too many faces linking with this edge ({0} - {1},'
@@ -341,6 +347,7 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
+    @staticmethod
     def find_edge(node_a, node_b):
         """
         Find edge with given nodes.
