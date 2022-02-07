@@ -22,10 +22,10 @@ def case_001_load_store(test='wing_1'):
 
     print('case_001_load_store({0})'.format(test))
     g = gsu.Grid()
-    g.load('grids/{0}.dat'.format(test))
-    g.store('grids/{0}_store1.dat'.format(test))
-    g.load('grids/{0}_store1.dat'.format(test))
-    g.store('grids/{0}_store2.dat'.format(test))
+    g.load('cases/grids/{0}.dat'.format(test))
+    g.store('cases/grids/{0}_store1.dat'.format(test))
+    g.load('cases/grids/{0}_store1.dat'.format(test))
+    g.store('cases/grids/{0}_store2.dat'.format(test))
 
 # --------------------------------------------------------------------------------------------------
 
@@ -46,25 +46,25 @@ def case_002_decompose(test='bunny_pos',
 
     # Create new name of grid and file
     new_grid_name = lambda m: '{0} {1}'.format(test, m)
-    new_file_name = lambda m: 'grids/{0}_{1}.dat'.format(test, m)
+    new_file_name = lambda m: 'cases/grids/{0}_{1}.dat'.format(test, m)
 
     if 'mono' in methods:
-        g.load('grids/{0}.dat'.format(test))
+        g.load('cases/grids/{0}.dat'.format(test))
         g.decompose_mono(new_name=new_grid_name('mono'))
         g.store(new_file_name('mono'))
 
     if 'random' in methods:
-        g.load('grids/{0}.dat'.format(test))
+        g.load('cases/grids/{0}.dat'.format(test))
         g.decompose_random(new_name=new_grid_name('random'))
         g.store(new_file_name('random'))
 
     if 'linear' in methods:
-        g.load('grids/{0}.dat'.format(test))
+        g.load('cases/grids/{0}.dat'.format(test))
         g.decompose_linear(new_name=new_grid_name('linear'))
         g.store(new_file_name('linear'))
 
     if 'hierarchical' in methods:
-        g.load('grids/{0}.dat'.format(test))
+        g.load('cases/grids/{0}.dat'.format(test))
         g.decompose_hierarchical(extract_signs_funs=[gsu.grid.fun_face_cx(),
                                                      gsu.grid.fun_face_cy(),
                                                      gsu.grid.fun_face_cz()],
@@ -73,7 +73,7 @@ def case_002_decompose(test='bunny_pos',
         g.store(new_file_name('hierarchical'))
 
     if 'farhat' in methods:
-        g.load('grids/{0}.dat'.format(test))
+        g.load('cases/grids/{0}.dat'.format(test))
         g.decompose_farhat(new_name=new_grid_name('farhat'),
                            fz_names=['POS1', 'POS2'])
         g.store(new_file_name('farhat'))
@@ -94,16 +94,16 @@ def case_005_explode_bunny(test='bunny'):
 
     print('case_005_explode_bunny({0})'.format(test))
     g = gsu.Grid()
-    g.load('grids/{0}.dat'.format(test))
+    g.load('cases/grids/{0}.dat'.format(test))
     g.decompose_hierarchical(extract_signs_funs=[gsu.grid.fun_face_cx(),
                                                  gsu.grid.fun_face_cy(),
                                                  gsu.grid.fun_face_cz()],
                              levels=5,
                              new_name=test + ' hierarchical')
-    g.store('grids/{0}_hierarchical.dat'.format(test))
-    g.load('grids/{0}_hierarchical.dat'.format(test), is_merge_same_nodes=False)
+    g.store('cases/grids/{0}_hierarchical.dat'.format(test))
+    g.load('cases/grids/{0}_hierarchical.dat'.format(test), is_merge_same_nodes=False)
     g.move_from_mean_point(0.25)
-    g.store('grids/{0}_explode.dat'.format(test))
+    g.store('cases/grids/{0}_explode.dat'.format(test))
 
 
 # --------------------------------------------------------------------------------------------------
@@ -121,10 +121,10 @@ def case_007_store_load_faces_calc_data(test='bunny'):
 
     print('case_007_store_load_faces_calc_data({0})'.format(test))
     g = gsu.Grid()
-    g.load('grids/{0}.dat'.format(test))
-    g.store_faces_calc_data('grids/{0}.txt'.format(test))
-    g.load_faces_calc_data('grids/{0}.txt'.format(test))
-    g.store('grids/{0}_data.dat'.format(test))
+    g.load('cases/grids/{0}.dat'.format(test))
+    g.store_faces_calc_data('cases/grids/{0}.txt'.format(test))
+    g.load_faces_calc_data('cases/grids/{0}.txt'.format(test))
+    g.store('cases/grids/{0}_data.dat'.format(test))
 
 
 # --------------------------------------------------------------------------------------------------
@@ -142,40 +142,38 @@ def case_009_store_mpi(test='bunny'):
 
     print('case_009_store_mpi({0})'.format(test))
     g = gsu.Grid()
-    g.load('grids/{0}.dat'.format(test))
+    g.load('cases/grids/{0}.dat'.format(test))
     g.decompose_hierarchical(extract_signs_funs=[gsu.grid.fun_face_cx(),
                                                  gsu.grid.fun_face_cy(),
                                                  gsu.grid.fun_face_cz()],
                              levels=3,
                              new_name=test + ' hierarchical')
-    g.store_mpi('grids/{0}_mpi'.format(test), '000000000100')
+    g.store_mpi('cases/grids/{0}_mpi'.format(test), '000000000100')
 
 
 # --------------------------------------------------------------------------------------------------
 
 
-def case_014_convert_grid_stall_to_check_point(test='cyl/cyl_stall'):
+def case_014_convert_grid_stall_to_check_point():
     """
     Load grid, convert and store.
     Test objective:
 
       Verification grids conversion.
-
-    :param test: test name
     """
 
-    print('case_014_convert_grid_stall_to_check_point({0})'.format(test))
+    print('case_014_convert_grid_stall_to_check_point')
     g = gsu.Grid()
-    g.load('grids/{0}.dat'.format(test))
+    g.load('cases/drops/cyl/cyl_stall.dat')
     g.convert_grid_stall_to_check_point()
-    g.store('grids/{0}_case_014.dat'.format(test))
+    g.store('cases/drops/cyl/cyl_stall_case_014.dat')
 
 # --------------------------------------------------------------------------------------------------
 
 def case_015_GloId_in_grid_for_divide_face():
 
     g = gsu.Grid()
-    g.load('grids/wing_1.dat')
+    g.load('cases/grids/wing_1.dat')
     print('face id')
     print([f.GloId for f in g.Faces])
     print('edge id')
@@ -198,7 +196,7 @@ def case_015_GloId_in_grid_for_divide_face():
 def case_016_GloId_in_grid_for_collapse_face():
 
     g = gsu.Grid()
-    g.load('grids/wing_1.dat')
+    g.load('cases/grids/wing_1.dat')
     print('face id')
     print([f.GloId for f in g.Faces])
     print('edge id')
@@ -221,7 +219,7 @@ def case_016_GloId_in_grid_for_collapse_face():
 def case_017_GloId_in_grid_for_cut_edge():
 
     g = gsu.Grid()
-    g.load('grids/wing_1.dat')
+    g.load('cases/grids/wing_1.dat')
     print('face id')
     print([f.GloId for f in g.Faces])
     print('edge id')
@@ -250,7 +248,7 @@ def case_017_GloId_in_grid_for_cut_edge():
 def case_018_GloId_in_grid_for_collapse_edge():
 
     g = gsu.Grid()
-    g.load('grids/wing_1.dat')
+    g.load('cases/grids/wing_1.dat')
     print('face id')
     print([f.GloId for f in g.Faces])
     print('edge id')
@@ -279,7 +277,7 @@ def case_018_GloId_in_grid_for_collapse_edge():
 def case_019_GloId_in_grid_for_cut_single_edge():
 
     g = gsu.Grid()
-    g.load('grids/wing_1.dat')
+    g.load('cases/grids/wing_1.dat')
     print('face id')
     print([f.GloId for f in g.Faces])
     print('edge id')
@@ -308,7 +306,7 @@ def case_019_GloId_in_grid_for_cut_single_edge():
 def case_020_GloId_in_grid_for_cut_edge_with_two_nodes():
 
     g = gsu.Grid()
-    g.load('grids/wing_1.dat')
+    g.load('cases/grids/wing_1.dat')
     print('face id')
     print([f.GloId for f in g.Faces])
     print('edge id')
