@@ -65,10 +65,7 @@ def case_002_decompose(test='bunny_pos',
 
     if 'hierarchical' in methods:
         g.load('cases/grids/{0}.dat'.format(test))
-        g.decompose_hierarchical(extract_signs_funs=[gsu.grid.fun_face_cx(),
-                                                     gsu.grid.fun_face_cy(),
-                                                     gsu.grid.fun_face_cz()],
-                                 new_name=new_grid_name('hierarchical'),
+        g.decompose_hierarchical(new_name=new_grid_name('hierarchical'),
                                  fixed_zones=['POS1', 'POS2'])
         g.store(new_file_name('hierarchical'))
 
@@ -95,11 +92,7 @@ def case_005_explode_bunny(test='bunny'):
     print('case_005_explode_bunny({0})'.format(test))
     g = gsu.Grid()
     g.load('cases/grids/{0}.dat'.format(test))
-    g.decompose_hierarchical(extract_signs_funs=[gsu.grid.fun_face_cx(),
-                                                 gsu.grid.fun_face_cy(),
-                                                 gsu.grid.fun_face_cz()],
-                             levels=5,
-                             new_name=test + ' hierarchical')
+    g.decompose_hierarchical(levels=5, new_name=test + ' hierarchical')
     g.store('cases/grids/{0}_hierarchical.dat'.format(test))
     g.load('cases/grids/{0}_hierarchical.dat'.format(test), is_merge_same_nodes=False)
     g.move_from_mean_point(0.25)
@@ -143,11 +136,7 @@ def case_009_store_mpi(test='bunny'):
     print('case_009_store_mpi({0})'.format(test))
     g = gsu.Grid()
     g.load('cases/grids/{0}.dat'.format(test))
-    g.decompose_hierarchical(extract_signs_funs=[gsu.grid.fun_face_cx(),
-                                                 gsu.grid.fun_face_cy(),
-                                                 gsu.grid.fun_face_cz()],
-                             levels=3,
-                             new_name=test + ' hierarchical')
+    g.decompose_hierarchical(levels=3, new_name=test + ' hierarchical')
     g.store_mpi('cases/grids/{0}_mpi'.format(test), '000000000100')
 
 
@@ -169,6 +158,7 @@ def case_014_convert_grid_stall_to_check_point():
     g.store('cases/drops/cyl/cyl_stall_case_014.dat')
 
 # --------------------------------------------------------------------------------------------------
+
 
 def case_015_GloId_in_grid_for_divide_face():
 
@@ -193,6 +183,7 @@ def case_015_GloId_in_grid_for_divide_face():
 
 # --------------------------------------------------------------------------------------------------
 
+
 def case_016_GloId_in_grid_for_collapse_face():
 
     g = gsu.Grid()
@@ -215,6 +206,7 @@ def case_016_GloId_in_grid_for_collapse_face():
     print([f.GloId for f in g.Nodes])
 
 # --------------------------------------------------------------------------------------------------
+
 
 def case_017_GloId_in_grid_for_cut_edge():
 
@@ -245,6 +237,7 @@ def case_017_GloId_in_grid_for_cut_edge():
 
 # --------------------------------------------------------------------------------------------------
 
+
 def case_018_GloId_in_grid_for_collapse_edge():
 
     g = gsu.Grid()
@@ -274,6 +267,7 @@ def case_018_GloId_in_grid_for_collapse_edge():
 
 # --------------------------------------------------------------------------------------------------
 
+
 def case_019_GloId_in_grid_for_cut_single_edge():
 
     g = gsu.Grid()
@@ -302,6 +296,7 @@ def case_019_GloId_in_grid_for_cut_single_edge():
     print([f.GloId for f in g.Nodes])
 
 # --------------------------------------------------------------------------------------------------
+
 
 def case_020_GloId_in_grid_for_cut_edge_with_two_nodes():
 
@@ -354,18 +349,18 @@ def case_020_GloId_in_grid_for_cut_edge_with_two_nodes():
 
 
 if __name__ == '__main__':
-    case_001_load_store()
-    case_002_decompose()
-    case_005_explode_bunny()
-    case_007_store_load_faces_calc_data()
-    case_009_store_mpi()
-    case_014_convert_grid_stall_to_check_point()
-    case_015_GloId_in_grid_for_divide_face()
-    case_016_GloId_in_grid_for_collapse_face()
-    case_017_GloId_in_grid_for_cut_edge()
-    case_018_GloId_in_grid_for_collapse_edge()
-    case_019_GloId_in_grid_for_cut_single_edge()
-    case_020_GloId_in_grid_for_cut_edge_with_two_nodes()
+    # case_001_load_store()
+    # case_002_decompose()
+    # case_005_explode_bunny()
+    # case_007_store_load_faces_calc_data()
+    # case_009_store_mpi()
+    # case_014_convert_grid_stall_to_check_point()
+    # case_015_GloId_in_grid_for_divide_face()
+    # case_016_GloId_in_grid_for_collapse_face()
+    # case_017_GloId_in_grid_for_cut_edge()
+    # case_018_GloId_in_grid_for_collapse_edge()
+    # case_019_GloId_in_grid_for_cut_single_edge()
+    # case_020_GloId_in_grid_for_cut_edge_with_two_nodes()
 
     pass
 
