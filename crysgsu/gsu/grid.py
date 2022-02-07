@@ -1085,22 +1085,6 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
-    def box(self):
-        """
-        Get box around grid (tuple with 6 values - XYZ of the left down back point
-        and XYZ of the right up front point).
-
-        :return: tuple
-        """
-
-        xs = [n.P[0] for n in self.Nodes]
-        ys = [n.P[1] for n in self.Nodes]
-        zs = [n.P[2] for n in self.Nodes]
-
-        return min(xs), min(ys), min(zs), max(xs), max(ys), max(zs)
-
-    # ----------------------------------------------------------------------------------------------
-
     def move_from_mean_point(self, k=0.1):
         """
         Move all zones away from mean point (grid explosion).
