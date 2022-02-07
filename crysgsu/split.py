@@ -69,17 +69,30 @@ def split(grid_file,
         if not recovery_factor_name in f.Data.keys():
             f.Data[recovery_factor_name] = recovery_factor
 
-    # Decompose grid.
+    # Extract count of decompose domains.
     if split_strategy[0] == 'h':
+        hierarchical_splits_count = int(split_strategy[1:])
+        domains_count = 2 ** hierarchical_splits_count
+    elif split_strategy[0] == 'n':
+        domains_count = int(split_strategy[1:])
+    else:
+        raise Exception('crys-gsu-split : unknown split strategy ({0})'.format(split_strategy))
+
+    # Decompose grid.
+    if (domains_count == 1) and (fixed_zones == []):
+        # Issue#10.
+        # While decomposing on 1 zone and without AIS use mono decomposition.
+        print('crys-gsu-split : trivial mono decomposition, 1 zone')
+        g.decompose_mono()
+    elif split_strategy[0] == 'h':
         # Hierarchical split.
-        n = int(split_strategy[1:])
-        target_zones_count = 2 ** n + len(fixed_zones)
+        target_zones_count = domains_count + len(fixed_zones)
         print('crys-gsu-split : hierarchical, target-zones-count={0} '
               '(2^{1} + {2}) // {3}'.format(target_zones_count,
-                                            n,
+                                            hierarchical_splits_count,
                                             len(fixed_zones),
                                             fixed_zones))
-        g.decompose_hierarchical(levels=n + 1,
+        g.decompose_hierarchical(levels=hierarchical_splits_count + 1,
                                  fixed_zones=fixed_zones)
         actual_zones_count = len(g.Zones)
         print('crys-gsu-split : hierarchical, actual-zones-count={0}'.format(actual_zones_count))
@@ -112,9 +125,8 @@ def split(grid_file,
     else:
         raise Exception('crys-gsu-split : internal error')
 
-
     time_stat = 'crys-gsu-split : done, ' \
-                '{0:.3f} seconds spent)'.format(time.time() - start_time)
+                '{0:.3f} seconds spent'.format(time.time() - start_time)
     print(time_stat)
     if not cry_dir is None:
         with open(cry_dir + '/report.txt', 'w') as f:
