@@ -12,8 +12,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 import re
 import pathlib
 import gsu_converter
+import gsu
 from functools import reduce
-from gsu.gsu import Grid
 
 # --------------------------------------------------------------------------------------------------
 
@@ -472,7 +472,7 @@ def data_from_nodes_to_faces(filename, ofilename, is_reversed_normals):
     g.Export(ofilename)
 
     # Читаем сетку с помощью gsu и сохраняем обратно -> появятся нужные поля.
-    g2 = Grid()
+    g2 = gsu.Grid()
     g2.load(ofilename)
     g2.store(ofilename)
 

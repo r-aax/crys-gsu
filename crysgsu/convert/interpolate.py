@@ -3,10 +3,10 @@ from os.path import isfile
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from gsu.gsu import Grid
 from time import time
 from scipy.spatial import KDTree
 from numpy import array
+import gsu
 
 
 def check_argument(filename):
@@ -97,8 +97,8 @@ if __name__ == '__main__':
             exit(1)
 
     start = time()
-    grid1 = Grid()
-    grid2 = Grid()
+    grid1 = gsu.Grid()
+    grid2 = gsu.Grid()
     grid1.load(source_mesh)
 
     if args.verbosity > 0:
