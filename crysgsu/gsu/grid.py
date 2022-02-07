@@ -25,42 +25,6 @@ def mean_nodes_point(ns):
 
     return sum(xs) / len(xs), sum(ys) / len(ys), sum(zs) / len(zs)
 
-# --------------------------------------------------------------------------------------------------
-
-
-def fun_face_cx():
-    """
-    Function that returns X coordinate of the face center.
-
-    :return: function
-    """
-
-    return lambda f: mean_nodes_point(f.Nodes)[0]
-
-# --------------------------------------------------------------------------------------------------
-
-
-def fun_face_cy():
-    """
-    Function that returns Y coordinate of the face center.
-
-    :return: function
-    """
-
-    return lambda f: mean_nodes_point(f.Nodes)[1]
-
-# --------------------------------------------------------------------------------------------------
-
-
-def fun_face_cz():
-    """
-    Function that returns Z coordinate of the face center.
-
-    :return: function
-    """
-
-    return lambda f: mean_nodes_point(f.Nodes)[2]
-
 # ==================================================================================================
 
 
@@ -1046,7 +1010,11 @@ class Grid:
 
     # ----------------------------------------------------------------------------------------------
 
-    def decompose_hierarchical(self, extract_signs_funs, levels=6, new_name=None, fixed_zones=[]):
+    def decompose_hierarchical(self,
+                               extract_signs_funs=[lambda f: f.get_center()[0],
+                                                   lambda f: f.get_center()[1],
+                                                   lambda f: f.get_center()[2]],
+                               levels=6, new_name=None, fixed_zones=[]):
         """
         Hierarchical distribution with given numbers of levels.
 

@@ -79,10 +79,7 @@ def split(grid_file,
                                             n,
                                             len(fixed_zones),
                                             fixed_zones))
-        g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(),
-                                                     gsu.fun_face_cy(),
-                                                     gsu.fun_face_cz()],
-                                 levels=n + 1,
+        g.decompose_hierarchical(levels=n + 1,
                                  fixed_zones=fixed_zones)
         actual_zones_count = len(g.Zones)
         print('crys-gsu-split : hierarchical, actual-zones-count={0}'.format(actual_zones_count))
@@ -119,8 +116,9 @@ def split(grid_file,
     time_stat = 'crys-gsu-split : done, ' \
                 '{0:.3f} seconds spent)'.format(time.time() - start_time)
     print(time_stat)
-    with open(cry_dir + '/report.txt', 'w') as f:
-        print(time_stat, file=f)
+    if not cry_dir is None:
+        with open(cry_dir + '/report.txt', 'w') as f:
+            print(time_stat, file=f)
 
     return g
 
@@ -229,7 +227,10 @@ if __name__ == '__main__':
         fixed_zones = []
 
     # Extract recovery_factor from json.
-    recovery_factor = extract_recovery_factor_from_json(args.json_file)
+    if not args.json_file is None:
+        recovery_factor = extract_recovery_factor_from_json(args.json_file)
+    else:
+        recovery_factor = 1.0
 
     split(grid_file=args.grid_file,
           cry_dir=args.cry_dir,
