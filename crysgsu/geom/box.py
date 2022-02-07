@@ -3,8 +3,7 @@ Box realization.
 """
 
 import math
-from geom.vect import Vect
-from geom.triangle import Triangle
+import geom
 
 # ==================================================================================================
 
@@ -142,11 +141,5 @@ class Box:
             # Maybe there is intersection, but maybe not.
             # Maybe there is some sense to check intersection in all rest cases.
             return True
-
-# ==================================================================================================
-
-
-if __name__ == '__main__':
-    pass
 
 # ==================================================================================================

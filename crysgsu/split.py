@@ -3,12 +3,12 @@ Split grid for MPI.
 """
 
 import pathlib
-from gsu import gsu
 import utils
 import sys
 import os
 import json
 import time
+import gsu
 
 # --------------------------------------------------------------------------------------------------
 

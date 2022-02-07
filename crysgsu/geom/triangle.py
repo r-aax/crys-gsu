@@ -6,9 +6,6 @@ import math
 import numpy as np
 from sympy import Float
 import itertools
-from src.geom.vect import Vect
-from src.geom.segment import Segment
-
 
 # ==================================================================================================
 
@@ -533,11 +530,5 @@ class Triangle:
 
         return (a.dist_to(b) ** 2 + b.dist_to(c) ** 2 + c.dist_to(a) ** 2) / sqrt(self.area())
 
-
-# ==================================================================================================
-
-
-if __name__ == '__main__':
-    pass
 
 # ==================================================================================================

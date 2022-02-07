@@ -1,4 +1,5 @@
-src/__pycache__/*
-src/convert/__pycache__/*
-src/geom/__pycache__/*
-src/gsu/__pycache__/*
+crysgsu/__pycache__/*
+crysgsu/convert/__pycache__/*
+crysgsu/geom/__pycache__/*
+crysgsu/gsu/__pycache__/*
+tests/__pycache__/*

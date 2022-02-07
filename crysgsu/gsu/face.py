@@ -3,8 +3,7 @@ Face realization.
 """
 
 import random
-from geom.vect import Vect
-from geom.triangle import Triangle
+import geom
 
 # ==================================================================================================
 
@@ -142,9 +141,9 @@ class Face:
         :return: Triangle.
         """
 
-        t = Triangle(Vect.from_iterable(self.Nodes[0].P),
-                     Vect.from_iterable(self.Nodes[1].P),
-                     Vect.from_iterable(self.Nodes[2].P))
+        t = geom.Triangle(geom.Vect.from_iterable(self.Nodes[0].P),
+                          geom.Vect.from_iterable(self.Nodes[1].P),
+                          geom.Vect.from_iterable(self.Nodes[2].P))
 
         # Back reference for fixing parent object for triangle.
         t.BackRef = self
@@ -170,11 +169,5 @@ class Face:
                 max_edge = edge
 
         return max_edge
-
-# ==================================================================================================
-
-
-if __name__ == '__main__':
-    pass
 
 # ==================================================================================================

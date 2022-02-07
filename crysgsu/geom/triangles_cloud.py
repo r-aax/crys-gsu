@@ -4,12 +4,7 @@ Triangles cloud realization.
 
 import numpy as np
 import itertools
-from geom.box import Box
-from geom.triangle import Triangle
-
-# # changing the recursion depth
-# import sys
-# sys.setrecursionlimit(1000)
+import geom
 
 # ==================================================================================================
 
@@ -209,11 +204,5 @@ class TrianglesCloud:
             # одинаковые точки нужно отсеять
             return list_tri_and_intersection_points
 
-
-# ==================================================================================================
-
-
-if __name__ == '__main__':
-    pass
 
 # ==================================================================================================

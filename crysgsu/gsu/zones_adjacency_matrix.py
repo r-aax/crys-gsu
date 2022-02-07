@@ -4,6 +4,7 @@ Zones adjacency matrix realization.
 
 # ==================================================================================================
 
+
 class ZonesAdjacencyMatrix:
     """
     Matrix of zones adjacency.
@@ -196,11 +197,5 @@ class ZonesAdjacencyMatrix:
         """
 
         return len([x for x in self.zone_cross_edges_array(zi) if x > 0])
-
-# ==================================================================================================
-
-
-if __name__ == '__main__':
-    pass
 
 # ==================================================================================================

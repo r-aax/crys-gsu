@@ -2,10 +2,9 @@
 Test module.
 """
 
-from gsu import gsu
-import gsu_geom
+import geom
+import gsu
 import split
-from geom.vect import Vect
 
 # ==================================================================================================
 
@@ -66,9 +65,9 @@ def case_002_decompose(test='bunny_pos',
 
     if 'hierarchical' in methods:
         g.load('grids/{0}.dat'.format(test))
-        g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(),
-                                                     gsu.fun_face_cy(),
-                                                     gsu.fun_face_cz()],
+        g.decompose_hierarchical(extract_signs_funs=[gsu.grid.fun_face_cx(),
+                                                     gsu.grid.fun_face_cy(),
+                                                     gsu.grid.fun_face_cz()],
                                  new_name=new_grid_name('hierarchical'),
                                  fixed_zones=['POS1', 'POS2'])
         g.store(new_file_name('hierarchical'))
@@ -96,9 +95,9 @@ def case_005_explode_bunny(test='bunny'):
     print('case_005_explode_bunny({0})'.format(test))
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
-    g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(),
-                                                 gsu.fun_face_cy(),
-                                                 gsu.fun_face_cz()],
+    g.decompose_hierarchical(extract_signs_funs=[gsu.grid.fun_face_cx(),
+                                                 gsu.grid.fun_face_cy(),
+                                                 gsu.grid.fun_face_cz()],
                              levels=5,
                              new_name=test + ' hierarchical')
     g.store('grids/{0}_hierarchical.dat'.format(test))
@@ -144,9 +143,9 @@ def case_009_store_mpi(test='bunny'):
     print('case_009_store_mpi({0})'.format(test))
     g = gsu.Grid()
     g.load('grids/{0}.dat'.format(test))
-    g.decompose_hierarchical(extract_signs_funs=[gsu.fun_face_cx(),
-                                                 gsu.fun_face_cy(),
-                                                 gsu.fun_face_cz()],
+    g.decompose_hierarchical(extract_signs_funs=[gsu.grid.fun_face_cx(),
+                                                 gsu.grid.fun_face_cy(),
+                                                 gsu.grid.fun_face_cz()],
                              levels=3,
                              new_name=test + ' hierarchical')
     g.store_mpi('grids/{0}_mpi'.format(test), '000000000100')
@@ -324,8 +323,8 @@ def case_020_GloId_in_grid_for_cut_edge_with_two_nodes():
         w = not len(g.Faces[n].Edges[0].Faces) == 1
         if not w:
             g.cut_edge_with_two_nodes(g.Faces[n].Edges[0],
-                                      g.Faces[n].get_triangle().centroid()-Vect(0.01, 0.01, 0.01),
-                                      g.Faces[n].get_triangle().centroid()+Vect(0.01, 0.01, 0.01))
+                                      g.Faces[n].get_triangle().centroid() - geom.Vect(0.01, 0.01, 0.01),
+                                      g.Faces[n].get_triangle().centroid() + geom.Vect(0.01, 0.01, 0.01))
         n += 1
 
     print('face id after')
@@ -342,8 +341,8 @@ def case_020_GloId_in_grid_for_cut_edge_with_two_nodes():
         w = not len(g.Faces[n].Edges[0].Faces) == 2
         if not w:
             g.cut_edge_with_two_nodes(g.Faces[n].Edges[0],
-                                      g.Faces[n].get_triangle().centroid() - Vect(0.01, 0.01, 0.01),
-                                      g.Faces[n].get_triangle().centroid() + Vect(0.01, 0.01, 0.01))
+                                      g.Faces[n].get_triangle().centroid() - geom.Vect(0.01, 0.01, 0.01),
+                                      g.Faces[n].get_triangle().centroid() + geom.Vect(0.01, 0.01, 0.01))
         n += 1
 
     print('face id after')
@@ -357,17 +356,17 @@ def case_020_GloId_in_grid_for_cut_edge_with_two_nodes():
 
 
 if __name__ == '__main__':
-    # case_001_load_store()
-    # case_002_decompose()
-    # case_005_explode_bunny()
-    # case_007_store_load_faces_calc_data()
-    # case_009_store_mpi()
-    # case_014_convert_grid_stall_to_check_point()
-    # case_015_GloId_in_grid_for_divide_face()
-    # case_016_GloId_in_grid_for_collapse_face()
-    # case_017_GloId_in_grid_for_cut_edge()
-    # case_018_GloId_in_grid_for_collapse_edge()
-    # case_019_GloId_in_grid_for_cut_single_edge()
+    case_001_load_store()
+    case_002_decompose()
+    case_005_explode_bunny()
+    case_007_store_load_faces_calc_data()
+    case_009_store_mpi()
+    case_014_convert_grid_stall_to_check_point()
+    case_015_GloId_in_grid_for_divide_face()
+    case_016_GloId_in_grid_for_collapse_face()
+    case_017_GloId_in_grid_for_cut_edge()
+    case_018_GloId_in_grid_for_collapse_edge()
+    case_019_GloId_in_grid_for_cut_single_edge()
     case_020_GloId_in_grid_for_cut_edge_with_two_nodes()
 
     pass

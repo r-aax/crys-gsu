@@ -8,13 +8,8 @@ import numpy as np
 import utils
 import time
 import math
-from gsu.gsu import Grid
-from geom.vect import Vect
-from geom.segment import Segment
-from geom.triangle import Triangle
-from geom.triangles_cloud import TrianglesCloud
-from geom.trajectory import Trajectory
-from geom.box import Box
+import gsu
+import geom
 
 # ==================================================================================================
 
@@ -262,7 +257,7 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
     start_time = time.time()
 
     # Load grid.
-    g = Grid()
+    g = gsu.Grid()
     g.load(grid_stall_file)
     triangles_cloud = TrianglesCloud(g.get_triangles_list())
 

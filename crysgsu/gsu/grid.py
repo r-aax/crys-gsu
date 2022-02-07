@@ -5,16 +5,8 @@ GSU main functions.
 import random
 import math
 import utils
-from geom.vect import Vect
-from geom.segment import Segment
-from geom.triangle import Triangle
-from geom.trajectory import Trajectory
-from geom.box import Box
-from gsu.node import Node
-from gsu.edge import Edge
-from gsu.face import Face
-from gsu.zone import Zone
-from gsu.zones_adjacency_matrix import ZonesAdjacencyMatrix
+import geom
+import gsu
 
 # ==================================================================================================
 
@@ -358,8 +350,8 @@ class Grid:
         :param edge: edge
         """
 
-        assert (type(node) is Node)
-        assert (type(edge) is Edge)
+        assert (type(node) is gsu.Node)
+        assert (type(edge) is gsu.Edge)
         node.Edges.append(edge)
         edge.Nodes.append(node)
 
@@ -373,8 +365,8 @@ class Grid:
         :param face: face
         """
 
-        assert(type(node) is Node)
-        assert (type(face) is Face)
+        assert(type(node) is gsu.Node)
+        assert (type(face) is gsu.Face)
         node.Faces.append(face)
         face.Nodes.append(node)
 
@@ -388,8 +380,8 @@ class Grid:
         :param face: face
         """
 
-        assert (type(edge) is Edge)
-        assert (type(face) is Face)
+        assert (type(edge) is gsu.Edge)
+        assert (type(face) is gsu.Face)
         # Check if it is enable to link the face with the edge.
         if len(edge.Faces) == 2:
             raise Exception('Too many faces linking with this edge ({0} - {1},'
@@ -433,7 +425,7 @@ class Grid:
 
         if edge is None:
             # New edge and link it.
-            edge = Edge()
+            edge = gsu.Edge()
             self.add_edge(edge)
             Grid.link_node_edge(node_a, edge)
             Grid.link_node_edge(node_b, edge)
@@ -558,7 +550,7 @@ class Grid:
 
                     # Create new zone.
                     zone_name = line.split('=')[-1][1:-2]
-                    zone = Zone(zone_name)
+                    zone = gsu.Zone(zone_name)
                     self.Zones.append(zone)
 
                     # Read count of nodes and faces to read.
@@ -591,8 +583,8 @@ class Grid:
                         line = f.readline()
                         c.append([float(xi) for xi in line.split()])
                     for i in range(nodes_to_read):
-                        p = Vect(c[0][i], c[1][i], c[2][i])
-                        node = Node(p)
+                        p = geom.Vect(c[0][i], c[1][i], c[2][i])
+                        node = gsu.Node(p)
                         node = self.add_node(node, is_merge_same_nodes)
                         zone.add_node(node)
 
@@ -602,8 +594,8 @@ class Grid:
                         line = f.readline()
                         d.append([float(xi) for xi in line.split()])
                     for i in range(faces_to_read):
-                        face = Face(face_variables,
-                                    [d[j][i] for j in range(face_variables_count)])
+                        face = gsu.Face(face_variables,
+                                        [d[j][i] for j in range(face_variables_count)])
                         self.add_face(face)
                         zone.add_face(face)
 
@@ -729,7 +721,7 @@ class Grid:
                      'T', 'Hw', 'Hi', 'HTC', 'Beta', 'MImp2', 'Vd2',
                      'TauX', 'TauY', 'TauZ', 'RecoveryFactor']
 
-        zam = ZonesAdjacencyMatrix(self.Edges, self.Zones)
+        zam = gsu.ZonesAdjacencyMatrix(self.Edges, self.Zones)
 
         # Local identifiers.
         loc_nodes_ids = [-1] * len(self.Nodes)
@@ -869,7 +861,7 @@ class Grid:
         # Delete all zones and create one zone with name 'mono'.
         self.Zones.clear()
         self.unlink_faces_from_zones()
-        zone = Zone('mono')
+        zone = gsu.Zone('mono')
         self.Zones.append(zone)
         for face in self.Faces:
             zone.add_face(face)
@@ -894,7 +886,7 @@ class Grid:
         self.Zones.clear()
         self.unlink_faces_from_zones()
         for i in range(count):
-            zone = Zone('random ' + str(i))
+            zone = gsu.Zone('random ' + str(i))
             self.Zones.append(zone)
         for face in self.Faces:
             self.Zones[random.randint(0, count - 1)].add_face(face)
@@ -923,7 +915,7 @@ class Grid:
         self.Zones.clear()
         self.unlink_faces_from_zones()
         for i in range(count):
-            zone = Zone('linear ' + str(i))
+            zone = gsu.Zone('linear ' + str(i))
             self.Zones.append(zone)
 
         # Distribute faces accurately.
@@ -1015,8 +1007,8 @@ class Grid:
             return
 
         # Technical actions.
-        zl = Zone(zone.Name + 'l')
-        zr = Zone(zone.Name + 'r')
+        zl = gsu.Zone(zone.Name + 'l')
+        zr = gsu.Zone(zone.Name + 'r')
         self.Zones.remove(zone)
         self.Zones.append(zl)
         self.Zones.append(zr)
@@ -1079,7 +1071,7 @@ class Grid:
         if levels < 1:
             raise Exception('It must be at least 1 level.')
 
-        zone = Zone('h')
+        zone = gsu.Zone('h')
         self.Zones.append(zone)
         for face in self.Faces:
             if face.Zone is None:
@@ -1118,7 +1110,7 @@ class Grid:
         fz_count = len(self.Zones)
         self.unlink_faces_from_zones()
         for i in range(count):
-            zone = Zone('farhat ' + str(i))
+            zone = gsu.Zone('farhat ' + str(i))
             self.Zones.append(zone)
 
         #
@@ -1327,15 +1319,15 @@ class Grid:
         self.del_face(face)
 
         # get new faces
-        f1 = Face(list(data.keys()), list(data.values()))
-        f2 = Face(list(data.keys()), list(data.values()))
-        f3 = Face(list(data.keys()), list(data.values()))
+        f1 = gsu.Face(list(data.keys()), list(data.values()))
+        f2 = gsu.Face(list(data.keys()), list(data.values()))
+        f3 = gsu.Face(list(data.keys()), list(data.values()))
 
         # get nodes
         n1 = nodes[0]
         n2 = nodes[1]
         n3 = nodes[2]
-        n4 = Node(p)
+        n4 = gsu.Node(p)
         node = self.add_node(n4, True)
         if id(node) == id(n4):
             zone.add_node(n4)
@@ -1346,9 +1338,9 @@ class Grid:
         e1 = Grid.find_edge(n1, n2)
         e2 = Grid.find_edge(n2, n3)
         e3 = Grid.find_edge(n1, n3)
-        e4 = Edge()
-        e5 = Edge()
-        e6 = Edge()
+        e4 = gsu.Edge()
+        e5 = gsu.Edge()
+        e6 = gsu.Edge()
 
         # links
         Grid.link_node_edge(n1, e4)
@@ -1425,8 +1417,8 @@ class Grid:
             self.del_face(other_face)
 
             # get new faces
-            f1 = Face(list(data.keys()), list(data.values()))
-            f2 = Face(list(data.keys()), list(data.values()))
+            f1 = gsu.Face(list(data.keys()), list(data.values()))
+            f2 = gsu.Face(list(data.keys()), list(data.values()))
 
             # get nodes
             n1 = max_edge.Nodes[0]
@@ -1440,7 +1432,7 @@ class Grid:
             e2 = [edge for edge in other_face.Edges for node in edge.Nodes if id(node) == id(n1)][0]
             e3 = [edge for edge in face.Edges for node in edge.Nodes if id(node) == id(n2)][0]
             e4 = [edge for edge in other_face.Edges for node in edge.Nodes if id(node) == id(n2)][0]
-            e5 = Edge()
+            e5 = gsu.Edge()
             self.add_edge(e5, max_edge.GloId)
             Grid.link_node_edge(n3, e5)
             Grid.link_node_edge(n4, e5)
@@ -1527,10 +1519,10 @@ class Grid:
             self.del_edge(edge)
 
             # new faces
-            f1_1 = Face(list(data1.keys()), list(data1.values()))
-            f1_2 = Face(list(data1.keys()), list(data1.values()))
-            f2_1 = Face(list(data2.keys()), list(data2.values()))
-            f2_2 = Face(list(data2.keys()), list(data2.values()))
+            f1_1 = gsu.Face(list(data1.keys()), list(data1.values()))
+            f1_2 = gsu.Face(list(data1.keys()), list(data1.values()))
+            f2_1 = gsu.Face(list(data2.keys()), list(data2.values()))
+            f2_2 = gsu.Face(list(data2.keys()), list(data2.values()))
 
             self.add_face(f1_1, gloid1)
             self.add_face(f2_1, gloid2)
@@ -1542,7 +1534,7 @@ class Grid:
             n2 = edge.Nodes[1]
             n3 = [i for i in f1.Nodes if id(i) != id(n1) and id(i) != id(n2)][0]
             n4 = [i for i in f2.Nodes if id(i) != id(n1) and id(i) != id(n2)][0]
-            n5 = Node(p)
+            n5 = gsu.Node(p)
             node = self.add_node(n5, True)
             if id(node) == id(n5):
                 zone.add_node(n5)
@@ -1556,10 +1548,10 @@ class Grid:
             e23 = [ed for ed in f1.Edges for node in ed.Nodes if id(node) == id(n2)][0]
             e14 = [ed for ed in f2.Edges for node in ed.Nodes if id(node) == id(n1)][0]
             e24 = [ed for ed in f2.Edges for node in ed.Nodes if id(node) == id(n2)][0]
-            e15 = Edge()
-            e25 = Edge()
-            e35 = Edge()
-            e45 = Edge()
+            e15 = gsu.Edge()
+            e25 = gsu.Edge()
+            e35 = gsu.Edge()
+            e45 = gsu.Edge()
             self.add_edge(e15, edge.GloId)
             self.add_edge(e25)
             self.add_edge(e35)
@@ -1645,7 +1637,7 @@ class Grid:
             n1 = edge.Nodes[0]
             n2 = edge.Nodes[1]
 
-            vect_coord_new_p = Vect.middle_point(n1.P, n2.P)
+            vect_coord_new_p = geom.Vect.middle_point(n1.P, n2.P)
 
             self.RoundedCoordsBag.remove(n1.RoundedCoords)
             n1.P = vect_coord_new_p
@@ -1723,8 +1715,8 @@ class Grid:
             self.del_edge(edge)
 
             # new faces
-            f1 = Face(list(data.keys()), list(data.values()))
-            f2 = Face(list(data.keys()), list(data.values()))
+            f1 = gsu.Face(list(data.keys()), list(data.values()))
+            f2 = gsu.Face(list(data.keys()), list(data.values()))
 
             self.add_face(f1, gloid)
             self.add_face(f2)
@@ -1733,7 +1725,7 @@ class Grid:
             n1 = edge.Nodes[0]
             n2 = edge.Nodes[1]
             n3 = [i for i in face.Nodes if id(i) != id(n1) and id(i) != id(n2)][0]
-            n4 = Node(p)
+            n4 = gsu.Node(p)
             node = self.add_node(n4, True)
             if id(node) == id(n4):
                 zone.add_node(n4)
@@ -1744,9 +1736,9 @@ class Grid:
             face.Edges.remove(edge)
             e13 = [ed for ed in face.Edges for node in ed.Nodes if id(node) == id(n1)][0]
             e23 = [ed for ed in face.Edges for node in ed.Nodes if id(node) == id(n2)][0]
-            e14 = Edge()
-            e24 = Edge()
-            e34 = Edge()
+            e14 = gsu.Edge()
+            e24 = gsu.Edge()
+            e34 = gsu.Edge()
             self.add_edge(e14, edge.GloId)
             self.add_edge(e24)
             self.add_edge(e34)
@@ -1824,9 +1816,9 @@ class Grid:
             self.del_edge(edge)
 
             # new faces
-            f1 = Face(list(data.keys()), list(data.values()))
-            f2 = Face(list(data.keys()), list(data.values()))
-            f3 = Face(list(data.keys()), list(data.values()))
+            f1 = gsu.Face(list(data.keys()), list(data.values()))
+            f2 = gsu.Face(list(data.keys()), list(data.values()))
+            f3 = gsu.Face(list(data.keys()), list(data.values()))
 
             self.add_face(f1, gloid)
             self.add_face(f2)
@@ -1836,13 +1828,13 @@ class Grid:
             n1 = edge.Nodes[0]
             n2 = edge.Nodes[1]
             n3 = [i for i in face.Nodes if id(i) != id(n1) and id(i) != id(n2)][0]
-            n4 = Node(p1)
+            n4 = gsu.Node(p1)
             node = self.add_node(n4, True)
             if id(node) == id(n4):
                 zone.add_node(n4)
             else:
                 n4 = node
-            n5 = Node(p2)
+            n5 = gsu.Node(p2)
             node = self.add_node(n5, True)
             if id(node) == id(n5):
                 zone.add_node(n5)
@@ -1853,11 +1845,11 @@ class Grid:
             face.Edges.remove(edge)
             e13 = [ed for ed in face.Edges for node in ed.Nodes if id(node) == id(n1)][0]
             e23 = [ed for ed in face.Edges for node in ed.Nodes if id(node) == id(n2)][0]
-            e14 = Edge()
-            e25 = Edge()
-            e45 = Edge()
-            e34 = Edge()
-            e35 = Edge()
+            e14 = gsu.Edge()
+            e25 = gsu.Edge()
+            e45 = gsu.Edge()
+            e34 = gsu.Edge()
+            e35 = gsu.Edge()
             self.add_edge(e14, edge.GloId)
             self.add_edge(e25)
             self.add_edge(e45)
@@ -1923,12 +1915,12 @@ class Grid:
             self.del_edge(edge)
 
             # new faces
-            f1 = Face(list(data1.keys()), list(data1.values()))
-            f2 = Face(list(data1.keys()), list(data1.values()))
-            f3 = Face(list(data1.keys()), list(data1.values()))
-            f4 = Face(list(data2.keys()), list(data2.values()))
-            f5 = Face(list(data2.keys()), list(data2.values()))
-            f6 = Face(list(data2.keys()), list(data2.values()))
+            f1 = gsu.Face(list(data1.keys()), list(data1.values()))
+            f2 = gsu.Face(list(data1.keys()), list(data1.values()))
+            f3 = gsu.Face(list(data1.keys()), list(data1.values()))
+            f4 = gsu.Face(list(data2.keys()), list(data2.values()))
+            f5 = gsu.Face(list(data2.keys()), list(data2.values()))
+            f6 = gsu.Face(list(data2.keys()), list(data2.values()))
 
             self.add_face(f1, gloid1)
             self.add_face(f2, gloid2)
@@ -1942,13 +1934,13 @@ class Grid:
             n2 = edge.Nodes[1]
             n3 = [i for i in face1.Nodes if id(i) != id(n1) and id(i) != id(n2)][0]
             n6 = [i for i in face2.Nodes if id(i) != id(n1) and id(i) != id(n2)][0]
-            n4 = Node(p1)
+            n4 = gsu.Node(p1)
             node = self.add_node(n4, True)
             if id(node) == id(n4):
                 zone.add_node(n4)
             else:
                 n4 = node
-            n5 = Node(p2)
+            n5 = gsu.Node(p2)
             node = self.add_node(n5, True)
             if id(node) == id(n5):
                 zone.add_node(n5)
@@ -1962,13 +1954,13 @@ class Grid:
             e23 = [ed for ed in face1.Edges for node in ed.Nodes if id(node) == id(n2)][0]
             e16 = [ed for ed in face2.Edges for node in ed.Nodes if id(node) == id(n1)][0]
             e26 = [ed for ed in face2.Edges for node in ed.Nodes if id(node) == id(n2)][0]
-            e14 = Edge()
-            e25 = Edge()
-            e45 = Edge()
-            e34 = Edge()
-            e35 = Edge()
-            e46 = Edge()
-            e56 = Edge()
+            e14 = gsu.Edge()
+            e25 = gsu.Edge()
+            e45 = gsu.Edge()
+            e34 = gsu.Edge()
+            e35 = gsu.Edge()
+            e46 = gsu.Edge()
+            e56 = gsu.Edge()
             self.add_edge(e14, edge.GloId)
             self.add_edge(e25)
             self.add_edge(e45)

@@ -1,5 +1,8 @@
-from geom.vect import Vect
+"""
+Utils functions.
+"""
 
+import geom
 
 # ==================================================================================================
 
@@ -30,6 +33,7 @@ def tetrahedron_volume(a: Vect,
     return abs((a - d) * Vect.cross_product(b - d, c - d)) / 6.0
 
 # --------------------------------------------------------------------------------------------------
+
 
 def displaced_triangle_volume(a: Vect,
                               b: Vect,
@@ -65,6 +69,7 @@ def displaced_triangle_volume(a: Vect,
             tetrahedron_volume(a, na, nb, nc))
 
 # --------------------------------------------------------------------------------------------------
+
 
 def prizmatoid_volume_coefs(v1: Vect,
                             v2: Vect,
@@ -113,3 +118,5 @@ def prizmatoid_volume_coefs(v1: Vect,
     c = (1.0 / 6.0) * (Vect.cross_product(u21, u31) * n)
 
     return a, b, c
+
+# ==================================================================================================
