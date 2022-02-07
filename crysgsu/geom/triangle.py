@@ -6,6 +6,7 @@ import math
 import numpy as np
 from sympy import Float
 import itertools
+import geom
 
 # ==================================================================================================
 
@@ -82,7 +83,7 @@ class Triangle:
         :return: Area.
         """
 
-        return 0.5 * Vect.cross_product(self.b() - self.a(), self.c() - self.b()).mod()
+        return 0.5 * geom.Vect.cross_product(self.b() - self.a(), self.c() - self.b()).mod()
 
     # ----------------------------------------------------------------------------------------------
 
@@ -419,12 +420,12 @@ class Triangle:
         a, b, c = self.a(), self.b(), self.c()
         ta, tb, tc = tri.a(), tri.b(), tri.c()
 
-        int11 = self.intersection_with_segment(Segment(ta, tb))
-        int12 = self.intersection_with_segment(Segment(tb, tc))
-        int13 = self.intersection_with_segment(Segment(tc, ta))
-        int21 = tri.intersection_with_segment(Segment(a, b))
-        int22 = tri.intersection_with_segment(Segment(b, c))
-        int23 = tri.intersection_with_segment(Segment(c, a))
+        int11 = self.intersection_with_segment(geom.Segment(ta, tb))
+        int12 = self.intersection_with_segment(geom.Segment(tb, tc))
+        int13 = self.intersection_with_segment(geom.Segment(tc, ta))
+        int21 = tri.intersection_with_segment(geom.Segment(a, b))
+        int22 = tri.intersection_with_segment(geom.Segment(b, c))
+        int23 = tri.intersection_with_segment(geom.Segment(c, a))
         res = int11 + int12 + int13 + int21 + int22 + int23
         if res:
             res.sort()
@@ -449,13 +450,13 @@ class Triangle:
         a, b, c = self.a(), self.b(), self.c()
         ba = b - a
         ca = c - a
-        corn1 = Vect.get_angle_in_deg(ba, ca) < corner
+        corn1 = geom.Vect.get_angle_in_deg(ba, ca) < corner
         ab = a - b
         cb = c - b
-        corn2 = Vect.get_angle_in_deg(ab, cb) < corner
+        corn2 = geom.Vect.get_angle_in_deg(ab, cb) < corner
         ac = a - c
         bc = b - c
-        corn3 = Vect.get_angle_in_deg(ac, bc) < corner
+        corn3 = geom.Vect.get_angle_in_deg(ac, bc) < corner
         return corn1 and corn2 and corn3
 
     # ----------------------------------------------------------------------------------------------

@@ -1,5 +1,9 @@
 import unittest
-from src import utils
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../crysgsu/')
+import utils
+
 
 class TestUtils(unittest.TestCase):
 

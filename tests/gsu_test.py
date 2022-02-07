@@ -1,14 +1,16 @@
 import unittest
-from src.gsu import gsu
-from src.geom.vect import Vect
-# import os
-# import sys
-# sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../crysgsu/')
+import geom
+import gsu
+
+
 class TestUtils(unittest.TestCase):
 
     def setUp(self):
         self.g = gsu.Grid()
-        self.g.load('../grids/wing_1.dat')
+        self.g.load('cases/grids/wing_1.dat')
 
     def test_atomic_grid_transformation(self):
 
@@ -197,8 +199,8 @@ class TestUtils(unittest.TestCase):
             w = not len(self.g.Faces[n].Edges[0].Faces) == 1
             if not w:
                 self.g.cut_edge_with_two_nodes(self.g.Faces[n].Edges[0],
-                                          self.g.Faces[n].get_triangle().centroid() - Vect(0.01, 0.01, 0.01),
-                                          self.g.Faces[n].get_triangle().centroid() + Vect(0.01, 0.01, 0.01))
+                                          self.g.Faces[n].get_triangle().centroid() - geom.Vect(0.01, 0.01, 0.01),
+                                          self.g.Faces[n].get_triangle().centroid() + geom.Vect(0.01, 0.01, 0.01))
             n += 1
         list_new_id = [f.GloId for f in self.g.Faces]
         self.assertTrue(check_GloId(list_old_id, list_new_id, 3-1))
@@ -212,8 +214,8 @@ class TestUtils(unittest.TestCase):
             w = not len(self.g.Faces[n].Edges[0].Faces) == 1
             if not w:
                 self.g.cut_edge_with_two_nodes(self.g.Faces[n].Edges[0],
-                                               self.g.Faces[n].get_triangle().centroid() - Vect(0.01, 0.01, 0.01),
-                                               self.g.Faces[n].get_triangle().centroid() + Vect(0.01, 0.01, 0.01))
+                                               self.g.Faces[n].get_triangle().centroid() - geom.Vect(0.01, 0.01, 0.01),
+                                               self.g.Faces[n].get_triangle().centroid() + geom.Vect(0.01, 0.01, 0.01))
             n += 1
         list_new_id = [f.GloId for f in self.g.Edges]
         self.assertTrue(check_GloId(list_old_id, list_new_id, 5 - 1))
@@ -227,8 +229,8 @@ class TestUtils(unittest.TestCase):
             w = not len(self.g.Faces[n].Edges[0].Faces) == 1
             if not w:
                 self.g.cut_edge_with_two_nodes(self.g.Faces[n].Edges[0],
-                                               self.g.Faces[n].get_triangle().centroid() - Vect(0.01, 0.01, 0.01),
-                                               self.g.Faces[n].get_triangle().centroid() + Vect(0.01, 0.01, 0.01))
+                                               self.g.Faces[n].get_triangle().centroid() - geom.Vect(0.01, 0.01, 0.01),
+                                               self.g.Faces[n].get_triangle().centroid() + geom.Vect(0.01, 0.01, 0.01))
             n += 1
         list_new_id = [f.GloId for f in self.g.Nodes]
         self.assertTrue(check_GloId(list_old_id, list_new_id, 2))
@@ -243,8 +245,8 @@ class TestUtils(unittest.TestCase):
             w = not len(self.g.Faces[n].Edges[0].Faces) == 2
             if not w:
                 self.g.cut_edge_with_two_nodes(self.g.Faces[n].Edges[0],
-                                               self.g.Faces[n].get_triangle().centroid() - Vect(0.01, 0.01, 0.01),
-                                               self.g.Faces[n].get_triangle().centroid() + Vect(0.01, 0.01, 0.01))
+                                               self.g.Faces[n].get_triangle().centroid() - geom.Vect(0.01, 0.01, 0.01),
+                                               self.g.Faces[n].get_triangle().centroid() + geom.Vect(0.01, 0.01, 0.01))
             n += 1
         list_new_id = [f.GloId for f in self.g.Faces]
         self.assertTrue(check_GloId(list_old_id, list_new_id, 6 - 2))
@@ -258,8 +260,8 @@ class TestUtils(unittest.TestCase):
             w = not len(self.g.Faces[n].Edges[0].Faces) == 2
             if not w:
                 self.g.cut_edge_with_two_nodes(self.g.Faces[n].Edges[0],
-                                               self.g.Faces[n].get_triangle().centroid() - Vect(0.01, 0.01, 0.01),
-                                               self.g.Faces[n].get_triangle().centroid() + Vect(0.01, 0.01, 0.01))
+                                               self.g.Faces[n].get_triangle().centroid() - geom.Vect(0.01, 0.01, 0.01),
+                                               self.g.Faces[n].get_triangle().centroid() + geom.Vect(0.01, 0.01, 0.01))
             n += 1
         list_new_id = [f.GloId for f in self.g.Edges]
         self.assertTrue(check_GloId(list_old_id, list_new_id, 7 - 1))
@@ -273,8 +275,8 @@ class TestUtils(unittest.TestCase):
             w = not len(self.g.Faces[n].Edges[0].Faces) == 2
             if not w:
                 self.g.cut_edge_with_two_nodes(self.g.Faces[n].Edges[0],
-                                               self.g.Faces[n].get_triangle().centroid() - Vect(0.01, 0.01, 0.01),
-                                               self.g.Faces[n].get_triangle().centroid() + Vect(0.01, 0.01, 0.01))
+                                               self.g.Faces[n].get_triangle().centroid() - geom.Vect(0.01, 0.01, 0.01),
+                                               self.g.Faces[n].get_triangle().centroid() + geom.Vect(0.01, 0.01, 0.01))
             n += 1
         list_new_id = [f.GloId for f in self.g.Nodes]
         self.assertTrue(check_GloId(list_old_id, list_new_id, 2))
