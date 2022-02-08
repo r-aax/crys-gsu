@@ -1,16 +1,15 @@
 from scipy.linalg import eig, det
 from numpy import argmax, array, vstack, diag, dot, abs, cumprod, sum, full, arccos, exp, real
-from geom.vect import Vect
-from gsu.gsu import Grid
 from copy import deepcopy
 from collections import deque
+import geom
+import gsu
 
 DETERMINANT_ACCURACY = 10e-5
 EPSILON = 10e-5
 
-
-
 # ==================================================================================================
+
 
 class Smoothing:
     __name__ = ''
@@ -48,7 +47,7 @@ class Smoothing:
 
 # --------------------------------------------------------------------------------------------------
 
-    def move_node(self, node, shift: Vect):
+    def move_node(self, node, shift: geom.Vect):
         """Move node for a given shift.
 
         Parameters
@@ -94,13 +93,15 @@ class Smoothing:
         for n, l in zip(self.grid.Nodes, shifts):
             self.move_node(n, l)
 
-
 # ==================================================================================================
+
 
 class NullSpaceSmoothing(Smoothing):
     __name__ = "NullSpace"
 
-    def __init__(self, grid: Grid, num_iterations=0, st=0.2, epsilon=1e-2, print_intermediate_steps=False, 
+    def __init__(self, grid: gsu.Grid,
+                 num_iterations=0, st=0.2, epsilon=1e-2,
+                 print_intermediate_steps=False,
                  fix_boundary_nodes=False):
         """Constructor.
 
@@ -239,3 +240,5 @@ class NullSpaceSmoothing(Smoothing):
 
             if self.print_intermediate_steps:
                 Smoothing.write_grid_and_print_info(self, i)
+
+# ==================================================================================================

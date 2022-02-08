@@ -7,16 +7,14 @@ heights of ice obtained during the computer modeling.
 Shumilin Sergei noisd@yandex.ru
 """
 
-from gsu.gsu import Grid
-from gsu.node import Node
-from geom.vect import Vect
-from geom.utils import prizmatoid_volume_coefs, displaced_triangle_volume
 from smoothing import NullSpaceSmoothing
 import json
 import statistics
 import time
 import math
 from copy import deepcopy
+import geom
+import gsu
 
 # ==================================================================================================
 
@@ -40,7 +38,6 @@ def zipwith(a, b, f):
     """
 
     return [f(ai, bi) for (ai, bi) in zip(a, b)]
-
 
 # --------------------------------------------------------------------------------------------------
 
@@ -79,7 +76,7 @@ class Remesher:
 
 # --------------------------------------------------------------------------------------------------
 
-    def __call__(self, grid : Grid):
+    def __call__(self, grid : gsu.Grid):
         """
         Remesh the grid.
 
@@ -92,7 +89,7 @@ class Remesher:
 
 # --------------------------------------------------------------------------------------------------
 
-    def distance(self, node : Node) -> float:
+    def distance(self, node : gsu.Node) -> float:
         """
         Magnitude of shift.
 
@@ -110,7 +107,7 @@ class Remesher:
 
 # --------------------------------------------------------------------------------------------------
 
-    def direction(self, node : Node) -> Vect:
+    def direction(self, node : gsu.Node) -> geom.Vect:
         """
         Direction of shift.
 
@@ -314,7 +311,7 @@ class TongRemesher:
 
     # ----------------------------------------------------------------------------------------------
 
-    def __call__(self, grid: Grid):
+    def __call__(self, grid: gsu.Grid):
         """
         Remesh the grid.
 
@@ -638,7 +635,7 @@ class TongRemesher:
         # Requirement FR.RM.MT.TN.02.
         # Direction of ice growth in node is mean of all adjacent faces normals.
         for node in self.grid.Nodes:
-            node.ice_dir = sum([f.ice_dir for f in node.Faces], Vect())
+            node.ice_dir = sum([f.ice_dir for f in node.Faces], geom.Vect())
             node.ice_dir = node.ice_dir.orth()
 
     # ----------------------------------------------------------------------------------------------
@@ -780,7 +777,7 @@ class TongRemesher:
             np1 = p1 + n1.shift
             np2 = p2 + n2.shift
             np3 = p3 + n3.shift
-            v = displaced_triangle_volume(p1, p2, p3, np1, np2, np3)
+            v = geom.utils.displaced_triangle_volume(p1, p2, p3, np1, np2, np3)
 
             # Requirement FR.RM.MT.TN.08
             # Save volume difference that we will try to accrete on the next step.

@@ -5,11 +5,10 @@ Module describing Tong remesher.
 import argparse
 import array
 import os
-from gsu.gsu import Grid
 from remeshing import TongRemesher
 import time
 import struct
-
+import gsu
 
 # ==================================================================================================
 
@@ -76,7 +75,7 @@ if __name__ == '__main__':
     meshes = [mesh for mesh in meshes if mesh.endswith('.dat')]
 
     for i, mesh in enumerate(meshes):
-        grid = Grid()
+        grid = gsu.Grid()
         grid.load(mesh)
 
         if args.verbosity > 1:
@@ -101,6 +100,5 @@ if __name__ == '__main__':
         print(time_stat)
         with open(outdir + '/report.txt', 'w') as f:
             print(time_stat, file=f)
-
 
 # ==================================================================================================

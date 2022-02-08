@@ -94,7 +94,7 @@ class Triangle:
         :return: Normal orth.
         """
 
-        n = Vect.cross_product(self.b() - self.a(), self.c() - self.b())
+        n = geom.Vect.cross_product(self.b() - self.a(), self.c() - self.b())
 
         return n.orth()
 
