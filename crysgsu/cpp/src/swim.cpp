@@ -3,7 +3,6 @@
 #include <math.h>
 #include <sstream>
 #include "swim.h"
-#include <Python.h>
 
 using namespace std;
 
