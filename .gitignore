@@ -6,3 +6,9 @@ src/gsu/__pycache__/*
 *.o
 _swim.so
 swim.py
+crysgsu/__pycache__/*
+crysgsu/convert/__pycache__/*
+crysgsu/geom/__pycache__/*
+crysgsu/gsu/__pycache__/*
+tests/__pycache__/*
+
