@@ -182,8 +182,8 @@ if __name__ == '__main__':
     size = comm.Get_size()
     root = 0
 
-    FILENAME = '../grids/bunny.dat'
-    JSON = '../grids/bunny.json'
+    FILENAME = '../cases/grids/bunny.dat'
+    JSON = '../cases/grids/bunny.json'
     OUTDIR = '../'
     OUT_DAT_FILE = 'res.dat'
     CRYDIR = '.'
