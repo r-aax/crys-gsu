@@ -6,10 +6,10 @@ import sys
 import os
 import pathlib
 import utils
-from gsu import gsu
 import time
 import numpy as np
 from numpy import genfromtxt
+import gsu
 
 # --------------------------------------------------------------------------------------------------
 
