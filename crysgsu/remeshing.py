@@ -685,13 +685,13 @@ class TongRemesher:
 
             # Trying to calculate more accurately.
             if f.ice_chunk > eps:
-                a, b, _ = prizmatoid_volume_coefs(f.Nodes[0].P,
-                                                  f.Nodes[1].P,
-                                                  f.Nodes[2].P,
-                                                  f.Nodes[0].ice_dir,
-                                                  f.Nodes[1].ice_dir,
-                                                  f.Nodes[2].ice_dir,
-                                                  f.get_triangle().normal_orth())
+                a, b, _ = geom.utils.prizmatoid_volume_coefs(f.Nodes[0].P,
+                                                             f.Nodes[1].P,
+                                                             f.Nodes[2].P,
+                                                             f.Nodes[0].ice_dir,
+                                                             f.Nodes[1].ice_dir,
+                                                             f.Nodes[2].ice_dir,
+                                                             f.get_triangle().normal_orth())
 
                 # Check if it is needed to solve square equation.
                 if abs(b) > eps:
