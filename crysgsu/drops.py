@@ -30,7 +30,7 @@ class Space:
         """
 
         self.Ds = ds
-        self.Bx = Box([d[0] for d in ds])
+        self.Bx = geom.Box([d[0] for d in ds])
         self.PartitionsTuple = np.array(ds_tuple)
 
     # ----------------------------------------------------------------------------------------------
@@ -135,7 +135,7 @@ class Space:
             * third element - trajectory
         """
 
-        tr = Trajectory(p)
+        tr = geom.Trajectory(p)
         v = vel
 
         # Infinite loop.
@@ -167,7 +167,7 @@ class Space:
 
             # Everything is OK.
             # Check intersection.
-            tri = triangles_cloud.first_intersection_with_segment(Segment(lp, fp))
+            tri = triangles_cloud.first_intersection_with_segment(geom.Segment(lp, fp))
             if not tri is None:
                 return ('C', tri.BackRef, tr)
 
@@ -201,8 +201,8 @@ def read_vel_field_from_file(grid_air_file):
                     for i in range(ns):
                         l = f.readline()
                         d = l.split()
-                        p = Vect(float(d[0]), float(d[1]), float(d[2]))
-                        v = Vect(float(d[5]), float(d[6]), float(d[7]))
+                        p = geom.Vect(float(d[0]), float(d[1]), float(d[2]))
+                        v = geom.Vect(float(d[5]), float(d[6]), float(d[7]))
                         ds.append((p, v))
                         ds_tuple.append(p.coords_tuple())
                     # Ignore all febricks links.
@@ -259,7 +259,7 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
     # Load grid.
     g = gsu.Grid()
     g.load(grid_stall_file)
-    triangles_cloud = TrianglesCloud(g.get_triangles_list())
+    triangles_cloud = geom.TrianglesCloud(g.get_triangles_list())
 
     # Read air from file.
     air = read_vel_field_from_file(grid_air_file)
@@ -278,7 +278,7 @@ def drops(grid_stall_file, grid_air_file, out_grid_file,
             tri = f.get_triangle()
             start_point = tri.centroid() + tri.normal_orth() * d
             res = air.fly(start_point,
-                          Vect(f['StallVX'], f['StallVY'], f['StallVZ']), f['StallD'],
+                          geom.Vect(f['StallVX'], f['StallVY'], f['StallVZ']), f['StallD'],
                           dt, triangles_cloud, max_fly_steps)
             traj = res[2]
             print(traj)

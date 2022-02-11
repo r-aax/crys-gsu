@@ -63,7 +63,7 @@ class TrianglesCloud:
         self.Subclouds = []
 
         # Box.
-        self.Box = Box.from_triangles(self.Triangles)
+        self.Box = geom.Box.from_triangles(self.Triangles)
 
         # Build subclouds tree.
         self.build_subclouds_tree()
@@ -101,7 +101,7 @@ class TrianglesCloud:
 
         assert len(triangles_list) > 1, 'internal error'
 
-        box = Box.from_points([t.centroid() for t in triangles_list])
+        box = geom.Box.from_points([t.centroid() for t in triangles_list])
 
         # Edge points box.
         xmax, ymax, zmax = box.MaxX, box.MaxY, box.MaxZ
@@ -112,7 +112,7 @@ class TrianglesCloud:
         indxyz = lenxyz.index(np.amax(lenxyz))
 
         # separation
-        triangles_list = Triangle.sorting_by_the_selected_axis(triangles_list, indxyz)
+        triangles_list = geom.Triangle.sorting_by_the_selected_axis(triangles_list, indxyz)
         mid_of_list = len(triangles_list)//2
 
         return [triangles_list[:mid_of_list],  triangles_list[mid_of_list:]]

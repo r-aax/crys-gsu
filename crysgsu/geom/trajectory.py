@@ -24,7 +24,7 @@ class Trajectory:
         :param start: Start point.
         """
 
-        if not isinstance(start, Vect):
+        if not isinstance(start, geom.Vect):
             raise Exception('trajectory must be based on points (vectors)')
 
         self.Points = [start]
@@ -51,7 +51,7 @@ class Trajectory:
         :param p: Point.
         """
 
-        if not isinstance(p, Vect):
+        if not isinstance(p, geom.Vect):
             raise Exception('trajectory must be based on points (vectors)')
 
         self.Points.append(p)
