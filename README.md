@@ -48,3 +48,7 @@ To build documentation in HTML you should run:
 cd docs
 make html
 ```
+
+## Testing
+
+Run `python -m unittest` in project's top directory to execute tests.
