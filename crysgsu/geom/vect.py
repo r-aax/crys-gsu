@@ -232,13 +232,7 @@ class Vect:
         :param op: Vect, float ot int.
         :return:  Result (vector).
         """
-
-        if isinstance(op, Vect):
-            return self.X * op.X + self.Y * op.Y + self.Z * op.Z
-        elif isinstance(op, float) or isinstance(op, int):
-            return Vect(self.X * op, self.Y * op, self.Z * op)
-        else:
-            raise Exception('wrong argument type')
+        return Vect(self.X * op, self.Y * op, self.Z * op)
 
     # ----------------------------------------------------------------------------------------------
 

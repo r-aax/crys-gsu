@@ -30,7 +30,7 @@ def tetrahedron_volume(a: Vect,
         Volume
     """
 
-    return abs((a - d) * Vect.cross_product(b - d, c - d)) / 6.0
+    return abs(Vect.dot_product((a - d), Vect.cross_product(b - d, c - d))) / 6.0
 
 # --------------------------------------------------------------------------------------------------
 
@@ -114,7 +114,7 @@ def prizmatoid_volume_coefs(v1: Vect,
 
     # a, b, c coefficients
     a = 0.5 * Vect.cross_product(v21, v31).mod()
-    b = 0.25 * ((Vect.cross_product(v21, u31) + Vect.cross_product(u21, v31)) * n)
+    b = 0.25 * Vect.dot_product(Vect.cross_product(v21, u31) + Vect.cross_product(u21, v31), n)
     c = (1.0 / 6.0) * (Vect.cross_product(u21, u31) * n)
 
     return a, b, c
