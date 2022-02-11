@@ -653,7 +653,7 @@ class TongRemesher:
 
             # First, we smooth faces' ice directions through nodes' ice directions.
             for face in self.grid.Faces:
-                ws = [max(s * (1.0 - (face.ice_dir * node.ice_dir)), k) for node in face.Nodes]
+                ws = [max(s * (1.0 - Vect.dot_product(face.ice_dir, node.ice_dir)), k) for node in face.Nodes]
                 face.ice_dir = wsum([node.ice_dir for node in face.Nodes], ws)
 
             # Second, we smooth nodes' ice directions through faces' ice directions.
